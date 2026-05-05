@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Qualificadora — Abril 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<style>
+  :root {
+    --bg: #0b1220;
+    --bg-2: #0f172a;
+    --card: #121a2c;
+    --card-2: #182236;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #3b82f6;
+    --green: #22c55e;
+    --orange: #f97316;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --yellow: #eab308;
+    --teal: #14b8a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #070c18 0%, #0b1220 100%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; color: #f1f5f9; }
+  .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+  .last-updated {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #4ade80; padding: 6px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; margin-bottom: 16px;
+    font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+  .last-updated::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e; box-shadow: 0 0 8px #22c55e;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f1f5f9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h3 {
+    margin: 0 0 14px; font-size: 13px; font-weight: 700;
+    color: #f1f5f9; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .grid { display: grid; gap: 14px; }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 1100px) {
+    .grid-5 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .grid-5, .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  }
+  .kpi.kpi-lost .kpi-value { color: #f87171; }
+  .kpi {
+    background: linear-gradient(135deg, var(--card) 0%, var(--card-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .kpi-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .kpi-sub { color: var(--text-dim); font-size: 11px; margin-top: 6px; }
+  .canvas-wrap { position: relative; height: 320px; }
+  .canvas-wrap.tall { height: 420px; }
+  .canvas-wrap.short { height: 240px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); color: var(--text); }
+  th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.5px; }
+  th:first-child, td:first-child { text-align: left; }
+
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; color: white; }
+  .pill.agro { background: var(--green); }
+  .pill.fiscal { background: var(--orange); }
+  .pill.pj360 { background: var(--accent); }
+  .pill.partner { background: #0f172a; border: 1px solid #475569; }
+
+  /* Pace meta */
+  .pace-card {
+    background: linear-gradient(135deg, var(--card) 0%, var(--card-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .pace-headline { display: flex; gap: 24px; align-items: baseline; margin-bottom: 8px; flex-wrap: wrap; }
+  .pace-num { font-size: 30px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .pace-num small { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+  .pace-divider { color: var(--text-dim); font-size: 22px; }
+  .pace-meta-info { color: var(--text-muted); font-size: 12px; }
+  .pace-bar-track { background: #1e293b; height: 28px; border-radius: 6px; position: relative; overflow: hidden; margin: 10px 0 6px; }
+  .pace-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), #16a34a); border-radius: 6px 0 0 6px; transition: width 0.5s; }
+  .pace-bar-future { position: absolute; top: 0; height: 100%; background: linear-gradient(90deg, rgba(168,85,247,0.85), rgba(168,85,247,0.65)); }
+  .pace-target-line { position: absolute; top: -4px; bottom: -4px; width: 3px; background: var(--red); border-radius: 2px; }
+  .pace-target-label { position: absolute; top: -18px; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: var(--red); white-space: nowrap; background: var(--bg); padding: 1px 4px; border-radius: 3px; }
+  .pace-legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .pace-legend span { display: flex; align-items: center; gap: 5px; }
+  .pace-legend .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* Person row pace */
+  .person-row { display: grid; grid-template-columns: 150px 1fr 90px 130px; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .person-row:last-child { border-bottom: none; }
+  .person-name { font-weight: 500; color: #e2e8f0; font-size: 12.5px; }
+  .person-bar-track { background: #1e293b; height: 22px; border-radius: 4px; position: relative; overflow: visible; }
+  .person-bar-fill { height: 100%; background: var(--green); border-radius: 4px 0 0 4px; }
+  .person-bar-future { position: absolute; top: 0; height: 100%; background: rgba(168,85,247,0.75); }
+  .person-bar-target { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--red); }
+  .person-stat { font-size: 12px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+  .person-stat .delta { font-weight: 700; }
+  .person-gap { font-size: 11.5px; text-align: right; font-variant-numeric: tabular-nums; }
+  .person-gap .gap-num { font-weight: 700; }
+  .person-gap .gap-meta { color: var(--text-dim); font-size: 10.5px; display: block; margin-top: 1px; }
+  .ok { color: var(--green); }
+  .warn { color: var(--yellow); }
+  .danger { color: var(--red); }
+
+  /* Product bar viz in table */
+  .barbox { display: inline-block; background: #1e293b; height: 8px; width: 80px; border-radius: 3px; vertical-align: middle; margin-left: 6px; overflow: hidden; }
+  .barbox-fill { background: var(--red); height: 100%; }
+  .barbox-fill.green { background: var(--green); }
+  .barbox-fill.blue { background: var(--accent); }
+
+  /* Heatmap */
+  .heat-table { font-size: 11.5px; }
+  .heat-table th { background: var(--card-2); position: sticky; top: 0; }
+  .heat-cell { text-align: center; font-weight: 600; }
+  .heat-scroll { overflow-x: auto; max-height: 480px; }
+
+  /* Month nav */
+  .month-nav {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 6px; border-radius: 10px; margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .month-nav a {
+    color: var(--text-muted); text-decoration: none;
+    padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    transition: all 0.15s;
+  }
+  .month-nav a:hover { background: var(--card-2); color: #f1f5f9; }
+  .month-nav a.active {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #fff;
+  }
+  .month-nav .label {
+    color: var(--text-muted); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.6px; padding: 0 8px; font-weight: 600;
+  }
+  .month-nav .badge {
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    background: rgba(34, 197, 94, 0.2); color: #4ade80;
+    margin-left: 6px; font-weight: 700;
+  }
+  .month-nav .badge.live {
+    background: rgba(168, 85, 247, 0.25); color: #c4b5fd;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="month-nav">
+    <span class="label">Mês:</span>
+    <a href="abril-2026.html" class="active">Abril 2026 <span class="badge">Fechado</span></a>
+    <a href="maio-2026.html" class="">Maio 2026 <span class="badge live">Em andamento</span></a>
+  </nav>
+  <h1 id="page-title">Dashboard Qualificadora — Abril 2026</h1>
+  <div class="last-updated" id="last-updated"></div>
+  <div class="subtitle" id="subtitle"></div>
+
+  <!-- KPIs -->
+  <div class="grid grid-5">
+    <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value" id="kpi-leads"></div><div class="kpi-sub" id="kpi-leads-sub"></div></div>
+    <div class="kpi kpi-lost"><div class="kpi-label">Leads Perdidos</div><div class="kpi-value" id="kpi-lost"></div><div class="kpi-sub" id="kpi-lost-sub"></div></div>
+    <div class="kpi"><div class="kpi-label">MQL (Qualificações)</div><div class="kpi-value" id="kpi-qual"></div><div class="kpi-sub" id="kpi-qual-sub"></div></div>
+    <div class="kpi"><div class="kpi-label">CC1 Agendadas</div><div class="kpi-value" id="kpi-ag"></div><div class="kpi-sub" id="kpi-ag-sub"></div></div>
+    <div class="kpi"><div class="kpi-label">CC1 Realizadas</div><div class="kpi-value" id="kpi-re"></div><div class="kpi-sub" id="kpi-re-sub"></div></div>
+  </div>
+
+  <!-- Curve chart -->
+  <div class="section-title">Pace diário</div>
+  <div class="card"><h3>Leads vs Perdidos vs Agendamentos vs Realizadas</h3>
+    <div class="canvas-wrap tall"><canvas id="curve"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Pace Acumulado — Abril 2026</h3>
+    <div class="canvas-wrap tall"><canvas id="curve-cum"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Pace Acumulado vs Meta — Realizadas</h3>
+    <div class="canvas-wrap tall"><canvas id="pace-cum"></canvas></div>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Linha verde sólida = realizadas acumuladas. Linhas tracejadas = onde o time deveria estar a cada dia para fechar a meta no fim do mês (avança apenas em dias úteis).
+    </div>
+  </div>
+
+  <!-- Pace metas headline -->
+  <div class="section-title">Quanto falta para a meta</div>
+  <div class="grid grid-2">
+    <div class="pace-card">
+      <div class="pace-headline">
+        <div class="pace-num" id="sdr-total"></div>
+        <div class="pace-divider">/</div>
+        <div class="pace-num" id="sdr-meta-total"><small></small></div>
+      </div>
+      <div class="pace-meta-info" id="sdr-pace-info"></div>
+      <div class="pace-bar-track">
+        <div class="pace-bar-fill" id="sdr-bar-fill"></div>
+        <div class="pace-bar-future" id="sdr-bar-future"></div>
+        <div class="pace-target-line" id="sdr-bar-target"><div class="pace-target-label" id="sdr-bar-label">Hoje</div></div>
+      </div>
+      <div class="pace-legend">
+        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
+        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
+        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
+      </div>
+    </div>
+    <div class="pace-card">
+      <div class="pace-headline">
+        <div class="pace-num" id="closer-total"></div>
+        <div class="pace-divider">/</div>
+        <div class="pace-num" id="closer-meta-total"><small></small></div>
+      </div>
+      <div class="pace-meta-info" id="closer-pace-info"></div>
+      <div class="pace-bar-track">
+        <div class="pace-bar-fill" id="closer-bar-fill"></div>
+        <div class="pace-bar-future" id="closer-bar-future"></div>
+        <div class="pace-target-line" id="closer-bar-target"><div class="pace-target-label" id="closer-bar-label">Hoje</div></div>
+      </div>
+      <div class="pace-legend">
+        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
+        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
+        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-person pace with gap merged in -->
+  <div class="card"><h3>Pace por SDR — Meta 70 realizadas</h3><div id="sdr-pace-list"></div></div>
+  <div class="card"><h3>Pace por Closer — Meta 40 realizadas</h3><div id="closer-pace-list"></div></div>
+
+  <!-- SDR atividades -->
+  <div class="section-title">Atividade SDR</div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Agendamentos por SDR</h3><div class="canvas-wrap"><canvas id="sdr-ag-chart"></canvas></div></div>
+    <div class="card"><h3>Realizadas por SDR</h3><div class="canvas-wrap"><canvas id="sdr-re-chart"></canvas></div></div>
+  </div>
+
+  <!-- Closer atividades -->
+  <div class="section-title">Atividade Closer</div>
+  <div class="card"><h3>Realizadas / Para acontecer / No Show por Closer</h3>
+    <div class="canvas-wrap tall"><canvas id="closer-chart"></canvas></div>
+  </div>
+
+  <!-- Por produto -->
+  <div class="section-title">Performance por Produto</div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Agendamentos por Produto</h3><div class="canvas-wrap short"><canvas id="prod-ag"></canvas></div></div>
+    <div class="card"><h3>Realizadas por Produto</h3><div class="canvas-wrap short"><canvas id="prod-re"></canvas></div></div>
+  </div>
+
+  <!-- Leads vs Perdidos -->
+  <div class="card"><h3>Leads gerados vs Perdidos por Produto</h3>
+    <div class="canvas-wrap"><canvas id="prod-leads-lost"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Tabela: Leads × Agendamentos × Perdidos × Em aberto</h3>
+    <table id="prod-table"></table>
+  </div>
+
+  <!-- Stacked bar: composição dos leads por produto -->
+  <div class="card"><h3>Composição dos Leads por Produto — Perdidos / Em aberto / Agendados (% sobre o total de leads)</h3>
+    <div class="canvas-wrap"><canvas id="prod-rates"></canvas></div>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Em aberto = leads recebidos no mês que ainda não foram marcados como perdidos. Agendamentos podem incluir leads de meses anteriores, por isso aparecem como linha de referência sobreposta.
+    </div>
+  </div>
+
+  <!-- Heatmaps -->
+  <div class="section-title">Análise de Perdas</div>
+  <div class="card"><h3>Perdidos por Motivo × Produto</h3>
+    <div class="heat-scroll"><table class="heat-table" id="motivo-produto"></table></div>
+  </div>
+
+  <div class="card"><h3>Perdidos por Motivo × Campanha (top 12)</h3>
+    <div class="heat-scroll"><table class="heat-table" id="motivo-campanha"></table></div>
+  </div>
+</div>
+
+<script>
+const D = {"totals": {"leads": 4525, "lost": 4125, "qual": 791, "ag": 601, "re": 435, "ns": 229, "future_re": 0}, "daily_series": [{"date": "2026-04-01", "leads": 133, "lost": 29, "qual": 33, "ag": 21, "re": 12, "ns": 2}, {"date": "2026-04-02", "leads": 143, "lost": 48, "qual": 44, "ag": 28, "re": 9, "ns": 5}, {"date": "2026-04-03", "leads": 150, "lost": 1, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-04-04", "leads": 164, "lost": 6, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-04-05", "leads": 222, "lost": 1, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-04-06", "leads": 176, "lost": 353, "qual": 34, "ag": 28, "re": 16, "ns": 8}, {"date": "2026-04-07", "leads": 103, "lost": 142, "qual": 34, "ag": 25, "re": 16, "ns": 10}, {"date": "2026-04-08", "leads": 343, "lost": 246, "qual": 32, "ag": 23, "re": 13, "ns": 15}, {"date": "2026-04-09", "leads": 63, "lost": 131, "qual": 23, "ag": 18, "re": 18, "ns": 10}, {"date": "2026-04-10", "leads": 76, "lost": 74, "qual": 22, "ag": 20, "re": 12, "ns": 7}, {"date": "2026-04-11", "leads": 80, "lost": 2, "qual": 0, "ag": 0, "re": 1, "ns": 0}, {"date": "2026-04-12", "leads": 120, "lost": 7, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-04-13", "leads": 132, "lost": 263, "qual": 41, "ag": 25, "re": 13, "ns": 12}, {"date": "2026-04-14", "leads": 154, "lost": 171, "qual": 41, "ag": 30, "re": 17, "ns": 11}, {"date": "2026-04-15", "leads": 180, "lost": 193, "qual": 40, "ag": 26, "re": 21, "ns": 11}, {"date": "2026-04-16", "leads": 204, "lost": 193, "qual": 43, "ag": 29, "re": 20, "ns": 8}, {"date": "2026-04-17", "leads": 185, "lost": 259, "qual": 47, "ag": 24, "re": 19, "ns": 17}, {"date": "2026-04-18", "leads": 169, "lost": 7, "qual": 1, "ag": 2, "re": 0, "ns": 0}, {"date": "2026-04-19", "leads": 226, "lost": 8, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-04-20", "leads": 153, "lost": 543, "qual": 33, "ag": 20, "re": 12, "ns": 14}, {"date": "2026-04-21", "leads": 161, "lost": 9, "qual": 7, "ag": 3, "re": 0, "ns": 1}, {"date": "2026-04-22", "leads": 115, "lost": 287, "qual": 39, "ag": 27, "re": 23, "ns": 9}, {"date": "2026-04-23", "leads": 119, "lost": 131, "qual": 44, "ag": 36, "re": 28, "ns": 18}, {"date": "2026-04-24", "leads": 127, "lost": 179, "qual": 39, "ag": 31, "re": 22, "ns": 10}, {"date": "2026-04-25", "leads": 137, "lost": 43, "qual": 10, "ag": 12, "re": 11, "ns": 8}, {"date": "2026-04-26", "leads": 157, "lost": 12, "qual": 3, "ag": 3, "re": 0, "ns": 0}, {"date": "2026-04-27", "leads": 150, "lost": 310, "qual": 62, "ag": 46, "re": 31, "ns": 18}, {"date": "2026-04-28", "leads": 119, "lost": 145, "qual": 39, "ag": 45, "re": 44, "ns": 14}, {"date": "2026-04-29", "leads": 130, "lost": 193, "qual": 42, "ag": 42, "re": 43, "ns": 10}, {"date": "2026-04-30", "leads": 134, "lost": 141, "qual": 37, "ag": 36, "re": 32, "ns": 11}], "sdr": {"ag": {"Izadora Zacker": 85, "Leonardo Soares": 61, "Mélodi Nirvana": 101, "Andriely Oliveira": 50, "João Gabriel Dutra": 56, "Jonatans Junior": 50, "Lorenzo Meneghetti": 109, "Henri Meneghetti": 51, "Glauber Bagetti": 17, "Jhully Soares": 13}, "re": {"Mélodi Nirvana": 72, "Andriely Oliveira": 38, "Leonardo Soares": 33, "Henri Meneghetti": 49, "Lorenzo Meneghetti": 81, "Jonatans Junior": 33, "Glauber Bagetti": 14, "João Gabriel Dutra": 34, "Izadora Zacker": 73, "Jhully Soares": 6}, "ns": {"Lorenzo Meneghetti": 29, "Mélodi Nirvana": 49, "Leonardo Soares": 35, "Andriely Oliveira": 8, "Glauber Bagetti": 11, "Henri Meneghetti": 27, "Izadora Zacker": 25, "João Gabriel Dutra": 18, "Jonatans Junior": 23, "Jhully Soares": 4}, "future": {}}, "closer": {"re": {"Djulia Silva": 49, "Suzanny Mauren Dihelem": 22, "William Dias": 22, "Haynnã": 26, "Samuel Brião": 24, "Émerson Cavitchoni": 19, "Felippe Porcella": 22, "Thuany Ghabril": 21, "Lorenzo Coronel": 41, "Samuel Almeida": 36, "Adalberto Neto": 31, "Laura Feijó Junqueira": 6, "Andresa Caldas": 31, "Maria Luísa": 8, "Raissa Antunes": 11, "Alécio Carneiro": 2, "Leonardo Ribeiro": 21, "Gabriela Cunha": 36, "Jeferson Ludke": 4, "Bruna Mota": 1, "Bruna Salazar": 2}, "future": {}, "ns": {"Djulia Silva": 13, "Haynnã": 14, "Samuel Almeida": 12, "Suzanny Mauren Dihelem": 15, "Leonardo Ribeiro": 8, "Adalberto Neto": 12, "Thuany Ghabril": 22, "Lorenzo Coronel": 24, "Émerson Cavitchoni": 12, "Andresa Caldas": 12, "William Dias": 13, "Laura Feijó Junqueira": 7, "Felippe Porcella": 18, "Mauricio Peixoto": 1, "Samuel Brião": 11, "Gabriela Cunha": 26, "Maria Luísa": 2, "Jeferson Ludke": 7}}, "product": {"ag": {"Studio Agro": 205, "Studio Fiscal": 103, "GS PARTNER": 185, "PJ360": 78}, "re": {"Studio Agro": 144, "GS PARTNER": 131, "Studio Fiscal": 84, "PJ360": 61}, "ns": {"GS PARTNER": 55, "Studio Fiscal": 32, "Studio Agro": 84, "PJ360": 32}, "leads": {"Studio Agro": 2173, "Studio Fiscal": 1825, "PJ360": 397, "GS PARTNER": 130}, "lost": {"Studio Agro": 1982, "Studio Fiscal": 1661, "PJ360": 358, "GS PARTNER": 76, "None": 50}, "loss_rate": {"Studio Agro": 91.2, "Studio Fiscal": 91.0, "PJ360": 90.2, "GS PARTNER": 58.5}, "mql_rate": {"Studio Agro": 9.4, "Studio Fiscal": 5.6, "PJ360": 19.6, "GS PARTNER": 142.3}}, "loss": {"by_reason_product": {"Sem perfil": {"Studio Fiscal": 1077, "Studio Agro": 1220, "GS PARTNER": 24, "PJ360": 80}, "Sem interesse": {"Studio Fiscal": 60, "GS PARTNER": 16, "Studio Agro": 116, "PJ360": 30}, "Não esta pronto para comprar": {"Studio Fiscal": 3, "GS PARTNER": 1, "Studio Agro": 1}, "Perfil Fake": {"Studio Fiscal": 60, "Studio Agro": 38, "PJ360": 9}, "Sem Contato": {"Studio Fiscal": 129, "Studio Agro": 181, "PJ360": 47, "GS PARTNER": 1}, "Sem Retorno": {"Studio Fiscal": 163, "GS PARTNER": 20, "Studio Agro": 242, "PJ360": 121}, "Teste": {"Studio Agro": 4, "Studio Fiscal": 3}, "Sem tempo": {"Studio Agro": 3}, "Sem dinheiro": {"Studio Fiscal": 2, "Studio Agro": 3, "PJ360": 1}, "Duplicidade": {"Studio Agro": 2, "Studio Fiscal": 50, "PJ360": 3}, "Procurando emprego": {"Studio Fiscal": 8, "Studio Agro": 1}, "Postergou decisão": {"GS PARTNER": 2, "Studio Fiscal": 1, "PJ360": 1}, "Mudança de Prioridades": {"Studio Fiscal": 3, "PJ360": 1, "Studio Agro": 1}, "Concorrência escolhida": {"GS PARTNER": 1, "Studio Agro": 1, "PJ360": 1}}, "by_reason_campaign": {"Sem perfil": {"[LEAD] FORMS_NATIVO] [ESCALA] [4]": 53, "[LEAD] FORMS_NATIVO] [ESCALA]": 252, "[LEAD][ABO][FORM NATIVO] [3]": 47, "[LEAD][ABO][FORM NATIVO LISTA]": 44, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 47, "[LEAD][ABO][FORM NATIVO] [ABO]": 65, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 262, "[LEAD][ABO][FORM NATIVO] [1]": 83, "[LEAD][ABO][LAL QUENTES PIPE]": 16, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 39, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 26, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 65, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 44, "lead_lp_agro_abo_05-03": 593, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 6, "FF - GS PARTNER [Formulario Direto][ABO]": 25, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 25, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [03]": 3, "[LEAD][ABO][FORM NATIVO] [LISTA]": 29, "[LEAD][ABO][LAL FRANQUEADOS]": 9, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 4, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 8, "[LEAD][ABO][REMARKETING]": 3, "pmax_franquia_studio_agro": 17, "120225035574020013": 3, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [04]": 64, "[LEAD][ABO][LAL CLIENTES FINAIS]": 6, "[LEAD] [DESTINO_LP] [ESCALA] [3]": 1, "[LEAD] [LP_FISCAL][ABO][ADV CONT EMPR]  [23_04]": 1, "search_studio_agro": 3, "[FORM DIRETO][ABO]": 21, "02 - [FORM DIRETO][ABO]": 43, "search_cadastro_franquia_12_03": 19, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [03]": 154, "FF | 02 - [FORM DIRETO][ABO]": 7, "[LEADS] [DESTINO_LP_FISCAL] [08_04] [01]": 3, "search_cadastro_franquia_12_03_v2": 1, "FF | [CADASTRO][VIDEOS][FF] ABO": 19, "FF | [CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL][2] ABO": 19, "FF | [FORMULARIO DIRETO][DIVERSOS] ABO": 22, "FF - GRUPO STUDIO [FORM DIRETO][ABO][JC E JU]": 5, "FF - STUDIO FISCAL Formulario Direto [ABO][25] V2": 12, "FF | ABO [FORMULARIO DIRETO][FRANQUIA] ABO": 32, "FF - STUDIO FISCAL Listas [ABO][Formulario Direto]": 10, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]  [2]": 9, "FF | 03 - [FORM DIRETO][ABO]": 9, "FF - STUDIO FISCAL [CBO][REMARKETING]": 1, "lead_lp_fiscal_abo_27_03": 45, "lead_destino_lp_fiscal_06_04": 7, "lead_destino_lp_fiscal_16_03": 15, "120238902011970788": 1, "[LEAD] [FORMULÁRIO META] [FISCAL] [ABO] [16_03]": 3, "lead_lp_fiscal_abo_14_03": 12, "lead_destino_lp_fiscal_27_03": 60, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]": 4, "120238902702800788": 1, "[LEAD] [FORMULÁRIO META] [FISCAL] [16_03] [2]": 9, "120217993432820013": 1, "Rede de Pesquisa": 2, "lead_lp_fiscal_abo_1_03": 11, "120245258093670013": 3, "120242298180730013": 2}, "Sem interesse": {"[LEAD] FORMS_NATIVO] [ESCALA] [3]": 1, "FF - GS PARTNER [Formulario Direto][ABO]": 19, "[LEAD][ABO][FORM NATIVO] [1]": 11, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 5, "[LEAD][ABO][FORM NATIVO] [ABO]": 11, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 4, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 8, "search_studio_agro": 2, "pmax_franquia_studio_agro": 1, "[LEAD] FORMS_NATIVO] [ESCALA]": 12, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 9, "[LEAD][ABO][FORM NATIVO] [3]": 3, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 1, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 7, "[LEAD][ABO][FORM NATIVO] [LISTA]": 6, "[LEAD][ABO][LAL QUENTES PIPE]": 2, "[LEAD] [DESTINO_LP] [ESCALA] [3]": 2, "lead_lp_agro_abo_05-03": 21, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [04]": 11, "FF | 03 - [FORM DIRETO][ABO]": 6, "[LEAD][ABO][FORM NATIVO LISTA]": 1, "search_cadastro_franquia_12_03": 1, "[FORM DIRETO][ABO]": 14, "02 - [FORM DIRETO][ABO]": 8, "[LEAD][ABO][LAL CLIENTES FINAIS]": 2, "120246084046030013": 1, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1, "FF | ABO [FORMULARIO DIRETO][FRANQUIA] ABO": 16, "FF | 02 - [FORM DIRETO][ABO]": 2, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [03]": 11, "lead_lp_fiscal_abo_27_03": 2, "lead_destino_lp_fiscal_27_03": 4, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]": 2, "FF | [CADASTRO][VIDEOS][FF] ABO": 5, "FF | [FORMULARIO DIRETO][DIVERSOS] ABO": 2, "FF - STUDIO FISCAL Formulario Direto [ABO][25] V2": 3, "FF | [CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL][2] ABO": 6, "lead_lp_fiscal_abo_14_03": 1, "Rede de Pesquisa": 1, "lead_lp_fiscal_abo_1_03": 1}, "Não esta pronto para comprar": {"[LEAD] FORMS_NATIVO] [ESCALA]": 2, "FF - GS PARTNER [Formulario Direto][ABO]": 1, "lead_lp_fiscal_abo_27_03": 1, "FF | [CADASTRO][VIDEOS][FF] ABO": 1}, "Perfil Fake": {"[LEAD] FORMS_NATIVO] [ESCALA]": 9, "[LEAD][ABO][FORM NATIVO LISTA]": 5, "pmax_franquia_studio_agro": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 14, "[LEAD][ABO][FORM NATIVO] [ABO]": 3, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 1, "[LEAD][ABO][FORM NATIVO] [LISTA]": 1, "[LEAD] [DESTINO_LP] [ESCALA] [3]": 1, "lead_lp_agro_abo_05-03": 15, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 4, "[LEAD][ABO][FORM NATIVO] [3]": 3, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 2, "120225035574020013": 1, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [04]": 1, "[LEAD][ABO][FORM NATIVO] [1]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 1, "[FORM DIRETO][ABO]": 4, "[LEAD][ABO][LAL FRANQUEADOS]": 1, "FF | 02 - [FORM DIRETO][ABO]": 1, "02 - [FORM DIRETO][ABO]": 3, "FF - STUDIO FISCAL Formulario Direto [ABO][25] V2": 4, "FF | ABO [FORMULARIO DIRETO][FRANQUIA] ABO": 4, "FF - GRUPO STUDIO [FORM DIRETO][ABO][JC E JU]": 1, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [03]": 8, "lead_destino_lp_fiscal_27_03": 4, "FF | [FORMULARIO DIRETO][DIVERSOS] ABO": 2, "FF - STUDIO FISCAL Listas [ABO][Formulario Direto]": 1, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]": 4, "lead_lp_fiscal_abo_27_03": 1, "search_cadastro_franquia_12_03": 3, "120245264250280013": 1, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]  [2]": 1, "FF | 03 - [FORM DIRETO][ABO]": 1}, "Sem Contato": {"[LEAD] FORMS_NATIVO] [ESCALA] [2]": 11, "[LEAD][ABO][FORM NATIVO] [3]": 4, "lead_lp_agro_abo_05-03": 39, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 2, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 6, "[LEAD][ABO][FORM NATIVO] [ABO]": 17, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [03]": 2, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 16, "[LEAD][ABO][FORM NATIVO] [1]": 19, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 2, "[LEAD] FORMS_NATIVO] [ESCALA]": 19, "[LEAD][ABO][FORM NATIVO LISTA]": 7, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 9, "120225035574020013": 1, "[LEAD][ABO][FORM NATIVO] [LISTA]": 7, "FF - GS PARTNER [Formulario Direto][ABO]": 2, "[LEADS] [DESTINO_LP_FISCAL] [08_04] [01]": 1, "pmax_franquia_studio_agro": 1, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [04]": 11, "[LEAD][ABO][LAL CLIENTES FINAIS]": 3, "[LEAD][ABO][LAL FRANQUEADOS]": 1, "02 - [FORM DIRETO][ABO]": 16, "[FORM DIRETO][ABO]": 22, "[LEAD][ABO][LAL QUENTES PIPE]": 4, "[LEAD] [DESTINO_LP] [ESCALA] [3]": 1, "120217993432820013": 1, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1, "[LEAD][ABO][REMARKETING]": 1, "FF | 02 - [FORM DIRETO][ABO]": 6, "[LEAD] [LP_FISCAL][CBO] [REMARKETING VV]": 1, "[LEAD] [LP_FISCAL][CBO][ADV+CONT+EMPR]": 1, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]  [2]": 2, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [03]": 16, "FF - STUDIO FISCAL Formulario Direto [ABO][25] V2": 8, "FF | [CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL][2] ABO": 15, "lead_destino_lp_fiscal_16_03": 5, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 1, "[LEAD] [FORMULÁRIO META] [FISCAL] [16_03] [2]": 2, "FF - STUDIO FISCAL Listas [ABO][Formulario Direto]": 3, "lead_destino_lp_fiscal_06_04": 2, "lead_destino_lp_fiscal_27_03": 17, "FF | [FORMULARIO DIRETO][DIVERSOS] ABO": 14, "FF | ABO [FORMULARIO DIRETO][FRANQUIA] ABO": 13, "search_cadastro_franquia_12_03": 4, "FF | [CADASTRO][VIDEOS][FF] ABO": 10, "lead_lp_fiscal_abo_27_03": 3, "FF | 03 - [FORM DIRETO][ABO]": 4, "lead_lp_fiscal_abo_14_03": 2, "[LEAD] [FORMULÁRIO META] [FISCAL] [ABO] [16_03]": 1, "bio_instagram": 1}, "Sem Retorno": {"[LEAD][ABO][FORM NATIVO LISTA]": 8, "FF - GS PARTNER [Formulario Direto][ABO]": 27, "[LEAD][ABO][FORM NATIVO] [ABO]": 27, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 23, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 3, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 16, "[LEAD] FORMS_NATIVO] [ESCALA]": 40, "lead_lp_agro_abo_05-03": 39, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 1, "[LEAD][ABO][FORM NATIVO] [1]": 29, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1, "[LEAD][ABO][REMARKETING]": 1, "[LEAD][ABO][FORM NATIVO] [3]": 3, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 8, "[LEAD][ABO][FORM NATIVO] [LISTA]": 9, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 3, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 12, "[LEAD][ABO][LAL QUENTES PIPE]": 4, "[LEAD][ABO][LAL CLIENTES FINAIS]": 6, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 2, "pmax_franquia_studio_agro": 1, "[FORM DIRETO][ABO]": 53, "[LEAD] [DESTINO_LP] [ESCALA] [3]": 1, "FF | 02 - [FORM DIRETO][ABO]": 19, "02 - [FORM DIRETO][ABO]": 34, "FF | 03 - [FORM DIRETO][ABO]": 14, "[LEAD] [LP_FISCAL][CBO][ADV+CONT+EMPR]": 1, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [04]": 18, "120245950706600013": 1, "FF | [CADASTRO][VIDEOS][FF] ABO": 20, "FF - STUDIO FISCAL Formulario Direto [ABO][25] V2": 11, "FF | [CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL][2] ABO": 15, "search_cadastro_franquia_12_03_v2": 2, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [03]": 16, "search_cadastro_franquia_12_03": 3, "FF | ABO [FORMULARIO DIRETO][FRANQUIA] ABO": 37, "FF | [FORMULARIO DIRETO][DIVERSOS] ABO": 9, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]  [2]": 2, "FF - STUDIO FISCAL Listas [ABO][Formulario Direto]": 6, "GSFISCAL_2026_03_24_GUSTAVO_VID40": 1, "lead_lp_fiscal_abo_14_03": 1, "lead_destino_lp_fiscal_06_04": 2, "lead_lp_fiscal_abo_27_03": 2, "lead_destino_lp_fiscal_27_03": 6, "120217993432820013": 1, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]": 3, "120225035574020013": 1, "[LEAD] [FORMULÁRIO META] [FISCAL] [ABO] [16_03]": 1, "FF - GRUPO STUDIO [FORM DIRETO][ABO][JC E JU]": 1, "Rede de Pesquisa": 1, "lead_lp_fiscal_abo_1_03": 2, "lead_destino_lp_fiscal_16_03": 2, "[LEAD] [FORMULÁRIO META] [FISCAL] [16_03] [2]": 1}, "Sem tempo": {"[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 1, "FF | [CADASTRO][VIDEOS][FF] ABO": 2}, "Sem dinheiro": {"[LEAD][ABO][FORM NATIVO] [3]": 1, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 1, "[LEAD][ABO][FORM NATIVO] [ABO]": 1, "FF | 02 - [FORM DIRETO][ABO]": 1, "[LEAD] FORMS_NATIVO] [ESCALA]": 1, "FF - GS PARTNER [Formulario Direto][ABO]": 1, "lead_lp_agro_abo_05-03": 1}, "Procurando emprego": {"[LEAD] FORMS_NATIVO] [ESCALA] [4]": 1, "[LEAD] FORMS_NATIVO] [ESCALA]": 3, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 3, "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [04]": 1, "FF - STUDIO FISCAL Formulario Direto [ABO][25] V2": 1}, "Duplicidade": {"[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 1, "[FORM DIRETO][ABO]": 1, "[LEAD][ABO][FORM NATIVO] [LISTA]": 1, "FF | [CADASTRO][VIDEOS][FF] ABO": 1, "FF - GRUPO STUDIO [FORM DIRETO][ABO][JC E JU]": 17, "search_cadastro_franquia_12_03": 1, "FF | 03 - [FORM DIRETO][ABO]": 1, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]": 15, "[LEAD] [FORM DIRETO][ABO][FULL PUBLIC]  [2]": 7, "lead_lp_agro_abo_05-03": 1, "[LEAD] [FORMULÁRIO META] [FISCAL] [ABO] [16_03]": 1, "[LEAD] [FORMULÁRIO META] [FISCAL] [16_03] [2]": 8, "02 - [FORM DIRETO][ABO]": 1}, "Postergou decisão": {"FF - GS PARTNER [Formulario Direto][ABO]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 1, "FF | 03 - [FORM DIRETO][ABO]": 1}, "Mudança de Prioridades": {"[LEAD][ABO][FORM NATIVO] [LISTA]": 1, "[LEAD] FORMS_NATIVO] [ESCALA]": 2, "02 - [FORM DIRETO][ABO]": 1, "FF | [CADASTRO][VIDEOS][FF] ABO": 1}, "Teste": {"lead_lp_agro_abo_05-03": 1, "lead_destino_lp_fiscal_27_03": 1}, "Concorrência escolhida": {"FF - GS PARTNER [Formulario Direto][ABO]": 1, "FF | ABO [FORMULARIO DIRETO][FRANQUIA] ABO": 1, "02 - [FORM DIRETO][ABO]": 1}}, "top_campaigns": ["lead_lp_agro_abo_05-03", "[LEAD] FORMS_NATIVO] [ESCALA]", "[LEAD] FORMS_NATIVO] [ESCALA] [2]", "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [03]", "[LEAD][ABO][FORM NATIVO] [1]", "[LEAD][ABO][FORM NATIVO] [ABO]", "[FORM DIRETO][ABO]", "02 - [FORM DIRETO][ABO]", "[LEAD] [FORMULÁRIO META] [AGRO] [16_03] [04]", "FF | ABO [FORMULARIO DIRETO][FRANQUIA] ABO", "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]", "lead_destino_lp_fiscal_27_03", "FF - GS PARTNER [Formulario Direto][ABO]", "[LEAD][ABO][FORM NATIVO] [CONSULTOR]", "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]"]}, "meta": {"sdr_goal": 70, "closer_goal": 40, "sdr_pace_target": 70.0, "closer_pace_target": 40.0, "working_days_elapsed": 22, "working_days_total": 22, "last_data_date": "Abril 2026 — fechado, dados oficiais do Pipedrive Insights"}};
+const SDR_GOAL = D.meta.sdr_goal;
+const CLOSER_GOAL = D.meta.closer_goal;
+const SDR_PACE = D.meta.sdr_pace_target;
+const CLOSER_PACE = D.meta.closer_pace_target;
+const ELAPSED = D.meta.working_days_elapsed;
+const TOTAL_DAYS = D.meta.working_days_total;
+const PACE_PCT = ELAPSED / TOTAL_DAYS;
+
+const fmt = n => n.toLocaleString('pt-BR');
+const pct = (a,b) => b > 0 ? ((a/b)*100).toFixed(1) + '%' : '–';
+
+// Colors
+const COLORS = {
+  leads: '#3b82f6', lost: '#ef4444', ag: '#a855f7', re: '#22c55e',
+  ns: '#f97316', future: '#a855f7'
+};
+const PROD_COLORS = {
+  'Studio Agro': '#22c55e', 'Studio Fiscal': '#f97316',
+  'PJ360': '#3b82f6', 'GS PARTNER': '#0f172a'
+};
+
+// Common chart options for dark theme
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#1e293b';
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+Chart.defaults.font.size = 11;
+
+const gridOpt = { color: '#1e293b' };
+
+// === Last updated badge ===
+document.getElementById('last-updated').textContent =
+  `ATUALIZADO EM ${D.meta.last_data_date}`;
+
+// === Subtitle ===
+document.getElementById('subtitle').textContent =
+  `Dia útil ${ELAPSED} de ${TOTAL_DAYS} (${(PACE_PCT*100).toFixed(0)}% do mês) — atualização automática a cada hora`;
+
+// === KPI ===
+document.getElementById('kpi-leads').textContent = fmt(D.totals.leads);
+document.getElementById('kpi-leads-sub').textContent = `propriedade da equipe Qualificadora`;
+document.getElementById('kpi-lost').textContent = fmt(D.totals.lost);
+document.getElementById('kpi-lost-sub').textContent = `${pct(D.totals.lost, D.totals.leads)} dos leads`;
+document.getElementById('kpi-qual').textContent = fmt(D.totals.qual);
+document.getElementById('kpi-qual-sub').textContent = `${pct(D.totals.qual, D.totals.leads)} dos leads`;
+document.getElementById('kpi-ag').textContent = fmt(D.totals.ag);
+document.getElementById('kpi-ag-sub').textContent = `${pct(D.totals.ag, D.totals.qual)} das qualificações`;
+document.getElementById('kpi-re').textContent = fmt(D.totals.re);
+document.getElementById('kpi-re-sub').textContent = `${pct(D.totals.re, D.totals.ag)} de show — ${fmt(D.totals.ns)} no show`;
+
+// === Curve ===
+const dailyLabels = D.daily_series.map(d => d.date.slice(5));
+
+// Datalabels: register globally but disable by default; only enable on charts that opt-in
+if (window.ChartDataLabels) {
+  Chart.register(window.ChartDataLabels);
+  Chart.defaults.plugins.datalabels = { display: false };
+}
+
+// Helper: show values on every non-zero point with high contrast background
+const dlOpts = (color) => ({
+  display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+  color: '#fff',
+  backgroundColor: color,
+  borderRadius: 3,
+  padding: { top: 2, bottom: 2, left: 4, right: 4 },
+  font: { size: 10, weight: 'bold' },
+  align: 'top', anchor: 'end', offset: 4,
+  formatter: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v
+});
+
+new Chart(document.getElementById('curve'), {
+  type: 'line',
+  data: {
+    labels: dailyLabels,
+    datasets: [
+      {label:'Leads gerados', data: D.daily_series.map(d=>d.leads), borderColor: COLORS.leads, backgroundColor:'rgba(59,130,246,0.1)', tension:0.3, fill:true, pointRadius:2, datalabels: dlOpts(COLORS.leads)},
+      {label:'Leads perdidos', data: D.daily_series.map(d=>d.lost), borderColor: COLORS.lost, backgroundColor:'rgba(239,68,68,0.05)', tension:0.3, fill:false, pointRadius:2, datalabels: dlOpts(COLORS.lost)},
+      {label:'CC1 Agendadas', data: D.daily_series.map(d=>d.ag), borderColor: COLORS.ag, backgroundColor:'rgba(168,85,247,0.05)', tension:0.3, fill:false, pointRadius:2, borderWidth:2, datalabels: dlOpts(COLORS.ag)},
+      {label:'CC1 Realizadas', data: D.daily_series.map(d=>d.re), borderColor: COLORS.re, backgroundColor:'rgba(34,197,94,0.05)', tension:0.3, fill:false, pointRadius:2, borderWidth:2, datalabels: dlOpts(COLORS.re)},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    layout:{padding:{top:18}},
+    plugins:{legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index', intersect:false}},
+    scales:{x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt}},
+    interaction:{mode:'index', intersect:false}
+  }
+});
+
+// === Cumulative chart ===
+// Build cumulative arrays
+function cumSum(arr){ let s=0; return arr.map(v=>{ s+=v; return s; }); }
+const cumLeads = cumSum(D.daily_series.map(d=>d.leads));
+const cumLost  = cumSum(D.daily_series.map(d=>d.lost));
+const cumAg    = cumSum(D.daily_series.map(d=>d.ag));
+const cumRe    = cumSum(D.daily_series.map(d=>d.re));
+
+// Stop showing labels for future days (where everything is still 0)
+// Find the last day with any non-zero value
+let lastIdx = D.daily_series.length - 1;
+for (let i = D.daily_series.length-1; i >= 0; i--) {
+  const d = D.daily_series[i];
+  if (d.leads || d.lost || d.ag || d.re) { lastIdx = i; break; }
+}
+
+// Show value on every day where progress was made (cumulative)
+const cumDl = (color) => ({
+  display: ctx => ctx.dataIndex <= lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
+  color: '#fff',
+  backgroundColor: color,
+  borderRadius: 3,
+  padding: { top: 2, bottom: 2, left: 4, right: 4 },
+  font: { size: 9, weight: 'bold' },
+  align: 'top', anchor: 'end', offset: 4,
+  formatter: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v
+});
+
+new Chart(document.getElementById('curve-cum'), {
+  type: 'line',
+  data: {
+    labels: dailyLabels,
+    datasets: [
+      {label:'Leads gerados (acum.)',   data: cumLeads, borderColor: COLORS.leads, backgroundColor:'rgba(59,130,246,0.12)', tension:0.25, fill:true,  pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.leads)},
+      {label:'Leads perdidos (acum.)',  data: cumLost,  borderColor: COLORS.lost,  backgroundColor:'rgba(239,68,68,0.06)',  tension:0.25, fill:false, pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.lost)},
+      {label:'CC1 Agendadas (acum.)',   data: cumAg,    borderColor: COLORS.ag,    backgroundColor:'rgba(168,85,247,0.06)', tension:0.25, fill:false, pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.ag)},
+      {label:'CC1 Realizadas (acum.)',  data: cumRe,    borderColor: COLORS.re,    backgroundColor:'rgba(34,197,94,0.06)',  tension:0.25, fill:false, pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.re)},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    layout:{padding:{top:22}},
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{
+        mode:'index', intersect:false,
+        callbacks:{
+          afterBody: (items) => {
+            const i = items[0].dataIndex;
+            const leads = cumLeads[i] || 0;
+            if (!leads) return [];
+            const lost = cumLost[i] || 0;
+            const ag = cumAg[i] || 0;
+            const re = cumRe[i] || 0;
+            // Daily values
+            const dLeads = D.daily_series[i].leads;
+            const dLost = D.daily_series[i].lost;
+            const dAg = D.daily_series[i].ag;
+            const dRe = D.daily_series[i].re;
+            const pct = (a,b) => b > 0 ? ((a/b)*100).toFixed(1) + '%' : '–';
+            return [
+              '',
+              '— % sobre leads gerados —',
+              `Acumulado: perda ${pct(lost,leads)} · agend. ${pct(ag,leads)} · realiz. ${pct(re,leads)}`,
+              `No dia:    perda ${pct(dLost,dLeads)} · agend. ${pct(dAg,dLeads)} · realiz. ${pct(dRe,dLeads)}`,
+            ];
+          }
+        }
+      }
+    },
+    scales:{x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt}},
+    interaction:{mode:'index', intersect:false}
+  }
+});
+
+// === Tabela de conversão diária + acumulada (sob o gráfico) ===
+(function buildConvTable(){
+  const cumLeads_t = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.leads); return a;},[]);
+  const cumLost_t  = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.lost);  return a;},[]);
+  const cumAg_t    = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.ag);    return a;},[]);
+  const cumRe_t    = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.re);    return a;},[]);
+  const pct = (a,b) => b > 0 ? ((a/b)*100).toFixed(1)+'%' : '–';
+
+  const tbl = document.createElement('table');
+  tbl.style.cssText = 'width:100%; border-collapse:collapse; margin-top:12px; font-size:11px; color:#cbd5e1;';
+  let html = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
+    <tr>
+      <th rowspan="2" style="padding:6px 4px; text-align:left;">Dia</th>
+      <th colspan="4" style="padding:6px 4px; border-bottom:1px solid #374151;">No dia</th>
+      <th colspan="4" style="padding:6px 4px; border-bottom:1px solid #374151; background:#0f172a;">Acumulado</th>
+    </tr>
+    <tr>
+      <th style="padding:4px;">Leads</th>
+      <th style="padding:4px; color:#fca5a5;">% Perda</th>
+      <th style="padding:4px; color:#c4b5fd;">% Agend.</th>
+      <th style="padding:4px; color:#86efac;">% Realiz.</th>
+      <th style="padding:4px; background:#0f172a;">Leads</th>
+      <th style="padding:4px; background:#0f172a; color:#fca5a5;">% Perda</th>
+      <th style="padding:4px; background:#0f172a; color:#c4b5fd;">% Agend.</th>
+      <th style="padding:4px; background:#0f172a; color:#86efac;">% Realiz.</th>
+    </tr>
+  </thead><tbody>`;
+  D.daily_series.forEach((d, i) => {
+    html += `<tr style="border-bottom:1px solid #1e293b;">
+      <td style="padding:4px; font-weight:600;">${d.date.slice(5)}</td>
+      <td style="padding:4px; text-align:center;">${d.leads}</td>
+      <td style="padding:4px; text-align:center; color:#fca5a5;">${pct(d.lost,d.leads)}</td>
+      <td style="padding:4px; text-align:center; color:#c4b5fd;">${pct(d.ag,d.leads)}</td>
+      <td style="padding:4px; text-align:center; color:#86efac;">${pct(d.re,d.leads)}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5);">${cumLeads_t[i]}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5); color:#fca5a5;">${pct(cumLost_t[i],cumLeads_t[i])}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5); color:#c4b5fd;">${pct(cumAg_t[i],cumLeads_t[i])}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5); color:#86efac;">${pct(cumRe_t[i],cumLeads_t[i])}</td>
+    </tr>`;
+  });
+  // Linha total
+  const tLeads = cumLeads_t[cumLeads_t.length-1];
+  const tLost = cumLost_t[cumLost_t.length-1];
+  const tAg = cumAg_t[cumAg_t.length-1];
+  const tRe = cumRe_t[cumRe_t.length-1];
+  html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
+    <td style="padding:6px 4px;">TOTAL ABRIL</td>
+    <td style="padding:6px 4px; text-align:center;">${tLeads}</td>
+    <td style="padding:6px 4px; text-align:center; color:#ef4444;">${pct(tLost,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#a855f7;">${pct(tAg,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#22c55e;">${pct(tRe,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center;">${tLeads}</td>
+    <td style="padding:6px 4px; text-align:center; color:#ef4444;">${pct(tLost,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#a855f7;">${pct(tAg,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#22c55e;">${pct(tRe,tLeads)}</td>
+  </tr>`;
+  html += '</tbody>';
+  tbl.innerHTML = html;
+  document.getElementById('curve-cum').parentElement.parentElement.appendChild(tbl);
+})();
+
+// === Pace Acumulado vs Meta (SDR + Closer) ===
+// Build linear meta line: only working days progress, weekends stay flat
+const sdrGoalTotal = SDR_GOAL * 10;  // 10 SDRs × 70 = 700
+const closerGoalTotal = CLOSER_GOAL * Object.keys(D.closer.re).length;
+const perWorkdayInc_sdr = sdrGoalTotal / TOTAL_DAYS;
+const perWorkdayInc_closer = closerGoalTotal / TOTAL_DAYS;
+
+let metaSdr = 0, metaCloser = 0;
+const metaSdrSeries = [], metaCloserSeries = [];
+for (const d of D.daily_series) {
+  const dt = new Date(d.date);
+  const isWorkday = dt.getDay() >= 1 && dt.getDay() <= 5; // Mon-Fri
+  if (isWorkday) {
+    metaSdr += perWorkdayInc_sdr;
+    metaCloser += perWorkdayInc_closer;
+  }
+  metaSdrSeries.push(Math.round(metaSdr));
+  metaCloserSeries.push(Math.round(metaCloser));
+}
+
+// Build cumulative closer (from D.daily_series; same as cumRe but it represents the team's total CC1)
+// Use cumRe as the proxy (SDR-attributed RE)
+const labelDl = (color) => ({
+  display: ctx => ctx.dataIndex <= lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
+  color: '#fff', backgroundColor: color, borderRadius: 3,
+  padding: { top: 2, bottom: 2, left: 4, right: 4 },
+  font: { size: 9, weight: 'bold' },
+  align: 'top', anchor: 'end', offset: 4,
+  formatter: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v
+});
+
+new Chart(document.getElementById('pace-cum'), {
+  type: 'line',
+  data: {
+    labels: dailyLabels,
+    datasets: [
+      {label:`Realizadas SDR (acum.) — meta ${sdrGoalTotal}`, data: cumRe,
+        borderColor: COLORS.re, backgroundColor:'rgba(34,197,94,0.12)',
+        tension:0.25, fill:true, pointRadius:3, borderWidth:3,
+        datalabels: labelDl(COLORS.re)},
+      {label:`Meta linear SDR (${sdrGoalTotal} no fim do mês)`, data: metaSdrSeries,
+        borderColor: '#22c55e', backgroundColor:'transparent',
+        borderDash:[6,4], tension:0, fill:false, pointRadius:0, borderWidth:2,
+        datalabels: { display: false }},
+      {label:`Meta linear Closer (${closerGoalTotal} no fim do mês)`, data: metaCloserSeries,
+        borderColor: '#a855f7', backgroundColor:'transparent',
+        borderDash:[6,4], tension:0, fill:false, pointRadius:0, borderWidth:2,
+        datalabels: { display: false }},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    layout:{padding:{top:22}},
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{mode:'index', intersect:false},
+    },
+    scales:{x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt}},
+    interaction:{mode:'index', intersect:false}
+  }
+});
+
+// === Pace headlines ===
+const sdrTotalRe = Object.values(D.sdr.re).reduce((a,b)=>a+b,0);
+const sdrTotalFut = Object.values(D.sdr.future).reduce((a,b)=>a+b,0);
+const sdrCount = Math.max(Object.keys(D.sdr.ag).length, 10);
+const sdrMetaTotal = SDR_GOAL * sdrCount;
+const sdrTargetNow = SDR_PACE * sdrCount;
+
+document.getElementById('sdr-total').textContent = fmt(sdrTotalRe);
+document.getElementById('sdr-meta-total').innerHTML = `${fmt(sdrMetaTotal)} <small>(${sdrCount} SDRs × ${SDR_GOAL})</small>`;
+document.getElementById('sdr-pace-info').innerHTML =
+  `Onde deveriam estar hoje: <b>${fmt(Math.round(sdrTargetNow))}</b> · Faltam <b class="${sdrTotalRe>=sdrTargetNow?'ok':'danger'}">${fmt(Math.max(0, Math.round(sdrTargetNow - sdrTotalRe)))}</b> para o pace · Faltam <b>${fmt(sdrMetaTotal - sdrTotalRe)}</b> para meta total`;
+document.getElementById('sdr-bar-fill').style.width = Math.min(100, (sdrTotalRe/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-future').style.left = Math.min(100, (sdrTotalRe/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-future').style.width = Math.min(100 - (sdrTotalRe/sdrMetaTotal)*100, (sdrTotalFut/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-target').style.left = Math.min(100, (sdrTargetNow/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-label').textContent = `Hoje · ${fmt(Math.round(sdrTargetNow))}`;
+
+const closerTotalRe = Object.values(D.closer.re).reduce((a,b)=>a+b,0);
+const closerTotalFut = Object.values(D.closer.future).reduce((a,b)=>a+b,0);
+const closerCount = Object.keys(D.closer.re).length;
+const closerMetaTotal = CLOSER_GOAL * closerCount;
+const closerTargetNow = CLOSER_PACE * closerCount;
+
+document.getElementById('closer-total').textContent = fmt(closerTotalRe);
+document.getElementById('closer-meta-total').innerHTML = `${fmt(closerMetaTotal)} <small>(${closerCount} closers × ${CLOSER_GOAL})</small>`;
+document.getElementById('closer-pace-info').innerHTML =
+  `Onde deveriam estar hoje: <b>${fmt(Math.round(closerTargetNow))}</b> · Faltam <b class="${closerTotalRe>=closerTargetNow?'ok':'danger'}">${fmt(Math.max(0, Math.round(closerTargetNow - closerTotalRe)))}</b> para o pace · Faltam <b>${fmt(closerMetaTotal - closerTotalRe)}</b> para meta total`;
+document.getElementById('closer-bar-fill').style.width = Math.min(100, (closerTotalRe/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-future').style.left = Math.min(100, (closerTotalRe/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-future').style.width = Math.min(100 - (closerTotalRe/closerMetaTotal)*100, (closerTotalFut/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-target').style.left = Math.min(100, (closerTargetNow/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-label').textContent = `Hoje · ${fmt(Math.round(closerTargetNow))}`;
+
+// === Per-person pace (with gap merged in) ===
+function paceList(elId, dataObj, futObj, goal, paceTarget) {
+  const allNames = new Set([...Object.keys(dataObj), ...Object.keys(futObj || {})]);
+  const rows = [...allNames].map(name => ({
+    name, re: dataObj[name] || 0, future: (futObj && futObj[name]) || 0
+  })).sort((a,b) => b.re - a.re);
+
+  const container = document.getElementById(elId);
+  container.innerHTML = '';
+  rows.forEach(r => {
+    const pctRe = Math.min(100, (r.re/goal)*100);
+    const pctFut = Math.min(100 - pctRe, (r.future/goal)*100);
+    const pctTarget = Math.min(100, (paceTarget/goal)*100);
+    const faltaPace = Math.max(0, Math.ceil(paceTarget - r.re));
+    const faltaMeta = Math.max(0, goal - r.re);
+    const statusGap = faltaPace === 0 ? 'ok' : (faltaPace <= paceTarget*0.2 ? 'warn' : 'danger');
+    const gapTxt = faltaPace === 0 ? '✓ no pace' : `−${faltaPace}`;
+    const div = document.createElement('div');
+    div.className = 'person-row';
+    div.innerHTML = `
+      <div class="person-name">${r.name}</div>
+      <div class="person-bar-track">
+        <div class="person-bar-fill" style="width:${pctRe}%"></div>
+        <div class="person-bar-future" style="left:${pctRe}%; width:${pctFut}%"></div>
+        <div class="person-bar-target" style="left:${pctTarget}%"></div>
+      </div>
+      <div class="person-gap">
+        <span class="gap-num ${statusGap}">${gapTxt}</span>
+        <span class="gap-meta">${faltaMeta} p/ meta</span>
+      </div>
+      <div class="person-stat">${r.re}<span style="color:var(--purple)">+${r.future}</span> / ${goal}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+paceList('sdr-pace-list', D.sdr.re, D.sdr.future, SDR_GOAL, SDR_PACE);
+paceList('closer-pace-list', D.closer.re, D.closer.future, CLOSER_GOAL, CLOSER_PACE);
+
+// === SDR Agendamentos & Realizadas (horizontal bars) ===
+function makeSdrChart(canvasId, dataObj, color, title) {
+  const sorted = Object.entries(dataObj).sort((a,b)=>b[1]-a[1]);
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s=>s[0]),
+      datasets: [{label: title, data: sorted.map(s=>s[1]), backgroundColor: color, borderRadius: 4}]
+    },
+    options: {
+      indexAxis: 'y',
+      maintainAspectRatio:false, responsive:true,
+      plugins:{legend:{display:false}, tooltip:{}, datalabels:{}},
+      scales:{x:{grid:gridOpt, beginAtZero:true}, y:{grid:{display:false}}}
+    },
+    plugins: [{
+      id: 'datalabel-bar',
+      afterDatasetsDraw(chart) {
+        const {ctx} = chart;
+        chart.data.datasets[0].data.forEach((v,i)=>{
+          const meta = chart.getDatasetMeta(0).data[i];
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(v, meta.x + 4, meta.y);
+        });
+      }
+    }]
+  });
+}
+makeSdrChart('sdr-ag-chart', D.sdr.ag, COLORS.ag, 'Agendamentos');
+makeSdrChart('sdr-re-chart', D.sdr.re, COLORS.re, 'Realizadas');
+
+// === Closer combined - stacked horizontal bars ===
+const closerNames = [...new Set([...Object.keys(D.closer.re), ...Object.keys(D.closer.future), ...Object.keys(D.closer.ns)])];
+closerNames.sort((a,b) => ((D.closer.re[b]||0)+(D.closer.future[b]||0)+(D.closer.ns[b]||0)) - ((D.closer.re[a]||0)+(D.closer.future[a]||0)+(D.closer.ns[a]||0)));
+new Chart(document.getElementById('closer-chart'), {
+  type: 'bar',
+  data: {
+    labels: closerNames,
+    datasets: [
+      {label:'Realizadas', data: closerNames.map(n=>D.closer.re[n]||0), backgroundColor: COLORS.re},
+      {label:'Para acontecer', data: closerNames.map(n=>D.closer.future[n]||0), backgroundColor: COLORS.future},
+      {label:'No Show', data: closerNames.map(n=>D.closer.ns[n]||0), backgroundColor: COLORS.ns},
+    ]
+  },
+  options: {
+    indexAxis:'y', maintainAspectRatio:false, responsive:true,
+    plugins:{legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index'}},
+    scales:{x:{stacked:true, grid:gridOpt, beginAtZero:true}, y:{stacked:true, grid:{display:false}}}
+  },
+  plugins: [{
+    id: 'stack-labels',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      chart.data.datasets.forEach((ds, dsi) => {
+        ds.data.forEach((v, i) => {
+          if (v < 3) return;
+          const meta = chart.getDatasetMeta(dsi).data[i];
+          ctx.fillStyle = '#fff';
+          ctx.fillText(v, (meta.base + meta.x)/2, meta.y);
+        });
+      });
+      // Total at end
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'left';
+      closerNames.forEach((n, i) => {
+        const total = (D.closer.re[n]||0) + (D.closer.future[n]||0) + (D.closer.ns[n]||0);
+        const lastMeta = chart.getDatasetMeta(2).data[i];
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(total, lastMeta.x + 6, lastMeta.y);
+      });
+    }
+  }]
+});
+
+// === Por produto - bar charts (replacing donuts) ===
+const PROD_LABELS = ['Studio Agro','Studio Fiscal','PJ360','GS PARTNER'];
+function prodBarChart(canvasId, dataObj, color) {
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: PROD_LABELS,
+      datasets: [{
+        data: PROD_LABELS.map(p => dataObj[p] || 0),
+        backgroundColor: PROD_LABELS.map(p => PROD_COLORS[p]),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      maintainAspectRatio:false, responsive:true,
+      plugins: {legend:{display:false}},
+      scales:{x:{grid:{display:false}}, y:{beginAtZero:true, grid:gridOpt}}
+    },
+    plugins: [{
+      id: 'value-labels',
+      afterDatasetsDraw(chart) {
+        const {ctx} = chart;
+        chart.data.datasets[0].data.forEach((v,i)=>{
+          const meta = chart.getDatasetMeta(0).data[i];
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(v, meta.x, meta.y - 6);
+        });
+      }
+    }]
+  });
+}
+prodBarChart('prod-ag', D.product.ag);
+prodBarChart('prod-re', D.product.re);
+
+// === Leads vs Perdidos per product ===
+const lossLabels = PROD_LABELS.map(p => {
+  const lr = D.product.loss_rate[p] || 0;
+  return `${p} (${lr.toFixed(1)}% perda)`;
+});
+new Chart(document.getElementById('prod-leads-lost'), {
+  type: 'bar',
+  data: {
+    labels: lossLabels,
+    datasets: [
+      {label:'Leads gerados', data: PROD_LABELS.map(p=>D.product.leads[p]||0), backgroundColor: COLORS.leads, borderRadius:4},
+      {label:'Perdidos', data: PROD_LABELS.map(p=>D.product.lost[p]||0), backgroundColor: COLORS.lost, borderRadius:4},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{
+        callbacks:{
+          afterBody: (items) => {
+            const i = items[0].dataIndex;
+            const p = PROD_LABELS[i];
+            const lr = D.product.loss_rate[p] || 0;
+            return `Taxa de perda: ${lr.toFixed(1)}%`;
+          }
+        }
+      }
+    },
+    scales:{x:{grid:{display:false}, ticks:{color:'#cbd5e1', font:{size:11, weight:'600'}}}, y:{beginAtZero:true, grid:gridOpt}}
+  },
+  plugins: [{
+    id: 'val-labels',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      chart.data.datasets.forEach((ds, dsi)=>{
+        ds.data.forEach((v,i)=>{
+          const meta = chart.getDatasetMeta(dsi).data[i];
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(v, meta.x, meta.y - 5);
+        });
+      });
+      // Texto vermelho com % no centro de cada par de barras
+      const xs = chart.scales.x;
+      const ys = chart.scales.y;
+      PROD_LABELS.forEach((p, i) => {
+        const lr = D.product.loss_rate[p] || 0;
+        const lostVal = D.product.lost[p] || 0;
+        const lostMeta = chart.getDatasetMeta(1).data[i];
+        if (lostMeta) {
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${lr.toFixed(1)}% perda`, lostMeta.x, lostMeta.y + (lostMeta.height/2) + 5);
+        }
+      });
+    }
+  }]
+});
+
+// === Product table — order: Leads, Perdidos, Em aberto, Agendamentos, Taxa de Perda, Taxa de MQL ===
+const tbl = document.getElementById('prod-table');
+let html = `<thead><tr><th>Produto</th><th>Leads</th><th>Perdidos</th><th>Em aberto</th><th>Agendamentos</th><th>Taxa de Perda</th><th>Taxa de MQL</th></tr></thead><tbody>`;
+PROD_LABELS.forEach(p => {
+  const leads = D.product.leads[p]||0;
+  const ag = D.product.ag[p]||0;
+  const lost = D.product.lost[p]||0;
+  const open = leads - lost;
+  const lossRate = D.product.loss_rate[p] || 0;
+  const mqlRate = D.product.mql_rate[p] || 0;
+  const cls = p === 'Studio Agro' ? 'agro' : p === 'Studio Fiscal' ? 'fiscal' : p === 'PJ360' ? 'pj360' : 'partner';
+  html += `<tr>
+    <td><span class="pill ${cls}">${p}</span></td>
+    <td>${fmt(leads)}</td>
+    <td>${fmt(lost)}</td>
+    <td>${fmt(open)}</td>
+    <td>${fmt(ag)}</td>
+    <td><b>${lossRate.toFixed(1)}%</b></td>
+    <td><b>${mqlRate.toFixed(1)}%</b></td>
+  </tr>`;
+});
+html += '</tbody>';
+tbl.innerHTML = html;
+
+// === Composição dos leads por produto — stacked 100% bar ===
+const compLabels = PROD_LABELS;
+const compData = compLabels.map(p => {
+  const leads = D.product.leads[p] || 0;
+  const lost = D.product.lost[p] || 0;
+  const open = leads - lost;
+  const ag = D.product.ag[p] || 0;
+  return {
+    leads, lost, open, ag,
+    lostPct: leads > 0 ? (lost/leads)*100 : 0,
+    openPct: leads > 0 ? (open/leads)*100 : 0,
+    agPct: leads > 0 ? (ag/leads)*100 : 0,
+  };
+});
+
+new Chart(document.getElementById('prod-rates'), {
+  type: 'bar',
+  data: {
+    labels: compLabels,
+    datasets: [
+      {
+        label:'Perdidos (% dos leads)',
+        data: compData.map(d => d.lostPct),
+        backgroundColor: COLORS.lost,
+        stack: 'composicao',
+      },
+      {
+        label:'Em aberto (% dos leads)',
+        data: compData.map(d => d.openPct),
+        backgroundColor: '#475569',
+        stack: 'composicao',
+      },
+      {
+        label:'Agendados (% dos leads — referência)',
+        data: compData.map(d => d.agPct),
+        backgroundColor: COLORS.re,
+        stack: 'agendados',
+      },
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{
+        callbacks:{
+          label: c => {
+            const d = compData[c.dataIndex];
+            if (c.datasetIndex === 0) return `Perdidos: ${fmt(d.lost)} (${d.lostPct.toFixed(1)}% dos leads)`;
+            if (c.datasetIndex === 1) return `Em aberto: ${fmt(d.open)} (${d.openPct.toFixed(1)}% dos leads)`;
+            return `Agendamentos: ${fmt(d.ag)} (${d.agPct.toFixed(1)}% dos leads)`;
+          },
+          afterBody: c => {
+            const d = compData[c[0].dataIndex];
+            return `Total leads: ${fmt(d.leads)}`;
+          }
+        }
+      }
+    },
+    scales:{
+      x:{grid:{display:false}},
+      y:{beginAtZero:true, max: 145, grid:gridOpt, ticks:{callback:v=>v+'%'}}
+    }
+  },
+  plugins: [{
+    id: 'comp-labels',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      // Labels inside stacked perdidos and em aberto
+      chart.data.datasets.slice(0,2).forEach((ds, dsi) => {
+        ds.data.forEach((v, i) => {
+          if (v < 6) return;
+          const meta = chart.getDatasetMeta(dsi).data[i];
+          ctx.fillStyle = '#fff';
+          ctx.fillText(v.toFixed(0)+'%', meta.x, (meta.base + meta.y)/2);
+        });
+      });
+      // Label above agendados bar
+      const ds3 = chart.data.datasets[2];
+      ds3.data.forEach((v, i) => {
+        const meta = chart.getDatasetMeta(2).data[i];
+        ctx.fillStyle = COLORS.re;
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(v.toFixed(1)+'% ag', meta.x, meta.y - 4);
+        ctx.textBaseline = 'middle';
+      });
+    }
+  }]
+});
+
+// === Heatmap Motivo × Produto ===
+function buildHeat(elId, dataObj, cols) {
+  const reasons = Object.keys(dataObj).sort((a,b) => {
+    const ta = Object.values(dataObj[a]).reduce((x,y)=>x+y,0);
+    const tb = Object.values(dataObj[b]).reduce((x,y)=>x+y,0);
+    return tb - ta;
+  });
+  const maxVal = Math.max(...reasons.map(r => Math.max(...Object.values(dataObj[r]))));
+  let html = `<thead><tr><th style="text-align:left">Motivo</th>`;
+  cols.forEach(c => html += `<th>${c.length > 30 ? c.slice(0,28)+'…' : c}</th>`);
+  html += `<th>Total</th></tr></thead><tbody>`;
+  reasons.forEach(r => {
+    const total = Object.values(dataObj[r]).reduce((a,b)=>a+b,0);
+    html += `<tr><td style="text-align:left;font-weight:600">${r}</td>`;
+    cols.forEach(c => {
+      const v = (dataObj[r] && dataObj[r][c]) || 0;
+      const intensity = v > 0 ? Math.min(0.9, 0.15 + (v/maxVal)*0.75) : 0;
+      const bg = `rgba(239,68,68,${intensity})`;
+      const txtCol = intensity > 0.4 ? '#fff' : '#e2e8f0';
+      html += `<td class="heat-cell" style="background:${bg};color:${txtCol}">${v||''}</td>`;
+    });
+    html += `<td class="heat-cell" style="font-weight:700;background:#1e293b">${total}</td>`;
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById(elId).innerHTML = html;
+}
+buildHeat('motivo-produto', D.loss.by_reason_product, PROD_LABELS);
+buildHeat('motivo-campanha', D.loss.by_reason_campaign, D.loss.top_campaigns.slice(0,12));
+</script>
+</body>
+</html>
