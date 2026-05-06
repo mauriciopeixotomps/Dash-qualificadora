@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Qualificadora — Maio 2026</title>
+<style>
+  :root {
+    --bg: #0b1020; --card: #0f172a; --card-2: #1e293b;
+    --border: #334155; --text-muted: #94a3b8;
+  }
+  body {
+    background: var(--bg); color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 24px; min-height: 100vh; box-sizing: border-box;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .month-nav {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 6px; border-radius: 10px; margin-bottom: 14px;
+  }
+  .month-nav a {
+    color: var(--text-muted); text-decoration: none;
+    padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+  }
+  .month-nav a.active { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; }
+  .month-nav .label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; padding: 0 8px; font-weight: 600; }
+  .month-nav .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(34, 197, 94, 0.2); color: #4ade80; margin-left: 6px; font-weight: 700; }
+  .month-nav .badge.live { background: rgba(168, 85, 247, 0.25); color: #c4b5fd; }
+
+  .placeholder {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 48px; border-radius: 12px; text-align: center;
+    margin-top: 24px;
+  }
+  .placeholder h1 { margin: 0 0 16px 0; font-size: 24px; }
+  .placeholder p { color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 520px; margin: 0 auto; }
+  .placeholder .icon { font-size: 48px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav class="month-nav">
+    <span class="label">Mês:</span>
+    <a href="abril-2026.html">Abril 2026 <span class="badge">Fechado</span></a>
+    <a href="maio-2026.html" class="active">Maio 2026 <span class="badge live">Em andamento</span></a>
+  </nav>
+  <div class="placeholder">
+    <div class="icon">📊</div>
+    <h1>Dashboard Qualificadora — Maio 2026</h1>
+    <p>Os dados de Maio serão publicados assim que as planilhas do Pipedrive Insights forem geradas e processadas. Volte em breve.</p>
+  </div>
+</div>
+</body>
+</html>
