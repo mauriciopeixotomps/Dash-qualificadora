@@ -2,54 +2,1473 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Qualificadora — Maio 2026</title>
+<title>Dashboard Qualificadora — Abril 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <style>
   :root {
-    --bg: #0b1020; --card: #0f172a; --card-2: #1e293b;
-    --border: #334155; --text-muted: #94a3b8;
+    --bg: #0b1220;
+    --bg-2: #0f172a;
+    --card: #121a2c;
+    --card-2: #182236;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent: #3b82f6;
+    --green: #22c55e;
+    --orange: #f97316;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --yellow: #eab308;
+    --teal: #14b8a6;
   }
+  * { box-sizing: border-box; }
   body {
-    background: var(--bg); color: #e2e8f0;
+    margin: 0;
+    background: linear-gradient(180deg, #070c18 0%, #0b1220 100%);
+    color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0; padding: 24px; min-height: 100vh; box-sizing: border-box;
+    font-size: 13px;
+    min-height: 100vh;
   }
-  .container { max-width: 1200px; margin: 0 auto; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; color: #f1f5f9; }
+  .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+  .last-updated {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #4ade80; padding: 6px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; margin-bottom: 16px;
+    font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  }
+  .last-updated::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e; box-shadow: 0 0 8px #22c55e;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f1f5f9;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h3 {
+    margin: 0 0 14px; font-size: 13px; font-weight: 700;
+    color: #f1f5f9; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .grid { display: grid; gap: 14px; }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 1100px) {
+    .grid-5 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .grid-5, .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  }
+  .kpi.kpi-lost .kpi-value { color: #f87171; }
+  .kpi {
+    background: linear-gradient(135deg, var(--card) 0%, var(--card-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .kpi-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .kpi-sub { color: var(--text-dim); font-size: 11px; margin-top: 6px; }
+  .canvas-wrap { position: relative; height: 320px; }
+  .canvas-wrap.tall { height: 420px; }
+  .canvas-wrap.short { height: 240px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); color: var(--text); }
+  th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.5px; }
+  th:first-child, td:first-child { text-align: left; }
+
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; color: white; }
+  .pill.agro { background: var(--green); }
+  .pill.fiscal { background: var(--orange); }
+  .pill.pj360 { background: var(--accent); }
+  .pill.partner { background: #0f172a; border: 1px solid #475569; }
+
+  /* Pace meta */
+  .pace-card {
+    background: linear-gradient(135deg, var(--card) 0%, var(--card-2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .pace-headline { display: flex; gap: 24px; align-items: baseline; margin-bottom: 8px; flex-wrap: wrap; }
+  .pace-num { font-size: 30px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .pace-num small { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+  .pace-divider { color: var(--text-dim); font-size: 22px; }
+  .pace-meta-info { color: var(--text-muted); font-size: 12px; }
+  .pace-bar-track { background: #1e293b; height: 28px; border-radius: 6px; position: relative; overflow: hidden; margin: 10px 0 6px; }
+  .pace-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), #16a34a); border-radius: 6px 0 0 6px; transition: width 0.5s; }
+  .pace-bar-future { position: absolute; top: 0; height: 100%; background: linear-gradient(90deg, rgba(168,85,247,0.85), rgba(168,85,247,0.65)); }
+  .pace-target-line { position: absolute; top: -4px; bottom: -4px; width: 3px; background: var(--red); border-radius: 2px; }
+  .pace-target-label { position: absolute; top: -18px; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: var(--red); white-space: nowrap; background: var(--bg); padding: 1px 4px; border-radius: 3px; }
+  .pace-legend { display: flex; gap: 14px; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .pace-legend span { display: flex; align-items: center; gap: 5px; }
+  .pace-legend .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* Person row pace */
+  .person-row { display: grid; grid-template-columns: 36px 150px 1fr 90px 130px; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .person-row:last-child { border-bottom: none; }
+  .person-row.top-rank { background: linear-gradient(90deg, rgba(251,191,36,0.06), transparent 50%); }
+  .person-name { font-weight: 500; color: #e2e8f0; font-size: 12.5px; }
+  .rank-pos { font-size: 14px; font-weight: 700; color: #94a3b8; text-align: center; }
+  .person-row.top-rank .rank-pos { font-size: 18px; }
+  .person-bar-track { background: #1e293b; height: 22px; border-radius: 4px; position: relative; overflow: visible; }
+  .person-bar-fill { height: 100%; background: var(--green); border-radius: 4px 0 0 4px; }
+  .person-bar-future { position: absolute; top: 0; height: 100%; background: rgba(168,85,247,0.75); }
+  .person-bar-target { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--red); }
+  .person-stat { font-size: 12px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+  .person-stat .delta { font-weight: 700; }
+  .person-gap { font-size: 11.5px; text-align: right; font-variant-numeric: tabular-nums; }
+  .person-gap .gap-num { font-weight: 700; }
+  .person-gap .gap-meta { color: var(--text-dim); font-size: 10.5px; display: block; margin-top: 1px; }
+  .ok { color: var(--green); }
+  .warn { color: var(--yellow); }
+  .danger { color: var(--red); }
+
+  /* Product bar viz in table */
+  .barbox { display: inline-block; background: #1e293b; height: 8px; width: 80px; border-radius: 3px; vertical-align: middle; margin-left: 6px; overflow: hidden; }
+  .barbox-fill { background: var(--red); height: 100%; }
+  .barbox-fill.green { background: var(--green); }
+  .barbox-fill.blue { background: var(--accent); }
+
+  /* Heatmap */
+  .heat-table { font-size: 11.5px; }
+  .heat-table th { background: var(--card-2); position: sticky; top: 0; }
+  .heat-cell { text-align: center; font-weight: 600; }
+  .heat-scroll { overflow-x: auto; max-height: 480px; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 10px 14px; border-radius: 10px; margin-bottom: 14px;
+  }
+  .filter-bar .label {
+    color: var(--text-muted); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.6px; font-weight: 600;
+  }
+  .filter-bar button {
+    background: var(--card-2); border: 1px solid var(--border); color: var(--text-muted);
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-bar button:hover { background: #1e293b; color: #f1f5f9; }
+  .filter-bar button.active {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #fff; border-color: transparent;
+  }
+  .filter-bar input[type="date"] {
+    background: var(--card-2); border: 1px solid var(--border); color: #e2e8f0;
+    padding: 5px 8px; border-radius: 6px; font-size: 12px;
+    color-scheme: dark;
+  }
+  .filter-bar .sep { color: #475569; padding: 0 4px; }
+  .filter-bar .info {
+    margin-left: auto; color: var(--text-muted); font-size: 11px;
+  }
+  .filter-bar .info b { color: #60a5fa; }
+
+  /* Month nav */
   .month-nav {
     display: flex; align-items: center; gap: 6px;
     background: var(--card); border: 1px solid var(--border);
     padding: 6px; border-radius: 10px; margin-bottom: 14px;
+    flex-wrap: wrap;
   }
   .month-nav a {
     color: var(--text-muted); text-decoration: none;
     padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    transition: all 0.15s;
   }
-  .month-nav a.active { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; }
-  .month-nav .label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; padding: 0 8px; font-weight: 600; }
-  .month-nav .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(34, 197, 94, 0.2); color: #4ade80; margin-left: 6px; font-weight: 700; }
-  .month-nav .badge.live { background: rgba(168, 85, 247, 0.25); color: #c4b5fd; }
-
-  .placeholder {
-    background: var(--card); border: 1px solid var(--border);
-    padding: 48px; border-radius: 12px; text-align: center;
-    margin-top: 24px;
+  .month-nav a:hover { background: var(--card-2); color: #f1f5f9; }
+  .month-nav a.active {
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: #fff;
   }
-  .placeholder h1 { margin: 0 0 16px 0; font-size: 24px; }
-  .placeholder p { color: var(--text-muted); font-size: 14px; line-height: 1.6; max-width: 520px; margin: 0 auto; }
-  .placeholder .icon { font-size: 48px; margin-bottom: 16px; }
+  .month-nav .label {
+    color: var(--text-muted); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.6px; padding: 0 8px; font-weight: 600;
+  }
+  .month-nav .badge {
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    background: rgba(34, 197, 94, 0.2); color: #4ade80;
+    margin-left: 6px; font-weight: 700;
+  }
+  .month-nav .badge.live {
+    background: rgba(168, 85, 247, 0.25); color: #c4b5fd;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <nav class="month-nav">
     <span class="label">Mês:</span>
-    <a href="abril-2026.html">Abril 2026 <span class="badge">Fechado</span></a>
+    <a href="abril-2026.html" class="">Abril 2026 <span class="badge">Fechado</span></a>
     <a href="maio-2026.html" class="active">Maio 2026 <span class="badge live">Em andamento</span></a>
   </nav>
-  <div class="placeholder">
-    <div class="icon">📊</div>
-    <h1>Dashboard Qualificadora — Maio 2026</h1>
-    <p>Os dados de Maio serão publicados assim que as planilhas do Pipedrive Insights forem geradas e processadas. Volte em breve.</p>
+  <h1 id="page-title">Dashboard Qualificadora — Maio 2026</h1>
+  <div class="last-updated" id="last-updated"></div>
+  <div class="subtitle" id="subtitle"></div>
+
+  <!-- Filtro de período -->
+  <div class="filter-bar" id="filter-bar">
+    <span class="label">Período:</span>
+    <button data-range="month" class="active">Mês inteiro</button>
+    <button data-range="today">Hoje</button>
+    <button data-range="yesterday">Ontem</button>
+    <button data-range="week">Esta semana</button>
+    <button data-range="lastweek">Última semana</button>
+    <span class="sep">|</span>
+    <span class="label">De</span>
+    <input type="date" id="filter-start">
+    <span class="label">Até</span>
+    <input type="date" id="filter-end">
+    <span class="info" id="filter-info"></span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-5">
+    <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value" id="kpi-leads"></div><div class="kpi-sub" id="kpi-leads-sub"></div></div>
+    <div class="kpi kpi-lost"><div class="kpi-label">Leads Perdidos</div><div class="kpi-value" id="kpi-lost"></div><div class="kpi-sub" id="kpi-lost-sub"></div></div>
+    <div class="kpi"><div class="kpi-label">MQL (Qualificações)</div><div class="kpi-value" id="kpi-qual"></div><div class="kpi-sub" id="kpi-qual-sub"></div></div>
+    <div class="kpi"><div class="kpi-label">CC1 Agendadas</div><div class="kpi-value" id="kpi-ag"></div><div class="kpi-sub" id="kpi-ag-sub"></div></div>
+    <div class="kpi"><div class="kpi-label">CC1 Realizadas</div><div class="kpi-value" id="kpi-re"></div><div class="kpi-sub" id="kpi-re-sub"></div></div>
+  </div>
+
+  <!-- Pace vs Meta (apenas Maio em diante) -->
+  <div id="pace-meta-section" style="display:none;">
+    <div class="section-title">🎯 Pace vs Meta — Time</div>
+    <div class="card" id="pace-time-card"></div>
+
+    <div class="section-title">Pace por Produto</div>
+    <div class="grid grid-3" id="pace-prod-grid"></div>
+  </div>
+
+  <!-- Curve chart -->
+  <div class="section-title">Pace diário</div>
+  <div class="card"><h3>Leads vs Perdidos vs Agendamentos vs Realizadas</h3>
+    <div class="canvas-wrap tall"><canvas id="curve"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Pace Acumulado — Abril 2026</h3>
+    <div class="canvas-wrap tall"><canvas id="curve-cum"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Pace Acumulado vs Meta — Realizadas</h3>
+    <div class="canvas-wrap tall"><canvas id="pace-cum"></canvas></div>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Linha verde sólida = realizadas acumuladas. Linhas tracejadas = onde o time deveria estar a cada dia para fechar a meta no fim do mês (avança apenas em dias úteis).
+    </div>
+  </div>
+
+  <!-- Pace metas headline -->
+  <div class="section-title">Quanto falta para a meta</div>
+  <div class="grid grid-2">
+    <div class="pace-card">
+      <div class="pace-headline">
+        <div class="pace-num" id="sdr-total"></div>
+        <div class="pace-divider">/</div>
+        <div class="pace-num" id="sdr-meta-total"><small></small></div>
+      </div>
+      <div class="pace-meta-info" id="sdr-pace-info"></div>
+      <div class="pace-bar-track">
+        <div class="pace-bar-fill" id="sdr-bar-fill"></div>
+        <div class="pace-bar-future" id="sdr-bar-future"></div>
+        <div class="pace-target-line" id="sdr-bar-target"><div class="pace-target-label" id="sdr-bar-label">Hoje</div></div>
+      </div>
+      <div class="pace-legend">
+        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
+        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
+        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
+      </div>
+    </div>
+    <div class="pace-card">
+      <div class="pace-headline">
+        <div class="pace-num" id="closer-total"></div>
+        <div class="pace-divider">/</div>
+        <div class="pace-num" id="closer-meta-total"><small></small></div>
+      </div>
+      <div class="pace-meta-info" id="closer-pace-info"></div>
+      <div class="pace-bar-track">
+        <div class="pace-bar-fill" id="closer-bar-fill"></div>
+        <div class="pace-bar-future" id="closer-bar-future"></div>
+        <div class="pace-target-line" id="closer-bar-target"><div class="pace-target-label" id="closer-bar-label">Hoje</div></div>
+      </div>
+      <div class="pace-legend">
+        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
+        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
+        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-person pace with gap merged in -->
+  <div class="card"><h3>Pace por SDR — Meta 70 realizadas</h3><div id="sdr-pace-list"></div></div>
+  <div class="card"><h3>Pace por Closer — Meta 40 realizadas</h3><div id="closer-pace-list"></div></div>
+
+  <!-- SDR atividades -->
+  <div class="section-title">Atividade SDR</div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Agendamentos por SDR</h3><div class="canvas-wrap"><canvas id="sdr-ag-chart"></canvas></div></div>
+    <div class="card"><h3>Realizadas por SDR</h3><div class="canvas-wrap"><canvas id="sdr-re-chart"></canvas></div></div>
+  </div>
+
+  <!-- Closer atividades -->
+  <div class="section-title">Atividade Closer</div>
+  <div class="card"><h3>Realizadas / Para acontecer / No Show por Closer</h3>
+    <div class="canvas-wrap tall"><canvas id="closer-chart"></canvas></div>
+  </div>
+
+  <!-- Por produto -->
+  <div class="section-title">Performance por Produto</div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Agendamentos por Produto</h3><div class="canvas-wrap short"><canvas id="prod-ag"></canvas></div></div>
+    <div class="card"><h3>Realizadas por Produto</h3><div class="canvas-wrap short"><canvas id="prod-re"></canvas></div></div>
+  </div>
+
+  <!-- Show Rate / No Show por produto -->
+  <div class="card"><h3>Taxa de No Show por Produto — Abril 2026</h3>
+    <div class="canvas-wrap"><canvas id="prod-noshow-rate"></canvas></div>
+    <table id="noshow-table" style="width:100%; margin-top:14px; border-collapse:collapse; font-size:12px;"></table>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Taxa de No Show = NS / (NS + RE) — do que deveria ter acontecido, quanto não compareceu.
+    </div>
+  </div>
+
+  <!-- Leads vs Perdidos -->
+  <div class="card"><h3>Leads gerados vs Perdidos por Produto</h3>
+    <div class="canvas-wrap"><canvas id="prod-leads-lost"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Tabela: Leads × Agendamentos × Perdidos × Em aberto</h3>
+    <table id="prod-table"></table>
+  </div>
+
+  <!-- Stacked bar: composição dos leads por produto -->
+  <div class="card"><h3>Composição dos Leads por Produto — Perdidos / Em aberto / Agendados (% sobre o total de leads)</h3>
+    <div class="canvas-wrap"><canvas id="prod-rates"></canvas></div>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Em aberto = leads recebidos no mês que ainda não foram marcados como perdidos. Agendamentos podem incluir leads de meses anteriores, por isso aparecem como linha de referência sobreposta.
+    </div>
+  </div>
+
+  <!-- Heatmaps -->
+  <div class="section-title">Análise de Perdas</div>
+  <div class="card"><h3>Perdidos por Motivo × Produto</h3>
+    <div class="heat-scroll"><table class="heat-table" id="motivo-produto"></table></div>
+  </div>
+
+  <div class="card"><h3>Perdidos por Motivo × Campanha (top 12)</h3>
+    <div class="heat-scroll"><table class="heat-table" id="motivo-campanha"></table></div>
   </div>
 </div>
+
+<script>
+const D = {"totals": {"leads": 776, "lost": 437, "qual": 152, "ag": 123, "re": 69, "ns": 14, "future_re": 76}, "daily_series": [{"date": "2026-05-01", "leads": 110, "lost": 7, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-02", "leads": 116, "lost": 1, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-03", "leads": 137, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-04", "leads": 109, "lost": 265, "qual": 42, "ag": 31, "re": 22, "ns": 5}, {"date": "2026-05-05", "leads": 139, "lost": 77, "qual": 42, "ag": 35, "re": 24, "ns": 3}, {"date": "2026-05-06", "leads": 165, "lost": 77, "qual": 68, "ag": 57, "re": 23, "ns": 5}, {"date": "2026-05-07", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 1}, {"date": "2026-05-08", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-09", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-10", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-11", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-12", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-13", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-14", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-15", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-16", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-17", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-18", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-19", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-20", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-21", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-22", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-23", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-24", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-25", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-26", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-27", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-28", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-29", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-30", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-31", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}], "daily_product": {"ag": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 11, "Studio Fiscal": 5, "PJ360": 0, "GS PARTNER": 15}, "2026-05-05": {"Studio Agro": 6, "Studio Fiscal": 5, "PJ360": 0, "GS PARTNER": 24}, "2026-05-06": {"Studio Agro": 22, "Studio Fiscal": 8, "PJ360": 1, "GS PARTNER": 25}, "2026-05-07": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-08": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-09": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-12": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-13": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-14": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-15": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-19": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-20": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-21": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-22": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-26": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}}, "re": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 10, "Studio Fiscal": 2, "PJ360": 0, "GS PARTNER": 10}, "2026-05-05": {"Studio Agro": 3, "Studio Fiscal": 3, "PJ360": 0, "GS PARTNER": 18}, "2026-05-06": {"Studio Agro": 4, "Studio Fiscal": 4, "PJ360": 0, "GS PARTNER": 15}, "2026-05-07": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-08": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-09": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-12": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-13": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-14": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-15": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-19": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-20": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-21": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-22": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-26": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}}, "ns": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 3, "Studio Fiscal": 1, "PJ360": 0, "GS PARTNER": 1}, "2026-05-05": {"Studio Agro": 1, "Studio Fiscal": 1, "PJ360": 0, "GS PARTNER": 1}, "2026-05-06": {"Studio Agro": 2, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 3}, "2026-05-07": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-08": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-09": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-12": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-13": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-14": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-15": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-19": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-20": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-21": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-22": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-26": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "PJ360": 0, "GS PARTNER": 0}}}, "working_days": ["2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29"], "sdr": {"ag": {"Mélodi Nirvana": 15, "Amada Oliveira": 6, "Camily Nadal": 4, "Glauber Bagetti": 10, "Rafael dallarosa longo": 7, "João Gabriel Dutra": 20, "Leonardo Soares": 12, "Jonatans Junior": 14, "Henri Meneghetti": 13, "Izadora Zacker": 11, "Andriely Oliveira": 5, "Lorenzo Meneghetti": 6}, "re": {"Leonardo Soares": 6, "Jonatans Junior": 10, "Henri Meneghetti": 14, "Mélodi Nirvana": 5, "Izadora Zacker": 9, "Andriely Oliveira": 3, "João Gabriel Dutra": 15, "Amada Oliveira": 1, "Glauber Bagetti": 1, "Lorenzo Meneghetti": 5}, "ns": {"Camily Nadal": 1, "Izadora Zacker": 2, "Leonardo Soares": 2, "Henri Meneghetti": 3, "Jonatans Junior": 2, "Andriely Oliveira": 1, "Glauber Bagetti": 2, "Lorenzo Meneghetti": 1}, "future": {"Leonardo Soares": 10, "Rafael dallarosa longo": 5, "Jonatans Junior": 11, "Mélodi Nirvana": 11, "Izadora Zacker": 9, "Henri Meneghetti": 6, "Amada Oliveira": 3, "João Gabriel Dutra": 10, "Andriely Oliveira": 5, "Glauber Bagetti": 3, "Camily Nadal": 1, "Lorenzo Meneghetti": 2}}, "closer": {"re": {"Adalberto Neto": 5, "Thuany Ghabril": 7, "Maria Luísa": 9, "Djulia Silva": 7, "Émerson Cavitchoni": 3, "William Dias": 5, "Haynnã": 7, "Suzanny Mauren Dihelem": 2, "Lorenzo Coronel": 2, "Raissa Antunes": 7, "Andresa Caldas": 4, "Samuel Almeida": 6, "Samuel Brião": 1, "Felippe Porcella": 2, "Leonardo Ribeiro": 1, "Laura Feijó Junqueira": 1}, "future": {"Leonardo Ribeiro": 3, "Samuel Almeida": 6, "Thuany Ghabril": 6, "Djulia Silva": 7, "Maria Luísa": 8, "Andresa Caldas": 7, "Samuel Brião": 1, "Felippe Porcella": 3, "Haynnã": 2, "William Dias": 9, "Lorenzo Coronel": 4, "Adalberto Neto": 4, "Suzanny Mauren Dihelem": 4, "Émerson Cavitchoni": 4, "Raissa Antunes": 5, "Gabriela Cunha": 3}, "ns": {"Lorenzo Coronel": 1, "Maria Luísa": 1, "Leonardo Ribeiro": 2, "Thuany Ghabril": 3, "Samuel Almeida": 1, "Djulia Silva": 2, "Andresa Caldas": 1, "Suzanny Mauren Dihelem": 1, "Felippe Porcella": 1, "Samuel Brião": 1}}, "product": {"ag": {"Studio Agro": 39, "GS PARTNER": 64, "Studio Fiscal": 18, "PJ360": 1}, "re": {"Studio Agro": 17, "Studio Fiscal": 9, "GS PARTNER": 43}, "ns": {"Studio Agro": 5, "GS PARTNER": 6, "Studio Fiscal": 3}, "leads": {"Studio Fiscal": 434, "Studio Agro": 286, "GS PARTNER": 56}, "lost": {"Studio Fiscal": 281, "Studio Agro": 132, "GS PARTNER": 14}, "loss_rate": {"Studio Fiscal": 64.7, "Studio Agro": 46.2, "GS PARTNER": 25.0}, "mql_rate": {"Studio Fiscal": 4.1, "Studio Agro": 13.6, "GS PARTNER": 114.3}}, "loss": {"by_reason_product": {"Sem perfil": {"Studio Fiscal": 250, "Studio Agro": 109, "GS PARTNER": 5}, "Sem interesse": {"GS PARTNER": 3, "Studio Agro": 9, "Studio Fiscal": 9}, "Sem Retorno": {"Studio Fiscal": 1, "GS PARTNER": 3, "Studio Agro": 1}, "Postergou decisão": {"GS PARTNER": 1}, "Sem Contato": {"Studio Fiscal": 9, "GS PARTNER": 1, "Studio Agro": 4}, "Perfil Fake": {"Studio Fiscal": 5, "Studio Agro": 4}, "Procurando emprego": {"Studio Agro": 1}, "Buscando Parceria": {"Studio Agro": 1}}, "by_reason_campaign": {"Sem perfil": {"[LEAD][ABO][FORM NATIVO LISTA]": 14, "[LEAD] FORMS_NATIVO] [ESCALA]": 71, "[LEAD][ABO][FORM NATIVO] [1]": 17, "[LEAD][ABO][LAL CLIENTES FINAIS]": 3, "[LEAD][ABO][FORM NATIVO] [LISTA]": 6, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 73, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 21, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 20, "[LEAD][ABO][FORM NATIVO] [3]": 10, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 25, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 1, "FF - GS PARTNER [Formulario Direto][ABO]": 4, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 14, "[LEAD][ABO][FORM NATIVO] [ABO]": 24, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 17, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 12, "[LEAD][ABO][LAL QUENTES PIPE]": 4, "pmax_franquia_studio_agro": 6, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 3, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 10, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 3, "search_studio_agro": 3, "120242298180730013": 1, "[LEAD][ABO][LAL FRANQUEADOS]": 1, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 1}, "Sem interesse": {"FF - GS PARTNER [Formulario Direto][ABO]": 3, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 1, "[LEAD][ABO][LAL QUENTES PIPE]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 1, "[LEAD][ABO][FORM NATIVO] [ABO]": 5, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 2, "[LEAD][ABO][FORM NATIVO] [1]": 1, "[LEAD][ABO][FORM NATIVO] [3]": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 1, "[LEAD] FORMS_NATIVO] [ESCALA]": 1}, "Sem Retorno": {"[LEAD] FORMS_NATIVO] [ESCALA] [5]": 1, "FF - GS PARTNER [Formulario Direto][ABO]": 1, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 2, "[LEAD][ABO][FORM NATIVO] [1]": 1}, "Postergou decisão": {"FF - GS PARTNER [Formulario Direto][ABO]": 1}, "Sem Contato": {"[LEAD][ABO][LAL QUENTES PIPE]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 2, "[LEAD][ABO][FORM NATIVO LISTA]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 1, "[LEAD] FORMS_NATIVO] [ESCALA]": 2, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 1, "[LEAD][ABO][FORM NATIVO] [1]": 1, "[LEAD][ABO][FORM NATIVO] [3]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 1, "[LEAD][ABO][FORM NATIVO] [ABO]": 1}, "Perfil Fake": {"[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 1, "[LEAD][ABO][FORM NATIVO] [ABO]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 1, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 1, "[LEAD][ABO][FORM NATIVO LISTA]": 2, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 2}, "Procurando emprego": {"[LEAD][ABO][FORM NATIVO] [ABO]": 1}, "Buscando Parceria": {"[LEAD][ABO][FORM NATIVO] [1]": 1}}, "top_campaigns": ["[LEAD] FORMS_NATIVO] [ESCALA] [2]", "[LEAD] FORMS_NATIVO] [ESCALA]", "[LEAD][ABO][FORM NATIVO] [ABO]", "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]", "[LEAD] FORMS_NATIVO] [ESCALA] [4]", "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]", "[LEAD][ABO][FORM NATIVO] [1]", "[LEAD][ABO][FORM NATIVO LISTA]", "[LEAD] FORMS_NATIVO] [ESCALA] [3]", "[LEAD][ABO][FORM NATIVO] [CONSULTOR]", "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]", "[LEAD][ABO][FORM NATIVO] [3]", "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]", "FF - GS PARTNER [Formulario Direto][ABO]", "[LEAD][ABO][LAL CLIENTES FINAIS]"]}, "meta": {"sdr_goal": 70, "closer_goal": 40, "sdr_pace_target": 14.0, "closer_pace_target": 8.0, "working_days_elapsed": 4, "working_days_total": 20, "last_data_date": "Maio 2026 — em andamento, dia útil 4 de 20", "team_total_re_goal": 600, "team_total_ag_goal": 794, "team_pace_target_re": 120.0, "team_pace_target_ag": 158.8, "metas_por_produto": {"Studio Agro": {"agendadas": 311, "realizadas": 225, "contratos": null}, "Studio Fiscal": {"agendadas": 288, "realizadas": 225, "contratos": null}, "GS PARTNER": {"agendadas": 195, "realizadas": 150, "contratos": null}}, "produtos_em_escopo": ["Studio Agro", "Studio Fiscal", "GS PARTNER"]}};
+const SDR_GOAL = D.meta.sdr_goal;
+const CLOSER_GOAL = D.meta.closer_goal;
+const SDR_PACE = D.meta.sdr_pace_target;
+const CLOSER_PACE = D.meta.closer_pace_target;
+const ELAPSED = D.meta.working_days_elapsed;
+const TOTAL_DAYS = D.meta.working_days_total;
+const PACE_PCT = ELAPSED / TOTAL_DAYS;
+
+const fmt = n => n.toLocaleString('pt-BR');
+const pct = (a,b) => b > 0 ? ((a/b)*100).toFixed(1) + '%' : '–';
+
+// Colors
+const COLORS = {
+  leads: '#3b82f6', lost: '#ef4444', ag: '#a855f7', re: '#22c55e',
+  ns: '#f97316', future: '#a855f7'
+};
+const PROD_COLORS = {
+  'Studio Agro': '#22c55e', 'Studio Fiscal': '#f97316',
+  'PJ360': '#3b82f6', 'GS PARTNER': '#0f172a'
+};
+
+// Common chart options for dark theme
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = '#1e293b';
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+Chart.defaults.font.size = 11;
+
+const gridOpt = { color: '#1e293b' };
+
+// === Last updated badge ===
+document.getElementById('last-updated').textContent =
+  `ATUALIZADO EM ${D.meta.last_data_date}`;
+
+// === Subtitle ===
+document.getElementById('subtitle').textContent =
+  `Dia útil ${ELAPSED} de ${TOTAL_DAYS} (${(PACE_PCT*100).toFixed(0)}% do mês) — atualização automática a cada hora`;
+
+// === Pace vs Meta (Maio em diante) — REATIVO AO FILTRO ===
+function renderPaceMeta(startDate, endDate) {
+  if (!D.meta.team_total_re_goal) return;
+  document.getElementById('pace-meta-section').style.display = '';
+  const goalRe = D.meta.team_total_re_goal;
+  const goalAg = D.meta.team_total_ag_goal;
+  const totalWd = D.meta.working_days_total;
+  const escopo = D.meta.produtos_em_escopo || [];
+
+  // Working days CONTIDOS no período selecionado
+  const workingDays = D.working_days || [];
+  const wdInPeriod = workingDays.filter(d => d >= startDate && d <= endDate).length;
+
+  // Meta proporcional
+  const paceTargetRe = goalRe * wdInPeriod / totalWd;
+  const paceTargetAg = goalAg * wdInPeriod / totalWd;
+
+  // Realizado no período (dias selecionados, escopo)
+  const filtered = D.daily_series.filter(d => d.date >= startDate && d.date <= endDate);
+  let reEscopo = 0, agEscopo = 0;
+  filtered.forEach(d => {
+    escopo.forEach(p => {
+      reEscopo += (D.daily_product.re[d.date] || {})[p] || 0;
+      agEscopo += (D.daily_product.ag[d.date] || {})[p] || 0;
+    });
+  });
+
+  const pctRe = goalRe>0 ? (reEscopo/goalRe*100) : 0;
+  const pctAg = goalAg>0 ? (agEscopo/goalAg*100) : 0;
+  const paceRePct = paceTargetRe>0 ? (reEscopo/paceTargetRe*100) : 0;
+  const paceAgPct = paceTargetAg>0 ? (agEscopo/paceTargetAg*100) : 0;
+
+  // Status: verde se >= 100% pace, amarelo 80-100%, vermelho <80%
+  const stat = (p) => p >= 100 ? '#22c55e' : p >= 80 ? '#fbbf24' : '#ef4444';
+  const statTxt = (p) => p >= 100 ? '✓ NO PACE' : p >= 80 ? '⚠ PERTO DO PACE' : '⚠ ABAIXO DO PACE';
+
+  // Texto contextual: "no mês" ou "no período"
+  const isFullMonth = startDate === minDate && endDate === maxDate;
+  const periodLabel = isFullMonth
+    ? `do mês`
+    : `no período (${wdInPeriod} dia${wdInPeriod===1?'':'s'} útil${wdInPeriod===1?'':'eis'})`;
+
+  document.getElementById('pace-time-card').innerHTML = `
+    <h3 style="margin:0 0 14px 0;">Time Qualificadora — Pace de Realizadas</h3>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div>
+        <div style="font-size:48px; font-weight:bold; color:#fff; line-height:1;">
+          ${reEscopo} <span style="color:#64748b; font-size:24px;">/ ${paceTargetRe.toFixed(0)}</span>
+        </div>
+        <div style="color:#94a3b8; font-size:12px; margin-top:4px;">Realizadas ${periodLabel} · meta proporcional ${paceTargetRe.toFixed(0)} (${pctRe.toFixed(1)}% da meta total ${goalRe})</div>
+        <div style="margin-top:14px; height:14px; background:#1e293b; border-radius:7px; overflow:hidden; position:relative;">
+          <div style="height:100%; width:${Math.min(paceRePct,100)}%; background:linear-gradient(90deg, #22c55e, #4ade80); transition:width 0.5s;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-top:6px;">
+          <span>0</span>
+          <span style="color:#fbbf24;">Meta do período: ${paceTargetRe.toFixed(0)}</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:14px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Atingimento do pace</div>
+        <div style="font-size:32px; font-weight:bold; color:${stat(paceRePct)};">${paceRePct.toFixed(0)}%</div>
+        <div style="font-size:13px; color:${stat(paceRePct)}; margin-bottom:14px;">${statTxt(paceRePct)}</div>
+        <div style="font-size:12px; color:#94a3b8;">
+          Pace ${isFullMonth?'do mês':'do período'}: <b style="color:#fbbf24;">${paceTargetRe.toFixed(0)}</b><br/>
+          Diferença: <b style="color:${reEscopo>=paceTargetRe?'#22c55e':'#ef4444'};">${reEscopo>=paceTargetRe?'+':''}${(reEscopo-paceTargetRe).toFixed(0)}</b><br/>
+          Faltam para meta total do mês: <b>${Math.max(0, goalRe-reEscopo).toFixed(0)}</b><br/>
+          Dias úteis no período: <b>${wdInPeriod}</b> ${isFullMonth?'':`de ${totalWd}`}
+        </div>
+      </div>
+    </div>
+
+    <!-- AG paralelo -->
+    <div style="margin-top:24px; padding-top:16px; border-top:1px solid #1e293b;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; align-items:center;">
+        <div>
+          <div style="color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Agendadas ${periodLabel}</div>
+          <div style="font-size:28px; font-weight:bold; color:#a855f7; line-height:1.1;">${agEscopo} / ${paceTargetAg.toFixed(0)}</div>
+          <div style="height:8px; background:#1e293b; border-radius:4px; overflow:hidden; margin-top:8px; position:relative;">
+            <div style="height:100%; width:${Math.min(paceAgPct,100)}%; background:linear-gradient(90deg, #a855f7, #c084fc);"></div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:#94a3b8;">
+          Meta do período: <b style="color:#fbbf24;">${paceTargetAg.toFixed(0)}</b> ·
+          Atingimento: <b style="color:${stat(paceAgPct)};">${paceAgPct.toFixed(0)}% do pace</b>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Pace por produto (3 cards) — também filtrado pelo período
+  const grid = document.getElementById('pace-prod-grid');
+  grid.innerHTML = '';
+  escopo.forEach(p => {
+    const meta = D.meta.metas_por_produto[p] || {};
+    const reMeta = meta.realizadas || 0;
+    const agMeta = meta.agendadas || 0;
+    // Realizadas/agendadas DO PERÍODO selecionado para esse produto
+    let reV = 0, agV = 0;
+    filtered.forEach(d => {
+      reV += (D.daily_product.re[d.date] || {})[p] || 0;
+      agV += (D.daily_product.ag[d.date] || {})[p] || 0;
+    });
+    const reTarget = reMeta * wdInPeriod / totalWd;
+    const agTarget = agMeta * wdInPeriod / totalWd;
+    const reAttPct = reMeta>0 ? (reV/reMeta*100) : 0;       // % da meta total do mês
+    const reTargetPct = reTarget>0 ? (reV/reTarget*100) : 0; // % do pace do período
+    const cls = p === 'Studio Agro' ? 'agro' : p === 'Studio Fiscal' ? 'fiscal' : 'partner';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3 style="margin:0 0 10px 0;"><span class="pill ${cls}">${p}</span></h3>
+      <div style="font-size:32px; font-weight:bold; color:#fff; line-height:1;">
+        ${reV} <span style="color:#64748b; font-size:18px;">/ ${reTarget.toFixed(0)}</span>
+      </div>
+      <div style="color:#94a3b8; font-size:11px;">Realizadas ${periodLabel}</div>
+      <div style="height:10px; background:#1e293b; border-radius:5px; overflow:hidden; margin-top:8px; position:relative;">
+        <div style="height:100%; width:${Math.min(reTargetPct,100)}%; background:linear-gradient(90deg, #22c55e, #4ade80);"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; margin-top:4px;">
+        <span>Meta período: ${reTarget.toFixed(0)}</span>
+        <span style="color:${stat(reTargetPct)};">${reTargetPct.toFixed(0)}% do pace</span>
+      </div>
+      <div style="margin-top:12px; padding-top:10px; border-top:1px solid #1e293b; font-size:11px; color:#94a3b8;">
+        <div>Agendadas: <b style="color:#a855f7;">${agV} / ${agTarget.toFixed(0)}</b></div>
+        <div style="margin-top:4px;">Meta total mês: ${reMeta} RE · ${reAttPct.toFixed(1)}% atingido</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// Inicializa pace com mês inteiro (rendering inicial; será atualizado pelo applyFilter)
+const initialMin = D.daily_series[0].date;
+const initialMax = D.daily_series[D.daily_series.length-1].date;
+renderPaceMeta(initialMin, initialMax);
+
+// === KPI (com filtro de período) ===
+const allDates = D.daily_series.map(d => d.date);
+const minDate = allDates[0];
+const maxDate = allDates[allDates.length - 1];
+
+// Inicializa inputs com mês inteiro
+document.getElementById('filter-start').min = minDate;
+document.getElementById('filter-start').max = maxDate;
+document.getElementById('filter-end').min = minDate;
+document.getElementById('filter-end').max = maxDate;
+document.getElementById('filter-start').value = minDate;
+document.getElementById('filter-end').value = maxDate;
+
+function fmtBR(isoDate) {
+  const [y,m,d] = isoDate.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function getFilteredKPIs(startDate, endDate) {
+  const filtered = D.daily_series.filter(d => d.date >= startDate && d.date <= endDate);
+  const sum = (k) => filtered.reduce((s,d) => s + (d[k]||0), 0);
+  return {
+    leads: sum('leads'), lost: sum('lost'), qual: sum('qual'),
+    ag: sum('ag'), re: sum('re'), ns: sum('ns'),
+    days: filtered.length,
+    startDate, endDate,
+  };
+}
+
+function renderKPIs(k) {
+  document.getElementById('kpi-leads').textContent = fmt(k.leads);
+  document.getElementById('kpi-leads-sub').textContent = `propriedade da equipe Qualificadora`;
+  document.getElementById('kpi-lost').textContent = fmt(k.lost);
+  document.getElementById('kpi-lost-sub').textContent = `${pct(k.lost, k.leads)} dos leads`;
+  document.getElementById('kpi-qual').textContent = fmt(k.qual);
+  document.getElementById('kpi-qual-sub').textContent = `${pct(k.qual, k.leads)} dos leads`;
+  document.getElementById('kpi-ag').textContent = fmt(k.ag);
+  document.getElementById('kpi-ag-sub').textContent = `${pct(k.ag, k.qual)} das qualificações`;
+  document.getElementById('kpi-re').textContent = fmt(k.re);
+  document.getElementById('kpi-re-sub').textContent = `${pct(k.re, k.ag)} de show — ${fmt(k.ns)} no show`;
+
+  // Info text
+  const info = document.getElementById('filter-info');
+  if (k.startDate === minDate && k.endDate === maxDate) {
+    info.innerHTML = `Mostrando: <b>mês inteiro</b> (${k.days} dias)`;
+  } else if (k.startDate === k.endDate) {
+    info.innerHTML = `Mostrando: <b>${fmtBR(k.startDate)}</b>`;
+  } else {
+    info.innerHTML = `Mostrando: <b>${fmtBR(k.startDate)} → ${fmtBR(k.endDate)}</b> (${k.days} dias)`;
+  }
+}
+
+// Filtros rápidos
+function shiftDate(iso, days) {
+  const d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0,10);
+}
+function getMonday(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun, 1=Mon...
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0,10);
+}
+
+const today = '2026-05-07';  // injetado pelo build script
+
+const ranges = {
+  month: () => ({s: minDate, e: maxDate}),
+  today: () => {
+    const t = today >= minDate && today <= maxDate ? today : maxDate;
+    return {s: t, e: t};
+  },
+  yesterday: () => {
+    const y = shiftDate(today, -1);
+    const v = y >= minDate && y <= maxDate ? y : maxDate;
+    return {s: v, e: v};
+  },
+  week: () => {
+    const start = getMonday(today);
+    const s = start >= minDate ? start : minDate;
+    const e = today <= maxDate ? today : maxDate;
+    return {s, e};
+  },
+  lastweek: () => {
+    const thisWeekMon = getMonday(today);
+    const lastMon = shiftDate(thisWeekMon, -7);
+    const lastSun = shiftDate(thisWeekMon, -1);
+    const s = lastMon >= minDate ? lastMon : minDate;
+    const e = lastSun <= maxDate ? lastSun : maxDate;
+    return {s, e};
+  },
+};
+
+document.querySelectorAll('#filter-bar button[data-range]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#filter-bar button[data-range]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const range = btn.dataset.range;
+    const {s, e} = ranges[range]();
+    document.getElementById('filter-start').value = s;
+    document.getElementById('filter-end').value = e;
+    applyFilter();
+  });
+});
+
+document.getElementById('filter-start').addEventListener('change', () => {
+  document.querySelectorAll('#filter-bar button[data-range]').forEach(b => b.classList.remove('active'));
+  applyFilter();
+});
+document.getElementById('filter-end').addEventListener('change', () => {
+  document.querySelectorAll('#filter-bar button[data-range]').forEach(b => b.classList.remove('active'));
+  applyFilter();
+});
+
+function applyFilter() {
+  const s = document.getElementById('filter-start').value || minDate;
+  const e = document.getElementById('filter-end').value || maxDate;
+  const k = getFilteredKPIs(s, e);
+  renderKPIs(k);
+  // Pace vs Meta acompanha o filtro
+  renderPaceMeta(s, e);
+  // Atualiza gráfico curve com filtro visual
+  if (window._curveChart) {
+    const filtered = D.daily_series.filter(d => d.date >= s && d.date <= e);
+    window._curveChart.data.labels = filtered.map(d => d.date.slice(5));
+    window._curveChart.data.datasets[0].data = filtered.map(d => d.leads);
+    window._curveChart.data.datasets[1].data = filtered.map(d => d.lost);
+    window._curveChart.data.datasets[2].data = filtered.map(d => d.ag);
+    window._curveChart.data.datasets[3].data = filtered.map(d => d.re);
+    window._curveChart.update();
+  }
+}
+
+// Render inicial
+renderKPIs(getFilteredKPIs(minDate, maxDate));
+
+// === Curve ===
+const dailyLabels = D.daily_series.map(d => d.date.slice(5));
+
+// Datalabels: register globally but disable by default; only enable on charts that opt-in
+if (window.ChartDataLabels) {
+  Chart.register(window.ChartDataLabels);
+  Chart.defaults.plugins.datalabels = { display: false };
+}
+
+// Helper: show values on every non-zero point with high contrast background
+const dlOpts = (color) => ({
+  display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+  color: '#fff',
+  backgroundColor: color,
+  borderRadius: 3,
+  padding: { top: 2, bottom: 2, left: 4, right: 4 },
+  font: { size: 10, weight: 'bold' },
+  align: 'top', anchor: 'end', offset: 4,
+  formatter: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v
+});
+
+window._curveChart = new Chart(document.getElementById('curve'), {
+  type: 'line',
+  data: {
+    labels: dailyLabels,
+    datasets: [
+      {label:'Leads gerados', data: D.daily_series.map(d=>d.leads), borderColor: COLORS.leads, backgroundColor:'rgba(59,130,246,0.1)', tension:0.3, fill:true, pointRadius:2, datalabels: dlOpts(COLORS.leads)},
+      {label:'Leads perdidos', data: D.daily_series.map(d=>d.lost), borderColor: COLORS.lost, backgroundColor:'rgba(239,68,68,0.05)', tension:0.3, fill:false, pointRadius:2, datalabels: dlOpts(COLORS.lost)},
+      {label:'CC1 Agendadas', data: D.daily_series.map(d=>d.ag), borderColor: COLORS.ag, backgroundColor:'rgba(168,85,247,0.05)', tension:0.3, fill:false, pointRadius:2, borderWidth:2, datalabels: dlOpts(COLORS.ag)},
+      {label:'CC1 Realizadas', data: D.daily_series.map(d=>d.re), borderColor: COLORS.re, backgroundColor:'rgba(34,197,94,0.05)', tension:0.3, fill:false, pointRadius:2, borderWidth:2, datalabels: dlOpts(COLORS.re)},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    layout:{padding:{top:18}},
+    plugins:{legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index', intersect:false}},
+    scales:{x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt}},
+    interaction:{mode:'index', intersect:false}
+  }
+});
+
+// === Cumulative chart ===
+// Build cumulative arrays
+function cumSum(arr){ let s=0; return arr.map(v=>{ s+=v; return s; }); }
+const cumLeads = cumSum(D.daily_series.map(d=>d.leads));
+const cumLost  = cumSum(D.daily_series.map(d=>d.lost));
+const cumAg    = cumSum(D.daily_series.map(d=>d.ag));
+const cumRe    = cumSum(D.daily_series.map(d=>d.re));
+
+// Stop showing labels for future days (where everything is still 0)
+// Find the last day with any non-zero value
+let lastIdx = D.daily_series.length - 1;
+for (let i = D.daily_series.length-1; i >= 0; i--) {
+  const d = D.daily_series[i];
+  if (d.leads || d.lost || d.ag || d.re) { lastIdx = i; break; }
+}
+
+// Show value on every day where progress was made (cumulative)
+const cumDl = (color) => ({
+  display: ctx => ctx.dataIndex <= lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
+  color: '#fff',
+  backgroundColor: color,
+  borderRadius: 3,
+  padding: { top: 2, bottom: 2, left: 4, right: 4 },
+  font: { size: 9, weight: 'bold' },
+  align: 'top', anchor: 'end', offset: 4,
+  formatter: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v
+});
+
+new Chart(document.getElementById('curve-cum'), {
+  type: 'line',
+  data: {
+    labels: dailyLabels,
+    datasets: [
+      {label:'Leads gerados (acum.)',   data: cumLeads, borderColor: COLORS.leads, backgroundColor:'rgba(59,130,246,0.12)', tension:0.25, fill:true,  pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.leads)},
+      {label:'Leads perdidos (acum.)',  data: cumLost,  borderColor: COLORS.lost,  backgroundColor:'rgba(239,68,68,0.06)',  tension:0.25, fill:false, pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.lost)},
+      {label:'CC1 Agendadas (acum.)',   data: cumAg,    borderColor: COLORS.ag,    backgroundColor:'rgba(168,85,247,0.06)', tension:0.25, fill:false, pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.ag)},
+      {label:'CC1 Realizadas (acum.)',  data: cumRe,    borderColor: COLORS.re,    backgroundColor:'rgba(34,197,94,0.06)',  tension:0.25, fill:false, pointRadius:2, borderWidth:2, datalabels: cumDl(COLORS.re)},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    layout:{padding:{top:22}},
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{
+        mode:'index', intersect:false,
+        callbacks:{
+          afterBody: (items) => {
+            const i = items[0].dataIndex;
+            const leads = cumLeads[i] || 0;
+            if (!leads) return [];
+            const lost = cumLost[i] || 0;
+            const ag = cumAg[i] || 0;
+            const re = cumRe[i] || 0;
+            // Daily values
+            const dLeads = D.daily_series[i].leads;
+            const dLost = D.daily_series[i].lost;
+            const dAg = D.daily_series[i].ag;
+            const dRe = D.daily_series[i].re;
+            const pct = (a,b) => b > 0 ? ((a/b)*100).toFixed(1) + '%' : '–';
+            return [
+              '',
+              '— % sobre leads gerados —',
+              `Acumulado: perda ${pct(lost,leads)} · agend. ${pct(ag,leads)} · realiz. ${pct(re,leads)}`,
+              `No dia:    perda ${pct(dLost,dLeads)} · agend. ${pct(dAg,dLeads)} · realiz. ${pct(dRe,dLeads)}`,
+            ];
+          }
+        }
+      }
+    },
+    scales:{x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt}},
+    interaction:{mode:'index', intersect:false}
+  }
+});
+
+// === Tabela de conversão diária + acumulada (sob o gráfico) ===
+(function buildConvTable(){
+  const cumLeads_t = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.leads); return a;},[]);
+  const cumLost_t  = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.lost);  return a;},[]);
+  const cumAg_t    = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.ag);    return a;},[]);
+  const cumRe_t    = D.daily_series.reduce((a,d,i)=>{a.push((a[i-1]||0)+d.re);    return a;},[]);
+  const pct = (a,b) => b > 0 ? ((a/b)*100).toFixed(1)+'%' : '–';
+
+  const tbl = document.createElement('table');
+  tbl.style.cssText = 'width:100%; border-collapse:collapse; margin-top:12px; font-size:11px; color:#cbd5e1;';
+  let html = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
+    <tr>
+      <th rowspan="2" style="padding:6px 4px; text-align:left;">Dia</th>
+      <th colspan="4" style="padding:6px 4px; border-bottom:1px solid #374151;">No dia</th>
+      <th colspan="4" style="padding:6px 4px; border-bottom:1px solid #374151; background:#0f172a;">Acumulado</th>
+    </tr>
+    <tr>
+      <th style="padding:4px;">Leads</th>
+      <th style="padding:4px; color:#fca5a5;">% Perda</th>
+      <th style="padding:4px; color:#c4b5fd;">% Agend.</th>
+      <th style="padding:4px; color:#86efac;">% Realiz.</th>
+      <th style="padding:4px; background:#0f172a;">Leads</th>
+      <th style="padding:4px; background:#0f172a; color:#fca5a5;">% Perda</th>
+      <th style="padding:4px; background:#0f172a; color:#c4b5fd;">% Agend.</th>
+      <th style="padding:4px; background:#0f172a; color:#86efac;">% Realiz.</th>
+    </tr>
+  </thead><tbody>`;
+  D.daily_series.forEach((d, i) => {
+    html += `<tr style="border-bottom:1px solid #1e293b;">
+      <td style="padding:4px; font-weight:600;">${d.date.slice(5)}</td>
+      <td style="padding:4px; text-align:center;">${d.leads}</td>
+      <td style="padding:4px; text-align:center; color:#fca5a5;">${pct(d.lost,d.leads)}</td>
+      <td style="padding:4px; text-align:center; color:#c4b5fd;">${pct(d.ag,d.leads)}</td>
+      <td style="padding:4px; text-align:center; color:#86efac;">${pct(d.re,d.leads)}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5);">${cumLeads_t[i]}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5); color:#fca5a5;">${pct(cumLost_t[i],cumLeads_t[i])}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5); color:#c4b5fd;">${pct(cumAg_t[i],cumLeads_t[i])}</td>
+      <td style="padding:4px; text-align:center; background:rgba(15,23,42,0.5); color:#86efac;">${pct(cumRe_t[i],cumLeads_t[i])}</td>
+    </tr>`;
+  });
+  // Linha total
+  const tLeads = cumLeads_t[cumLeads_t.length-1];
+  const tLost = cumLost_t[cumLost_t.length-1];
+  const tAg = cumAg_t[cumAg_t.length-1];
+  const tRe = cumRe_t[cumRe_t.length-1];
+  html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
+    <td style="padding:6px 4px;">TOTAL ABRIL</td>
+    <td style="padding:6px 4px; text-align:center;">${tLeads}</td>
+    <td style="padding:6px 4px; text-align:center; color:#ef4444;">${pct(tLost,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#a855f7;">${pct(tAg,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#22c55e;">${pct(tRe,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center;">${tLeads}</td>
+    <td style="padding:6px 4px; text-align:center; color:#ef4444;">${pct(tLost,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#a855f7;">${pct(tAg,tLeads)}</td>
+    <td style="padding:6px 4px; text-align:center; color:#22c55e;">${pct(tRe,tLeads)}</td>
+  </tr>`;
+  html += '</tbody>';
+  tbl.innerHTML = html;
+  document.getElementById('curve-cum').parentElement.parentElement.appendChild(tbl);
+})();
+
+// === Pace Acumulado vs Meta (SDR + Closer) ===
+// Build linear meta line: only working days progress, weekends stay flat
+const sdrGoalTotal = SDR_GOAL * 10;  // 10 SDRs × 70 = 700
+const closerGoalTotal = CLOSER_GOAL * Object.keys(D.closer.re).length;
+const perWorkdayInc_sdr = sdrGoalTotal / TOTAL_DAYS;
+const perWorkdayInc_closer = closerGoalTotal / TOTAL_DAYS;
+
+let metaSdr = 0, metaCloser = 0;
+const metaSdrSeries = [], metaCloserSeries = [];
+for (const d of D.daily_series) {
+  const dt = new Date(d.date);
+  const isWorkday = dt.getDay() >= 1 && dt.getDay() <= 5; // Mon-Fri
+  if (isWorkday) {
+    metaSdr += perWorkdayInc_sdr;
+    metaCloser += perWorkdayInc_closer;
+  }
+  metaSdrSeries.push(Math.round(metaSdr));
+  metaCloserSeries.push(Math.round(metaCloser));
+}
+
+// Build cumulative closer (from D.daily_series; same as cumRe but it represents the team's total CC1)
+// Use cumRe as the proxy (SDR-attributed RE)
+const labelDl = (color) => ({
+  display: ctx => ctx.dataIndex <= lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
+  color: '#fff', backgroundColor: color, borderRadius: 3,
+  padding: { top: 2, bottom: 2, left: 4, right: 4 },
+  font: { size: 9, weight: 'bold' },
+  align: 'top', anchor: 'end', offset: 4,
+  formatter: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v
+});
+
+new Chart(document.getElementById('pace-cum'), {
+  type: 'line',
+  data: {
+    labels: dailyLabels,
+    datasets: [
+      {label:`Realizadas SDR (acum.) — meta ${sdrGoalTotal}`, data: cumRe,
+        borderColor: COLORS.re, backgroundColor:'rgba(34,197,94,0.12)',
+        tension:0.25, fill:true, pointRadius:3, borderWidth:3,
+        datalabels: labelDl(COLORS.re)},
+      {label:`Meta linear SDR (${sdrGoalTotal} no fim do mês)`, data: metaSdrSeries,
+        borderColor: '#22c55e', backgroundColor:'transparent',
+        borderDash:[6,4], tension:0, fill:false, pointRadius:0, borderWidth:2,
+        datalabels: { display: false }},
+      {label:`Meta linear Closer (${closerGoalTotal} no fim do mês)`, data: metaCloserSeries,
+        borderColor: '#a855f7', backgroundColor:'transparent',
+        borderDash:[6,4], tension:0, fill:false, pointRadius:0, borderWidth:2,
+        datalabels: { display: false }},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    layout:{padding:{top:22}},
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{mode:'index', intersect:false},
+    },
+    scales:{x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt}},
+    interaction:{mode:'index', intersect:false}
+  }
+});
+
+// === Pace headlines ===
+const sdrTotalRe = Object.values(D.sdr.re).reduce((a,b)=>a+b,0);
+const sdrTotalFut = Object.values(D.sdr.future).reduce((a,b)=>a+b,0);
+const sdrCount = Math.max(Object.keys(D.sdr.ag).length, 10);
+const sdrMetaTotal = SDR_GOAL * sdrCount;
+const sdrTargetNow = SDR_PACE * sdrCount;
+
+document.getElementById('sdr-total').textContent = fmt(sdrTotalRe);
+document.getElementById('sdr-meta-total').innerHTML = `${fmt(sdrMetaTotal)} <small>(${sdrCount} SDRs × ${SDR_GOAL})</small>`;
+document.getElementById('sdr-pace-info').innerHTML =
+  `Onde deveriam estar hoje: <b>${fmt(Math.round(sdrTargetNow))}</b> · Faltam <b class="${sdrTotalRe>=sdrTargetNow?'ok':'danger'}">${fmt(Math.max(0, Math.round(sdrTargetNow - sdrTotalRe)))}</b> para o pace · Faltam <b>${fmt(sdrMetaTotal - sdrTotalRe)}</b> para meta total`;
+document.getElementById('sdr-bar-fill').style.width = Math.min(100, (sdrTotalRe/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-future').style.left = Math.min(100, (sdrTotalRe/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-future').style.width = Math.min(100 - (sdrTotalRe/sdrMetaTotal)*100, (sdrTotalFut/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-target').style.left = Math.min(100, (sdrTargetNow/sdrMetaTotal)*100) + '%';
+document.getElementById('sdr-bar-label').textContent = `Hoje · ${fmt(Math.round(sdrTargetNow))}`;
+
+const closerTotalRe = Object.values(D.closer.re).reduce((a,b)=>a+b,0);
+const closerTotalFut = Object.values(D.closer.future).reduce((a,b)=>a+b,0);
+const closerCount = Object.keys(D.closer.re).length;
+const closerMetaTotal = CLOSER_GOAL * closerCount;
+const closerTargetNow = CLOSER_PACE * closerCount;
+
+document.getElementById('closer-total').textContent = fmt(closerTotalRe);
+document.getElementById('closer-meta-total').innerHTML = `${fmt(closerMetaTotal)} <small>(${closerCount} closers × ${CLOSER_GOAL})</small>`;
+document.getElementById('closer-pace-info').innerHTML =
+  `Onde deveriam estar hoje: <b>${fmt(Math.round(closerTargetNow))}</b> · Faltam <b class="${closerTotalRe>=closerTargetNow?'ok':'danger'}">${fmt(Math.max(0, Math.round(closerTargetNow - closerTotalRe)))}</b> para o pace · Faltam <b>${fmt(closerMetaTotal - closerTotalRe)}</b> para meta total`;
+document.getElementById('closer-bar-fill').style.width = Math.min(100, (closerTotalRe/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-future').style.left = Math.min(100, (closerTotalRe/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-future').style.width = Math.min(100 - (closerTotalRe/closerMetaTotal)*100, (closerTotalFut/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-target').style.left = Math.min(100, (closerTargetNow/closerMetaTotal)*100) + '%';
+document.getElementById('closer-bar-label').textContent = `Hoje · ${fmt(Math.round(closerTargetNow))}`;
+
+// === Per-person pace — RANKING (sort by realizadas desc, future desc) ===
+function paceList(elId, dataObj, futObj, goal, paceTarget) {
+  const allNames = new Set([...Object.keys(dataObj), ...Object.keys(futObj || {})]);
+  const rows = [...allNames].map(name => ({
+    name, re: dataObj[name] || 0, future: (futObj && futObj[name]) || 0
+  })).sort((a,b) => {
+    // Ranking: 1º critério realizadas (desc), 2º critério para acontecer (desc)
+    if (b.re !== a.re) return b.re - a.re;
+    return b.future - a.future;
+  });
+
+  const container = document.getElementById(elId);
+  container.innerHTML = '';
+  rows.forEach((r, idx) => {
+    const pos = idx + 1;
+    const pctRe = Math.min(100, (r.re/goal)*100);
+    const pctFut = Math.min(100 - pctRe, (r.future/goal)*100);
+    const pctTarget = Math.min(100, (paceTarget/goal)*100);
+    const faltaPace = Math.max(0, Math.ceil(paceTarget - r.re));
+    const faltaMeta = Math.max(0, goal - r.re);
+    const statusGap = faltaPace === 0 ? 'ok' : (faltaPace <= paceTarget*0.2 ? 'warn' : 'danger');
+    const gapTxt = faltaPace === 0 ? '✓ no pace' : `−${faltaPace}`;
+    // Medalha para os 3 primeiros
+    const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : '';
+    const posBadge = `<span class="rank-pos">${medal || pos + 'º'}</span>`;
+    const div = document.createElement('div');
+    div.className = 'person-row' + (pos <= 3 ? ' top-rank' : '');
+    div.innerHTML = `
+      ${posBadge}
+      <div class="person-name">${r.name}</div>
+      <div class="person-bar-track">
+        <div class="person-bar-fill" style="width:${pctRe}%"></div>
+        <div class="person-bar-future" style="left:${pctRe}%; width:${pctFut}%"></div>
+        <div class="person-bar-target" style="left:${pctTarget}%"></div>
+      </div>
+      <div class="person-gap">
+        <span class="gap-num ${statusGap}">${gapTxt}</span>
+        <span class="gap-meta">${faltaMeta} p/ meta</span>
+      </div>
+      <div class="person-stat">${r.re}<span style="color:var(--purple)">+${r.future}</span> / ${goal}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+paceList('sdr-pace-list', D.sdr.re, D.sdr.future, SDR_GOAL, SDR_PACE);
+paceList('closer-pace-list', D.closer.re, D.closer.future, CLOSER_GOAL, CLOSER_PACE);
+
+// === SDR Agendamentos & Realizadas (horizontal bars) ===
+function makeSdrChart(canvasId, dataObj, color, title) {
+  const sorted = Object.entries(dataObj).sort((a,b)=>b[1]-a[1]);
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s=>s[0]),
+      datasets: [{label: title, data: sorted.map(s=>s[1]), backgroundColor: color, borderRadius: 4}]
+    },
+    options: {
+      indexAxis: 'y',
+      maintainAspectRatio:false, responsive:true,
+      plugins:{legend:{display:false}, tooltip:{}, datalabels:{}},
+      scales:{x:{grid:gridOpt, beginAtZero:true}, y:{grid:{display:false}}}
+    },
+    plugins: [{
+      id: 'datalabel-bar',
+      afterDatasetsDraw(chart) {
+        const {ctx} = chart;
+        chart.data.datasets[0].data.forEach((v,i)=>{
+          const meta = chart.getDatasetMeta(0).data[i];
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(v, meta.x + 4, meta.y);
+        });
+      }
+    }]
+  });
+}
+makeSdrChart('sdr-ag-chart', D.sdr.ag, COLORS.ag, 'Agendamentos');
+makeSdrChart('sdr-re-chart', D.sdr.re, COLORS.re, 'Realizadas');
+
+// === Closer combined - stacked horizontal bars ===
+const closerNames = [...new Set([...Object.keys(D.closer.re), ...Object.keys(D.closer.future), ...Object.keys(D.closer.ns)])];
+closerNames.sort((a,b) => ((D.closer.re[b]||0)+(D.closer.future[b]||0)+(D.closer.ns[b]||0)) - ((D.closer.re[a]||0)+(D.closer.future[a]||0)+(D.closer.ns[a]||0)));
+new Chart(document.getElementById('closer-chart'), {
+  type: 'bar',
+  data: {
+    labels: closerNames,
+    datasets: [
+      {label:'Realizadas', data: closerNames.map(n=>D.closer.re[n]||0), backgroundColor: COLORS.re},
+      {label:'Para acontecer', data: closerNames.map(n=>D.closer.future[n]||0), backgroundColor: COLORS.future},
+      {label:'No Show', data: closerNames.map(n=>D.closer.ns[n]||0), backgroundColor: COLORS.ns},
+    ]
+  },
+  options: {
+    indexAxis:'y', maintainAspectRatio:false, responsive:true,
+    plugins:{legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index'}},
+    scales:{x:{stacked:true, grid:gridOpt, beginAtZero:true}, y:{stacked:true, grid:{display:false}}}
+  },
+  plugins: [{
+    id: 'stack-labels',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      chart.data.datasets.forEach((ds, dsi) => {
+        ds.data.forEach((v, i) => {
+          if (v < 3) return;
+          const meta = chart.getDatasetMeta(dsi).data[i];
+          ctx.fillStyle = '#fff';
+          ctx.fillText(v, (meta.base + meta.x)/2, meta.y);
+        });
+      });
+      // Total at end
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'left';
+      closerNames.forEach((n, i) => {
+        const total = (D.closer.re[n]||0) + (D.closer.future[n]||0) + (D.closer.ns[n]||0);
+        const lastMeta = chart.getDatasetMeta(2).data[i];
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(total, lastMeta.x + 6, lastMeta.y);
+      });
+    }
+  }]
+});
+
+// === Por produto - bar charts (replacing donuts) ===
+// Lista padrão: 4 produtos. Em Maio, filtramos para os em escopo (definido em meta).
+const PROD_LABELS_ALL = ['Studio Agro','Studio Fiscal','PJ360','GS PARTNER'];
+const PROD_LABELS = (D.meta.produtos_em_escopo && D.meta.produtos_em_escopo.length)
+  ? D.meta.produtos_em_escopo
+  : PROD_LABELS_ALL;
+function prodBarChart(canvasId, dataObj, color) {
+  new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: PROD_LABELS,
+      datasets: [{
+        data: PROD_LABELS.map(p => dataObj[p] || 0),
+        backgroundColor: PROD_LABELS.map(p => PROD_COLORS[p]),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      maintainAspectRatio:false, responsive:true,
+      layout:{padding:{top:24}},
+      plugins: {legend:{display:false}},
+      scales:{x:{grid:{display:false}}, y:{beginAtZero:true, grid:gridOpt}}
+    },
+    plugins: [{
+      id: 'value-labels',
+      afterDatasetsDraw(chart) {
+        const {ctx} = chart;
+        chart.data.datasets[0].data.forEach((v,i)=>{
+          const meta = chart.getDatasetMeta(0).data[i];
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(v, meta.x, meta.y - 6);
+        });
+      }
+    }]
+  });
+}
+prodBarChart('prod-ag', D.product.ag);
+prodBarChart('prod-re', D.product.re);
+
+// === Taxa de No Show por Produto ===
+(function noShowByProduct(){
+  const ag = D.product.ag || {};
+  const re = D.product.re || {};
+  const ns = D.product.ns || {};
+  const data = PROD_LABELS.map(p => {
+    const a = ag[p]||0, r = re[p]||0, n = ns[p]||0;
+    const rateOnAttended = (n+r) > 0 ? (n/(n+r))*100 : 0;
+    const rateOnAg = a > 0 ? (n/a)*100 : 0;
+    return {p, a, r, n, rateOnAttended, rateOnAg};
+  });
+  const labels = data.map(d => d.p);
+  const values = data.map(d => +d.rateOnAttended.toFixed(1));
+
+  new Chart(document.getElementById('prod-noshow-rate'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Taxa de No Show (NS / (NS+RE))',
+        data: values,
+        backgroundColor: labels.map(p => PROD_COLORS[p]),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      maintainAspectRatio:false, responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            afterBody: (items) => {
+              const d = data[items[0].dataIndex];
+              return [`Realizadas: ${d.r}`, `No Show: ${d.n}`, `Agendadas: ${d.a}`, `NS / AG: ${d.rateOnAg.toFixed(1)}%`];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{color:'#cbd5e1', font:{weight:'600'}}},
+        y:{beginAtZero:true, grid:gridOpt, ticks:{callback:v=>v+'%'}}
+      }
+    },
+    layout:{padding:{top:30}},
+    plugins: [{
+      id: 'noshow-labels',
+      afterDatasetsDraw(chart){
+        const {ctx} = chart;
+        chart.data.datasets[0].data.forEach((v,i)=>{
+          const meta = chart.getDatasetMeta(0).data[i];
+          // % no topo da barra, em amarelo destaque
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${v.toFixed(1)}%`, meta.x, meta.y - 10);
+          // Volume dentro da barra com pill escura para garantir contraste
+          const txt = `${data[i].n} no shows`;
+          ctx.font = 'bold 13px sans-serif';
+          const padX = 8, padY = 4;
+          const w = ctx.measureText(txt).width + padX*2;
+          const h = 22;
+          const x = meta.x - w/2;
+          const y = meta.y + 12;
+          // pill background
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 6);
+            ctx.fill();
+          } else {
+            ctx.fillRect(x, y, w, h);
+          }
+          // texto branco
+          ctx.fillStyle = '#ffffff';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(txt, meta.x, y + h/2);
+          ctx.textBaseline = 'alphabetic';
+        });
+      }
+    }]
+  });
+
+  // Tabela complementar
+  const tbl = document.getElementById('noshow-table');
+  let h = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
+    <tr>
+      <th style="padding:8px; text-align:left;">Produto</th>
+      <th style="padding:8px; text-align:center;">Agendadas</th>
+      <th style="padding:8px; text-align:center;">Realizadas</th>
+      <th style="padding:8px; text-align:center;">No Show</th>
+      <th style="padding:8px; text-align:center; color:#fbbf24;">Taxa NS<br/><span style="font-weight:400; text-transform:none;">NS/(NS+RE)</span></th>
+      <th style="padding:8px; text-align:center; color:#cbd5e1;">NS/AG</th>
+    </tr>
+  </thead><tbody>`;
+  let totalA=0,totalR=0,totalN=0;
+  data.forEach(d => {
+    totalA+=d.a; totalR+=d.r; totalN+=d.n;
+    const cls = d.p === 'Studio Agro' ? 'agro' : d.p === 'Studio Fiscal' ? 'fiscal' : d.p === 'PJ360' ? 'pj360' : 'partner';
+    h += `<tr style="border-bottom:1px solid #1e293b;">
+      <td style="padding:6px 8px;"><span class="pill ${cls}">${d.p}</span></td>
+      <td style="padding:6px 8px; text-align:center;">${d.a}</td>
+      <td style="padding:6px 8px; text-align:center;">${d.r}</td>
+      <td style="padding:6px 8px; text-align:center;">${d.n}</td>
+      <td style="padding:6px 8px; text-align:center; color:#fbbf24; font-weight:bold;">${d.rateOnAttended.toFixed(1)}%</td>
+      <td style="padding:6px 8px; text-align:center; color:#cbd5e1;">${d.rateOnAg.toFixed(1)}%</td>
+    </tr>`;
+  });
+  const totRateA = (totalN+totalR)>0 ? (totalN/(totalN+totalR))*100 : 0;
+  const totRateAg = totalA>0 ? (totalN/totalA)*100 : 0;
+  h += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
+    <td style="padding:8px;">TOTAL EQUIPE</td>
+    <td style="padding:8px; text-align:center;">${totalA}</td>
+    <td style="padding:8px; text-align:center;">${totalR}</td>
+    <td style="padding:8px; text-align:center;">${totalN}</td>
+    <td style="padding:8px; text-align:center; color:#fbbf24;">${totRateA.toFixed(1)}%</td>
+    <td style="padding:8px; text-align:center; color:#cbd5e1;">${totRateAg.toFixed(1)}%</td>
+  </tr></tbody>`;
+  tbl.innerHTML = h;
+})();
+
+// === Leads vs Perdidos per product ===
+const lossLabels = PROD_LABELS.map(p => {
+  const lr = D.product.loss_rate[p] || 0;
+  return `${p} (${lr.toFixed(1)}% perda)`;
+});
+new Chart(document.getElementById('prod-leads-lost'), {
+  type: 'bar',
+  data: {
+    labels: lossLabels,
+    datasets: [
+      {label:'Leads gerados', data: PROD_LABELS.map(p=>D.product.leads[p]||0), backgroundColor: COLORS.leads, borderRadius:4},
+      {label:'Perdidos', data: PROD_LABELS.map(p=>D.product.lost[p]||0), backgroundColor: COLORS.lost, borderRadius:4},
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{
+        callbacks:{
+          afterBody: (items) => {
+            const i = items[0].dataIndex;
+            const p = PROD_LABELS[i];
+            const lr = D.product.loss_rate[p] || 0;
+            return `Taxa de perda: ${lr.toFixed(1)}%`;
+          }
+        }
+      }
+    },
+    scales:{x:{grid:{display:false}, ticks:{color:'#cbd5e1', font:{size:11, weight:'600'}}}, y:{beginAtZero:true, grid:gridOpt}}
+  },
+  plugins: [{
+    id: 'val-labels',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      chart.data.datasets.forEach((ds, dsi)=>{
+        ds.data.forEach((v,i)=>{
+          const meta = chart.getDatasetMeta(dsi).data[i];
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(v, meta.x, meta.y - 5);
+        });
+      });
+      // Texto vermelho com % no centro de cada par de barras
+      const xs = chart.scales.x;
+      const ys = chart.scales.y;
+      PROD_LABELS.forEach((p, i) => {
+        const lr = D.product.loss_rate[p] || 0;
+        const lostVal = D.product.lost[p] || 0;
+        const lostMeta = chart.getDatasetMeta(1).data[i];
+        if (lostMeta) {
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${lr.toFixed(1)}% perda`, lostMeta.x, lostMeta.y + (lostMeta.height/2) + 5);
+        }
+      });
+    }
+  }]
+});
+
+// === Product table — order: Leads, Perdidos, Em aberto, Agendamentos, Taxa de Perda, Taxa de MQL ===
+const tbl = document.getElementById('prod-table');
+let html = `<thead><tr><th>Produto</th><th>Leads</th><th>Perdidos</th><th>Em aberto</th><th>Agendamentos</th><th>Taxa de Perda</th><th>Taxa de MQL</th></tr></thead><tbody>`;
+PROD_LABELS.forEach(p => {
+  const leads = D.product.leads[p]||0;
+  const ag = D.product.ag[p]||0;
+  const lost = D.product.lost[p]||0;
+  const open = leads - lost;
+  const lossRate = D.product.loss_rate[p] || 0;
+  const mqlRate = D.product.mql_rate[p] || 0;
+  const cls = p === 'Studio Agro' ? 'agro' : p === 'Studio Fiscal' ? 'fiscal' : p === 'PJ360' ? 'pj360' : 'partner';
+  html += `<tr>
+    <td><span class="pill ${cls}">${p}</span></td>
+    <td>${fmt(leads)}</td>
+    <td>${fmt(lost)}</td>
+    <td>${fmt(open)}</td>
+    <td>${fmt(ag)}</td>
+    <td><b>${lossRate.toFixed(1)}%</b></td>
+    <td><b>${mqlRate.toFixed(1)}%</b></td>
+  </tr>`;
+});
+html += '</tbody>';
+tbl.innerHTML = html;
+
+// === Composição dos leads por produto — stacked 100% bar ===
+const compLabels = PROD_LABELS;
+const compData = compLabels.map(p => {
+  const leads = D.product.leads[p] || 0;
+  const lost = D.product.lost[p] || 0;
+  const open = leads - lost;
+  const ag = D.product.ag[p] || 0;
+  return {
+    leads, lost, open, ag,
+    lostPct: leads > 0 ? (lost/leads)*100 : 0,
+    openPct: leads > 0 ? (open/leads)*100 : 0,
+    agPct: leads > 0 ? (ag/leads)*100 : 0,
+  };
+});
+
+new Chart(document.getElementById('prod-rates'), {
+  type: 'bar',
+  data: {
+    labels: compLabels,
+    datasets: [
+      {
+        label:'Perdidos (% dos leads)',
+        data: compData.map(d => d.lostPct),
+        backgroundColor: COLORS.lost,
+        stack: 'composicao',
+      },
+      {
+        label:'Em aberto (% dos leads)',
+        data: compData.map(d => d.openPct),
+        backgroundColor: '#475569',
+        stack: 'composicao',
+      },
+      {
+        label:'Agendados (% dos leads — referência)',
+        data: compData.map(d => d.agPct),
+        backgroundColor: COLORS.re,
+        stack: 'agendados',
+      },
+    ]
+  },
+  options: {
+    maintainAspectRatio:false, responsive:true,
+    plugins:{
+      legend:{position:'top', labels:{color:'#cbd5e1'}},
+      tooltip:{
+        callbacks:{
+          label: c => {
+            const d = compData[c.dataIndex];
+            if (c.datasetIndex === 0) return `Perdidos: ${fmt(d.lost)} (${d.lostPct.toFixed(1)}% dos leads)`;
+            if (c.datasetIndex === 1) return `Em aberto: ${fmt(d.open)} (${d.openPct.toFixed(1)}% dos leads)`;
+            return `Agendamentos: ${fmt(d.ag)} (${d.agPct.toFixed(1)}% dos leads)`;
+          },
+          afterBody: c => {
+            const d = compData[c[0].dataIndex];
+            return `Total leads: ${fmt(d.leads)}`;
+          }
+        }
+      }
+    },
+    scales:{
+      x:{grid:{display:false}},
+      y:{beginAtZero:true, max: 145, grid:gridOpt, ticks:{callback:v=>v+'%'}}
+    }
+  },
+  plugins: [{
+    id: 'comp-labels',
+    afterDatasetsDraw(chart) {
+      const {ctx} = chart;
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      // Labels inside stacked perdidos and em aberto
+      chart.data.datasets.slice(0,2).forEach((ds, dsi) => {
+        ds.data.forEach((v, i) => {
+          if (v < 6) return;
+          const meta = chart.getDatasetMeta(dsi).data[i];
+          ctx.fillStyle = '#fff';
+          ctx.fillText(v.toFixed(0)+'%', meta.x, (meta.base + meta.y)/2);
+        });
+      });
+      // Label above agendados bar
+      const ds3 = chart.data.datasets[2];
+      ds3.data.forEach((v, i) => {
+        const meta = chart.getDatasetMeta(2).data[i];
+        ctx.fillStyle = COLORS.re;
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(v.toFixed(1)+'% ag', meta.x, meta.y - 4);
+        ctx.textBaseline = 'middle';
+      });
+    }
+  }]
+});
+
+// === Heatmap Motivo × Produto ===
+function buildHeat(elId, dataObj, cols) {
+  const reasons = Object.keys(dataObj).sort((a,b) => {
+    const ta = Object.values(dataObj[a]).reduce((x,y)=>x+y,0);
+    const tb = Object.values(dataObj[b]).reduce((x,y)=>x+y,0);
+    return tb - ta;
+  });
+  const maxVal = Math.max(...reasons.map(r => Math.max(...Object.values(dataObj[r]))));
+  let html = `<thead><tr><th style="text-align:left">Motivo</th>`;
+  cols.forEach(c => html += `<th>${c.length > 30 ? c.slice(0,28)+'…' : c}</th>`);
+  html += `<th>Total</th></tr></thead><tbody>`;
+  reasons.forEach(r => {
+    const total = Object.values(dataObj[r]).reduce((a,b)=>a+b,0);
+    html += `<tr><td style="text-align:left;font-weight:600">${r}</td>`;
+    cols.forEach(c => {
+      const v = (dataObj[r] && dataObj[r][c]) || 0;
+      const intensity = v > 0 ? Math.min(0.9, 0.15 + (v/maxVal)*0.75) : 0;
+      const bg = `rgba(239,68,68,${intensity})`;
+      const txtCol = intensity > 0.4 ? '#fff' : '#e2e8f0';
+      html += `<td class="heat-cell" style="background:${bg};color:${txtCol}">${v||''}</td>`;
+    });
+    html += `<td class="heat-cell" style="font-weight:700;background:#1e293b">${total}</td>`;
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById(elId).innerHTML = html;
+}
+buildHeat('motivo-produto', D.loss.by_reason_product, PROD_LABELS);
+buildHeat('motivo-campanha', D.loss.by_reason_campaign, D.loss.top_campaigns.slice(0,12));
+</script>
 </body>
 </html>
