@@ -463,7 +463,9 @@ function renderPaceMeta(startDate, endDate) {
   const statTxt = (p) => p >= 100 ? '✓ NO PACE' : p >= 80 ? '⚠ PERTO DO PACE' : '⚠ ABAIXO DO PACE';
 
   // Texto contextual: "no mês" ou "no período"
-  const isFullMonth = startDate === minDate && endDate === maxDate;
+  const _firstDate = D.daily_series[0].date;
+  const _lastDate = D.daily_series[D.daily_series.length-1].date;
+  const isFullMonth = startDate === _firstDate && endDate === _lastDate;
   const periodLabel = isFullMonth
     ? `do mês`
     : `no período (${wdInPeriod} dia${wdInPeriod===1?'':'s'} útil${wdInPeriod===1?'':'eis'})`;
