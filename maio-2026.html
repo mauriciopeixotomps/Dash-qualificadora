@@ -439,13 +439,20 @@ function renderPaceMeta(startDate, endDate) {
   const totalWd = D.meta.working_days_total;
   const escopo = D.meta.produtos_em_escopo || [];
 
-  // Working days CONTIDOS no período selecionado
+  // Working days no período até HOJE (não inclui dias futuros)
   const workingDays = D.working_days || [];
-  const wdInPeriod = workingDays.filter(d => d >= startDate && d <= endDate).length;
+  const _today = today; // injetado pelo build script
+  const effectiveEnd = endDate > _today ? _today : endDate;
+  const wdInPeriod = workingDays.filter(d => d >= startDate && d <= effectiveEnd).length;
 
   // Meta proporcional
   const paceTargetRe = goalRe * wdInPeriod / totalWd;
   const paceTargetAg = goalAg * wdInPeriod / totalWd;
+
+  // Onde deveria estar hoje (sempre cumulativo desde o início do mês até hoje, independente do filtro)
+  const elapsedWd = D.meta.working_days_elapsed;
+  const todayTargetRe = goalRe * elapsedWd / totalWd;
+  const todayTargetAg = goalAg * elapsedWd / totalWd;
 
   // Realizado no período (dias selecionados, escopo)
   const filtered = D.daily_series.filter(d => d.date >= startDate && d.date <= endDate);
@@ -489,6 +496,12 @@ function renderPaceMeta(startDate, endDate) {
           <span>0</span>
           <span style="color:#fbbf24;">Meta do período: ${paceTargetRe.toFixed(0)}</span>
         </div>
+        <div style="margin-top:10px; padding:10px 12px; background:#0f172a; border-left:3px solid #ef4444; border-radius:4px;">
+          <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Onde deveria estar hoje (acumulado do mês)</div>
+          <div style="font-size:22px; font-weight:bold; color:#fbbf24; line-height:1.2; margin-top:2px;">
+            ${todayTargetRe.toFixed(0)} <span style="color:#64748b; font-size:13px; font-weight:normal;">de ${goalRe} · dia útil ${elapsedWd}/${totalWd}</span>
+          </div>
+        </div>
       </div>
       <div>
         <div style="font-size:14px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Atingimento do pace</div>
@@ -511,6 +524,9 @@ function renderPaceMeta(startDate, endDate) {
           <div style="font-size:28px; font-weight:bold; color:#a855f7; line-height:1.1;">${agEscopo} / ${paceTargetAg.toFixed(0)}</div>
           <div style="height:8px; background:#1e293b; border-radius:4px; overflow:hidden; margin-top:8px; position:relative;">
             <div style="height:100%; width:${Math.min(paceAgPct,100)}%; background:linear-gradient(90deg, #a855f7, #c084fc);"></div>
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:#94a3b8;">
+            <span style="color:#fbbf24;">●</span> Onde deveria estar hoje: <b style="color:#fbbf24;">${todayTargetAg.toFixed(0)}</b> de ${goalAg}
           </div>
         </div>
         <div style="font-size:12px; color:#94a3b8;">
@@ -536,6 +552,8 @@ function renderPaceMeta(startDate, endDate) {
     });
     const reTarget = reMeta * wdInPeriod / totalWd;
     const agTarget = agMeta * wdInPeriod / totalWd;
+    const reTodayTarget = reMeta * elapsedWd / totalWd;  // onde deveria estar hoje (cumulativo)
+    const agTodayTarget = agMeta * elapsedWd / totalWd;
     const reAttPct = reMeta>0 ? (reV/reMeta*100) : 0;       // % da meta total do mês
     const reTargetPct = reTarget>0 ? (reV/reTarget*100) : 0; // % do pace do período
     const cls = p === 'Studio Agro' ? 'agro' : p === 'Studio Fiscal' ? 'fiscal' : 'partner';
@@ -554,7 +572,10 @@ function renderPaceMeta(startDate, endDate) {
         <span>Meta período: ${reTarget.toFixed(0)}</span>
         <span style="color:${stat(reTargetPct)};">${reTargetPct.toFixed(0)}% do pace</span>
       </div>
-      <div style="margin-top:12px; padding-top:10px; border-top:1px solid #1e293b; font-size:11px; color:#94a3b8;">
+      <div style="margin-top:8px; padding:6px 8px; background:#0f172a; border-left:2px solid #ef4444; border-radius:3px; font-size:10.5px; color:#94a3b8;">
+        Deveria estar hoje: <b style="color:#fbbf24;">${reTodayTarget.toFixed(0)} RE</b> · <b style="color:#a855f7;">${agTodayTarget.toFixed(0)} AG</b> (acumulado do mês)
+      </div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid #1e293b; font-size:11px; color:#94a3b8;">
         <div>Agendadas: <b style="color:#a855f7;">${agV} / ${agTarget.toFixed(0)}</b></div>
         <div style="margin-top:4px;">Meta total mês: ${reMeta} RE · ${reAttPct.toFixed(1)}% atingido</div>
       </div>
