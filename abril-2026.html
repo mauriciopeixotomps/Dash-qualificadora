@@ -328,7 +328,10 @@
 
   <!-- Per-person pace with gap merged in -->
   <div class="card"><h3>Pace por SDR — Meta 70 realizadas</h3><div id="sdr-pace-list"></div></div>
-  <div class="card"><h3>Pace por Closer — Meta 40 realizadas</h3><div id="closer-pace-list"></div></div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Pace por Closer FRANQUIA — Meta 40</h3><div id="closer-pace-list-franquia"></div></div>
+    <div class="card"><h3>Pace por Closer PARTNER — Meta 40</h3><div id="closer-pace-list-partner"></div></div>
+  </div>
 
   <!-- SDR atividades -->
   <div class="section-title">Atividade SDR</div>
@@ -1031,9 +1034,17 @@ function workingDaysInPeriod(startDate, endDate) {
   return n;
 }
 
-function paceList(elId, dailyData, dailyFuture, goalFull, totalWorkingDays, startDate, endDate) {
-  const dataObj = sumDailyByPerson(dailyData, startDate, endDate);
-  const futObj = sumDailyByPerson(dailyFuture, startDate, endDate);
+function paceList(elId, dailyData, dailyFuture, goalFull, totalWorkingDays, startDate, endDate, nameFilter) {
+  let dataObj = sumDailyByPerson(dailyData, startDate, endDate);
+  let futObj = sumDailyByPerson(dailyFuture, startDate, endDate);
+  // Filtro opcional por subset de nomes (ex: closers franquia vs partner)
+  if (nameFilter && nameFilter.length) {
+    const allowed = new Set(nameFilter);
+    dataObj = Object.fromEntries(Object.entries(dataObj).filter(([n]) => allowed.has(n)));
+    futObj = Object.fromEntries(Object.entries(futObj).filter(([n]) => allowed.has(n)));
+    // Inclui zeros pra closers sem realizadas no período (assim aparecem no ranking)
+    nameFilter.forEach(n => { if (!(n in dataObj)) dataObj[n] = 0; if (!(n in futObj)) futObj[n] = 0; });
+  }
   const wdInPeriod = workingDaysInPeriod(startDate, endDate);
   // Meta proporcional do período
   const goalPeriod = goalFull * wdInPeriod / Math.max(1, totalWorkingDays);
@@ -1085,7 +1096,10 @@ function paceList(elId, dailyData, dailyFuture, goalFull, totalWorkingDays, star
 
 function rerenderPaceLists(startDate, endDate) {
   paceList('sdr-pace-list', D.sdr_daily?.re, D.sdr_daily?.future, SDR_GOAL, D.meta.working_days_total, startDate, endDate);
-  paceList('closer-pace-list', D.closer_daily?.re, D.closer_daily?.future, CLOSER_GOAL, D.meta.working_days_total, startDate, endDate);
+  const teamFr = D.closer_team?.franquia || [];
+  const teamPt = D.closer_team?.partner || [];
+  paceList('closer-pace-list-franquia', D.closer_daily?.re, D.closer_daily?.future, CLOSER_GOAL, D.meta.working_days_total, startDate, endDate, teamFr);
+  paceList('closer-pace-list-partner',  D.closer_daily?.re, D.closer_daily?.future, CLOSER_GOAL, D.meta.working_days_total, startDate, endDate, teamPt);
 }
 // Render inicial (mês inteiro) — será sobrescrito por applyFilter
 rerenderPaceLists(D.daily_series[0].date, D.daily_series[D.daily_series.length-1].date);
