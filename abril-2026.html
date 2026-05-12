@@ -366,9 +366,10 @@
   <div class="card"><h3>Ranking SDR — Agendamentos × Realizadas × No Show (proporcional)</h3>
     <table id="sdr-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
     <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      <b>👆 Clique em qualquer coluna do header para ordenar.</b> Clique de novo para inverter (asc/desc). A ordem é salva automaticamente.<br/>
       <b>Show Rate</b> = RE / (RE + NS) — do que o SDR agendou e foi visitado, quantos compareceram.<br/>
-      <b>Conversão AG→RE</b> = RE / AG — eficiência total do SDR em transformar agendamento em reunião realizada.<br/>
-      Ranking por Show Rate (priorizando quem agenda leads que de fato comparecem).
+      <b>Taxa NS</b> = NS / (RE + NS) — inverso do Show Rate.<br/>
+      <b>Conversão AG→RE</b> = RE / AG — eficiência total do SDR em transformar agendamento em reunião realizada.
     </div>
   </div>
 
@@ -1355,7 +1356,7 @@ prodBarChart('prod-re', D.product.re);
   tbl.innerHTML = h;
 })();
 
-// === Ranking SDR proporcional — AG × RE × NS ===
+// === Ranking SDR proporcional — AG × RE × NS (com sort interativo) ===
 (function sdrRanking(){
   // Pega todos os SDRs que aparecem em qualquer atividade
   const sdrSet = new Set([
@@ -1363,7 +1364,7 @@ prodBarChart('prod-re', D.product.re);
     ...Object.keys(D.sdr.re || {}),
     ...Object.keys(D.sdr.ns || {}),
   ]);
-  const rows = [...sdrSet].map(name => {
+  const allRows = [...sdrSet].map(name => {
     const a = D.sdr.ag?.[name] || 0;
     const r = D.sdr.re?.[name] || 0;
     const n = D.sdr.ns?.[name] || 0;
@@ -1372,66 +1373,109 @@ prodBarChart('prod-re', D.product.re);
     const nsRate = attended > 0 ? (n / attended) * 100 : 0;
     const convAgRe = a > 0 ? (r / a) * 100 : 0;
     return { name, a, r, n, showRate, nsRate, convAgRe };
-  });
-  // Filtra quem tem pelo menos 1 atividade
-  const filtered = rows.filter(x => x.a + x.r + x.n > 0);
-  // Ordena por Show Rate desc (com mínimo de 5 RE+NS pra evitar pessoas com 1 reunião 100%)
-  filtered.sort((a, b) => {
-    const qa = (a.r + a.n) >= 5 ? 1 : 0;
-    const qb = (b.r + b.n) >= 5 ? 1 : 0;
-    if (qa !== qb) return qb - qa;  // quem tem volume mínimo vem primeiro
-    return b.showRate - a.showRate;
-  });
+  }).filter(x => x.a + x.r + x.n > 0);
 
-  const tbl = document.getElementById('sdr-ranking');
-  let html = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
-    <tr>
-      <th style="padding:8px; text-align:center; width:40px;">#</th>
-      <th style="padding:8px; text-align:left;">SDR</th>
-      <th style="padding:8px; text-align:center; color:#a855f7;">Agendadas</th>
-      <th style="padding:8px; text-align:center; color:#22c55e;">Realizadas</th>
-      <th style="padding:8px; text-align:center; color:#f97316;">No Show</th>
-      <th style="padding:8px; text-align:center; color:#86efac;">Show Rate<br/><span style="font-weight:400; text-transform:none; color:#94a3b8;">RE/(RE+NS)</span></th>
-      <th style="padding:8px; text-align:center; color:#fca5a5;">Taxa NS<br/><span style="font-weight:400; text-transform:none; color:#94a3b8;">NS/(RE+NS)</span></th>
-      <th style="padding:8px; text-align:center; color:#fbbf24;">Conv. AG→RE</th>
-    </tr>
-  </thead><tbody>`;
+  // Estado de ordenação (persistido no localStorage)
+  const SORT_KEY = 'sdr_ranking_sort_v1';
+  let sortState = (() => {
+    try { return JSON.parse(localStorage.getItem(SORT_KEY)) || { col: 'showRate', dir: 'desc' }; }
+    catch { return { col: 'showRate', dir: 'desc' }; }
+  })();
 
-  let totA = 0, totR = 0, totN = 0;
-  filtered.forEach((x, idx) => {
-    totA += x.a; totR += x.r; totN += x.n;
-    const pos = idx + 1;
-    const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos + 'º';
-    const showColor = x.showRate >= 70 ? '#22c55e' : x.showRate >= 50 ? '#fbbf24' : '#ef4444';
-    const lowVol = (x.r + x.n) < 5;
-    const lowVolNote = lowVol ? ' <span style="font-size:9px; color:#64748b;">(baixo volume)</span>' : '';
-    const rowBg = pos <= 3 ? 'background:rgba(34,197,94,0.04);' : '';
-    html += `<tr style="border-bottom:1px solid #1e293b; ${rowBg}">
-      <td style="padding:6px 8px; text-align:center; font-weight:bold;">${medal}</td>
-      <td style="padding:6px 8px;">${x.name}${lowVolNote}</td>
-      <td style="padding:6px 8px; text-align:center; color:#a855f7;">${x.a}</td>
-      <td style="padding:6px 8px; text-align:center; color:#22c55e; font-weight:bold;">${x.r}</td>
-      <td style="padding:6px 8px; text-align:center; color:#f97316;">${x.n}</td>
-      <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${showColor};">${x.showRate.toFixed(1)}%</td>
-      <td style="padding:6px 8px; text-align:center; color:#fca5a5;">${x.nsRate.toFixed(1)}%</td>
-      <td style="padding:6px 8px; text-align:center; color:#fbbf24;">${x.convAgRe.toFixed(1)}%</td>
-    </tr>`;
-  });
+  const cols = [
+    { key: 'name',     label: 'SDR',         align: 'left',  type: 'text',    color: null },
+    { key: 'a',        label: 'Agendadas',   align: 'center',type: 'num',     color: '#a855f7' },
+    { key: 'r',        label: 'Realizadas',  align: 'center',type: 'num',     color: '#22c55e' },
+    { key: 'n',        label: 'No Show',     align: 'center',type: 'num',     color: '#f97316' },
+    { key: 'showRate', label: 'Show Rate',   align: 'center',type: 'pct',     color: '#86efac', sub: 'RE/(RE+NS)' },
+    { key: 'nsRate',   label: 'Taxa NS',     align: 'center',type: 'pct',     color: '#fca5a5', sub: 'NS/(RE+NS)' },
+    { key: 'convAgRe', label: 'Conv. AG→RE', align: 'center',type: 'pct',     color: '#fbbf24' },
+  ];
 
-  const tShow = (totR + totN) > 0 ? (totR / (totR + totN)) * 100 : 0;
-  const tNs = (totR + totN) > 0 ? (totN / (totR + totN)) * 100 : 0;
-  const tConv = totA > 0 ? (totR / totA) * 100 : 0;
-  html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
-    <td style="padding:8px; text-align:center;">—</td>
-    <td style="padding:8px;">TOTAL TIME</td>
-    <td style="padding:8px; text-align:center; color:#a855f7;">${totA}</td>
-    <td style="padding:8px; text-align:center; color:#22c55e;">${totR}</td>
-    <td style="padding:8px; text-align:center; color:#f97316;">${totN}</td>
-    <td style="padding:8px; text-align:center; color:#86efac;">${tShow.toFixed(1)}%</td>
-    <td style="padding:8px; text-align:center; color:#fca5a5;">${tNs.toFixed(1)}%</td>
-    <td style="padding:8px; text-align:center; color:#fbbf24;">${tConv.toFixed(1)}%</td>
-  </tr></tbody>`;
-  tbl.innerHTML = html;
+  function render() {
+    // Salva estado
+    try { localStorage.setItem(SORT_KEY, JSON.stringify(sortState)); } catch {}
+
+    // Ordena
+    const sorted = [...allRows].sort((a, b) => {
+      const va = a[sortState.col], vb = b[sortState.col];
+      if (typeof va === 'string') {
+        return sortState.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      }
+      return sortState.dir === 'asc' ? va - vb : vb - va;
+    });
+
+    // Header com botões clicáveis
+    let html = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
+      <tr>
+        <th style="padding:8px; text-align:center; width:40px;">#</th>`;
+    cols.forEach(c => {
+      const isActive = sortState.col === c.key;
+      const arrow = isActive ? (sortState.dir === 'desc' ? ' ▼' : ' ▲') : ' ⇅';
+      const colStyle = c.color ? `color:${c.color};` : '';
+      const activeStyle = isActive ? 'background:rgba(168,85,247,0.15);' : '';
+      html += `<th data-sort="${c.key}" style="padding:8px; text-align:${c.align}; ${colStyle} ${activeStyle} cursor:pointer; user-select:none;" title="Clique para ordenar">
+        ${c.label}${c.sub ? `<br/><span style="font-weight:400; text-transform:none; color:#94a3b8;">${c.sub}</span>` : ''}
+        <span style="opacity:${isActive ? 1 : 0.4}; font-size:9px;">${arrow}</span>
+      </th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    let totA = 0, totR = 0, totN = 0;
+    sorted.forEach((x, idx) => {
+      totA += x.a; totR += x.r; totN += x.n;
+      const pos = idx + 1;
+      const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos + 'º';
+      const showColor = x.showRate >= 70 ? '#22c55e' : x.showRate >= 50 ? '#fbbf24' : '#ef4444';
+      const lowVol = (x.r + x.n) < 5;
+      const lowVolNote = lowVol ? ' <span style="font-size:9px; color:#64748b;">(baixo volume)</span>' : '';
+      const rowBg = pos <= 3 ? 'background:rgba(34,197,94,0.04);' : '';
+      html += `<tr style="border-bottom:1px solid #1e293b; ${rowBg}">
+        <td style="padding:6px 8px; text-align:center; font-weight:bold;">${medal}</td>
+        <td style="padding:6px 8px;">${x.name}${lowVolNote}</td>
+        <td style="padding:6px 8px; text-align:center; color:#a855f7;">${x.a}</td>
+        <td style="padding:6px 8px; text-align:center; color:#22c55e; font-weight:bold;">${x.r}</td>
+        <td style="padding:6px 8px; text-align:center; color:#f97316;">${x.n}</td>
+        <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${showColor};">${x.showRate.toFixed(1)}%</td>
+        <td style="padding:6px 8px; text-align:center; color:#fca5a5;">${x.nsRate.toFixed(1)}%</td>
+        <td style="padding:6px 8px; text-align:center; color:#fbbf24;">${x.convAgRe.toFixed(1)}%</td>
+      </tr>`;
+    });
+
+    const tShow = (totR + totN) > 0 ? (totR / (totR + totN)) * 100 : 0;
+    const tNs = (totR + totN) > 0 ? (totN / (totR + totN)) * 100 : 0;
+    const tConv = totA > 0 ? (totR / totA) * 100 : 0;
+    html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
+      <td style="padding:8px; text-align:center;">—</td>
+      <td style="padding:8px;">TOTAL TIME</td>
+      <td style="padding:8px; text-align:center; color:#a855f7;">${totA}</td>
+      <td style="padding:8px; text-align:center; color:#22c55e;">${totR}</td>
+      <td style="padding:8px; text-align:center; color:#f97316;">${totN}</td>
+      <td style="padding:8px; text-align:center; color:#86efac;">${tShow.toFixed(1)}%</td>
+      <td style="padding:8px; text-align:center; color:#fca5a5;">${tNs.toFixed(1)}%</td>
+      <td style="padding:8px; text-align:center; color:#fbbf24;">${tConv.toFixed(1)}%</td>
+    </tr></tbody>`;
+
+    const tbl = document.getElementById('sdr-ranking');
+    tbl.innerHTML = html;
+
+    // Wire-up sort handlers
+    tbl.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort');
+        if (sortState.col === col) {
+          sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
+        } else {
+          sortState.col = col;
+          // Default: numérico → desc, texto → asc
+          sortState.dir = col === 'name' ? 'asc' : 'desc';
+        }
+        render();
+      });
+    });
+  }
+
+  render();
 })();
 
 // === Leads vs Perdidos per product ===
