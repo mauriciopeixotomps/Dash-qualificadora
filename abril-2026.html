@@ -402,13 +402,13 @@
   <!-- Heatmaps -->
   <div class="section-title">Análise de Perdas</div>
 
-  <!-- % Perda por Campanha -->
-  <div class="card"><h3>% de Perda por Campanha</h3>
+  <!-- % Perda vs % Agendados por Campanha -->
+  <div class="card"><h3>Contraste por Campanha — % Perdidos vs % Agendados</h3>
     <table id="campaign-loss-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
     <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
-      <b>👆 Clique em qualquer coluna para ordenar.</b> Apenas campanhas com 5+ leads são mostradas.<br/>
-      <b>% Perda</b> = Perdidos / Leads — quanto da campanha foi descartado.<br/>
-      <b>Motivo principal</b> = motivo mais frequente entre os perdidos daquela campanha.
+      <b>👆 Clique em qualquer coluna para ordenar.</b> Apenas campanhas com 5+ leads.<br/>
+      <b>% Perda</b> = Perdidos / Leads · <b>% AG</b> = Agendados / Leads (CC1 marcada)<br/>
+      <b>Saldo</b> = %AG − %Perda — positivo (verde) significa campanha que converte bem em reunião; negativo (vermelho) significa campanha que está derrubando mais que agendando.
     </div>
   </div>
 
@@ -1587,10 +1587,12 @@ prodBarChart('prod-re', D.product.re);
 
   const cols = [
     { key: 'campaign',   label: 'Campanha',         align: 'left',   color: null },
-    { key: 'leads',      label: 'Leads gerados',    align: 'center', color: '#3b82f6' },
+    { key: 'leads',      label: 'Leads',            align: 'center', color: '#3b82f6' },
     { key: 'lost',       label: 'Perdidos',         align: 'center', color: '#ef4444' },
-    { key: 'open',       label: 'Em aberto',        align: 'center', color: '#94a3b8' },
-    { key: 'loss_pct',   label: '% Perda',          align: 'center', color: '#fbbf24' },
+    { key: 'ag',         label: 'Agendados',        align: 'center', color: '#a855f7' },
+    { key: 'loss_pct',   label: '% Perda',          align: 'center', color: '#ef4444' },
+    { key: 'ag_pct',     label: '% AG',             align: 'center', color: '#a855f7' },
+    { key: 'saldo',      label: 'Saldo',            align: 'center', color: '#fbbf24', sub: '%AG − %Perda' },
     { key: 'top_motivo', label: 'Motivo principal', align: 'left',   color: '#cbd5e1' },
   ];
 
@@ -1610,36 +1612,47 @@ prodBarChart('prod-re', D.product.re);
       const colStyle = c.color ? `color:${c.color};` : '';
       const activeStyle = isActive ? 'background:rgba(168,85,247,0.15);' : '';
       html += `<th data-sort="${c.key}" style="padding:8px; text-align:${c.align}; ${colStyle} ${activeStyle} cursor:pointer; user-select:none;">
-        ${c.label} <span style="opacity:${isActive ? 1 : 0.4}; font-size:9px;">${arrow}</span>
+        ${c.label}${c.sub ? `<br/><span style="font-weight:400; text-transform:none; color:#94a3b8;">${c.sub}</span>` : ''}
+        <span style="opacity:${isActive ? 1 : 0.4}; font-size:9px;">${arrow}</span>
       </th>`;
     });
     html += `</tr></thead><tbody>`;
 
-    let totL = 0, totP = 0, totO = 0;
+    let totL = 0, totP = 0, totAg = 0;
     sorted.forEach((x, idx) => {
-      totL += x.leads; totP += x.lost; totO += x.open;
+      totL += x.leads; totP += x.lost; totAg += x.ag;
       const pos = idx + 1;
-      const pctColor = x.loss_pct >= 70 ? '#ef4444' : x.loss_pct >= 50 ? '#fbbf24' : x.loss_pct >= 30 ? '#cbd5e1' : '#22c55e';
-      const truncated = x.campaign.length > 50 ? x.campaign.slice(0, 50) + '…' : x.campaign;
+      const lossColor = x.loss_pct >= 70 ? '#ef4444' : x.loss_pct >= 50 ? '#fbbf24' : x.loss_pct >= 30 ? '#cbd5e1' : '#22c55e';
+      const agColor = x.ag_pct >= 30 ? '#22c55e' : x.ag_pct >= 15 ? '#a855f7' : x.ag_pct >= 5 ? '#cbd5e1' : '#64748b';
+      const saldoColor = x.saldo >= 0 ? '#22c55e' : x.saldo >= -30 ? '#fbbf24' : '#ef4444';
+      const saldoTxt = (x.saldo > 0 ? '+' : '') + x.saldo.toFixed(1) + '%';
+      const truncated = x.campaign.length > 45 ? x.campaign.slice(0, 45) + '…' : x.campaign;
       html += `<tr style="border-bottom:1px solid #1e293b;">
         <td style="padding:6px 8px; text-align:center; color:#64748b;">${pos}</td>
         <td style="padding:6px 8px; font-size:11.5px;" title="${x.campaign}">${truncated}</td>
         <td style="padding:6px 8px; text-align:center;">${x.leads}</td>
         <td style="padding:6px 8px; text-align:center; color:#ef4444;">${x.lost}</td>
-        <td style="padding:6px 8px; text-align:center; color:#94a3b8;">${x.open}</td>
-        <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${pctColor};">${x.loss_pct.toFixed(1)}%</td>
+        <td style="padding:6px 8px; text-align:center; color:#a855f7;">${x.ag}</td>
+        <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${lossColor};">${x.loss_pct.toFixed(1)}%</td>
+        <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${agColor};">${x.ag_pct.toFixed(1)}%</td>
+        <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${saldoColor};">${saldoTxt}</td>
         <td style="padding:6px 8px; font-size:11px; color:#cbd5e1;">${x.top_motivo}</td>
       </tr>`;
     });
 
-    const tPct = totL > 0 ? (totP / totL) * 100 : 0;
+    const tLossPct = totL > 0 ? (totP / totL) * 100 : 0;
+    const tAgPct = totL > 0 ? (totAg / totL) * 100 : 0;
+    const tSaldo = tAgPct - tLossPct;
+    const tSaldoColor = tSaldo >= 0 ? '#22c55e' : tSaldo >= -30 ? '#fbbf24' : '#ef4444';
     html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
       <td style="padding:8px; text-align:center;">—</td>
       <td style="padding:8px;">TOTAL (${sorted.length} campanhas)</td>
       <td style="padding:8px; text-align:center;">${totL}</td>
       <td style="padding:8px; text-align:center; color:#ef4444;">${totP}</td>
-      <td style="padding:8px; text-align:center;">${totO}</td>
-      <td style="padding:8px; text-align:center; color:#fbbf24;">${tPct.toFixed(1)}%</td>
+      <td style="padding:8px; text-align:center; color:#a855f7;">${totAg}</td>
+      <td style="padding:8px; text-align:center; color:#ef4444;">${tLossPct.toFixed(1)}%</td>
+      <td style="padding:8px; text-align:center; color:#a855f7;">${tAgPct.toFixed(1)}%</td>
+      <td style="padding:8px; text-align:center; color:${tSaldoColor};">${(tSaldo>0?'+':'')+tSaldo.toFixed(1)}%</td>
       <td style="padding:8px;">—</td>
     </tr></tbody>`;
 
