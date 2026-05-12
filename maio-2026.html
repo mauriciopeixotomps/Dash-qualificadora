@@ -480,13 +480,14 @@ function renderPaceMeta(startDate, endDate) {
   const totalWd = D.meta.working_days_total;
   const escopo = D.meta.produtos_em_escopo || [];
 
-  // Working days no período até HOJE (não inclui dias futuros)
+  // Working days no período selecionado (usa o range completo, sem capar no hoje)
   const workingDays = D.working_days || [];
   const _today = today; // injetado pelo build script
-  const effectiveEnd = endDate > _today ? _today : endDate;
-  const wdInPeriod = workingDays.filter(d => d >= startDate && d <= effectiveEnd).length;
+  const wdInPeriod = workingDays.filter(d => d >= startDate && d <= endDate).length;
+  // Working days do período que JÁ decorreram (até hoje) — usado pra contextualização
+  const wdElapsedInPeriod = workingDays.filter(d => d >= startDate && d <= (endDate > _today ? _today : endDate)).length;
 
-  // Meta proporcional
+  // Meta proporcional do PERÍODO COMPLETO selecionado
   const paceTargetRe = goalRe * wdInPeriod / totalWd;
   const paceTargetAg = goalAg * wdInPeriod / totalWd;
 
