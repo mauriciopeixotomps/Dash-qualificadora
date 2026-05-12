@@ -401,6 +401,27 @@
 
   <!-- Heatmaps -->
   <div class="section-title">Análise de Perdas</div>
+
+  <!-- % Perda por Campanha -->
+  <div class="card"><h3>% de Perda por Campanha</h3>
+    <table id="campaign-loss-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      <b>👆 Clique em qualquer coluna para ordenar.</b> Apenas campanhas com 5+ leads são mostradas.<br/>
+      <b>% Perda</b> = Perdidos / Leads — quanto da campanha foi descartado.<br/>
+      <b>Motivo principal</b> = motivo mais frequente entre os perdidos daquela campanha.
+    </div>
+  </div>
+
+  <!-- % Perda por Motivo -->
+  <div class="card"><h3>% de Perda por Motivo</h3>
+    <table id="motivo-loss-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      <b>👆 Clique em qualquer coluna para ordenar.</b><br/>
+      <b>% dos Perdidos</b> = qual fatia do total de perdidos esse motivo representa.<br/>
+      <b>% dos Leads</b> = qual fatia do total de leads gerados esse motivo derrubou.
+    </div>
+  </div>
+
   <div class="card"><h3>Perdidos por Motivo × Produto</h3>
     <div class="heat-scroll"><table class="heat-table" id="motivo-produto"></table></div>
   </div>
@@ -1550,6 +1571,167 @@ prodBarChart('prod-re', D.product.re);
     });
   }
 
+  render();
+})();
+
+// === % Perda por Campanha — tabela ordenável ===
+(function campaignLossRanking(){
+  const rows = (D.loss?.campaign_stats || []).slice();
+  if (!rows.length) return;
+
+  const SORT_KEY = 'campaign_loss_sort_v1';
+  let sortState = (() => {
+    try { return JSON.parse(localStorage.getItem(SORT_KEY)) || { col: 'loss_pct', dir: 'desc' }; }
+    catch { return { col: 'loss_pct', dir: 'desc' }; }
+  })();
+
+  const cols = [
+    { key: 'campaign',   label: 'Campanha',         align: 'left',   color: null },
+    { key: 'leads',      label: 'Leads gerados',    align: 'center', color: '#3b82f6' },
+    { key: 'lost',       label: 'Perdidos',         align: 'center', color: '#ef4444' },
+    { key: 'open',       label: 'Em aberto',        align: 'center', color: '#94a3b8' },
+    { key: 'loss_pct',   label: '% Perda',          align: 'center', color: '#fbbf24' },
+    { key: 'top_motivo', label: 'Motivo principal', align: 'left',   color: '#cbd5e1' },
+  ];
+
+  function render() {
+    try { localStorage.setItem(SORT_KEY, JSON.stringify(sortState)); } catch {}
+    const sorted = [...rows].sort((a, b) => {
+      const va = a[sortState.col], vb = b[sortState.col];
+      if (typeof va === 'string') return sortState.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      return sortState.dir === 'asc' ? va - vb : vb - va;
+    });
+
+    let html = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
+      <tr><th style="padding:8px; text-align:center; width:40px;">#</th>`;
+    cols.forEach(c => {
+      const isActive = sortState.col === c.key;
+      const arrow = isActive ? (sortState.dir === 'desc' ? ' ▼' : ' ▲') : ' ⇅';
+      const colStyle = c.color ? `color:${c.color};` : '';
+      const activeStyle = isActive ? 'background:rgba(168,85,247,0.15);' : '';
+      html += `<th data-sort="${c.key}" style="padding:8px; text-align:${c.align}; ${colStyle} ${activeStyle} cursor:pointer; user-select:none;">
+        ${c.label} <span style="opacity:${isActive ? 1 : 0.4}; font-size:9px;">${arrow}</span>
+      </th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    let totL = 0, totP = 0, totO = 0;
+    sorted.forEach((x, idx) => {
+      totL += x.leads; totP += x.lost; totO += x.open;
+      const pos = idx + 1;
+      const pctColor = x.loss_pct >= 70 ? '#ef4444' : x.loss_pct >= 50 ? '#fbbf24' : x.loss_pct >= 30 ? '#cbd5e1' : '#22c55e';
+      const truncated = x.campaign.length > 50 ? x.campaign.slice(0, 50) + '…' : x.campaign;
+      html += `<tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:6px 8px; text-align:center; color:#64748b;">${pos}</td>
+        <td style="padding:6px 8px; font-size:11.5px;" title="${x.campaign}">${truncated}</td>
+        <td style="padding:6px 8px; text-align:center;">${x.leads}</td>
+        <td style="padding:6px 8px; text-align:center; color:#ef4444;">${x.lost}</td>
+        <td style="padding:6px 8px; text-align:center; color:#94a3b8;">${x.open}</td>
+        <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${pctColor};">${x.loss_pct.toFixed(1)}%</td>
+        <td style="padding:6px 8px; font-size:11px; color:#cbd5e1;">${x.top_motivo}</td>
+      </tr>`;
+    });
+
+    const tPct = totL > 0 ? (totP / totL) * 100 : 0;
+    html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
+      <td style="padding:8px; text-align:center;">—</td>
+      <td style="padding:8px;">TOTAL (${sorted.length} campanhas)</td>
+      <td style="padding:8px; text-align:center;">${totL}</td>
+      <td style="padding:8px; text-align:center; color:#ef4444;">${totP}</td>
+      <td style="padding:8px; text-align:center;">${totO}</td>
+      <td style="padding:8px; text-align:center; color:#fbbf24;">${tPct.toFixed(1)}%</td>
+      <td style="padding:8px;">—</td>
+    </tr></tbody>`;
+
+    const tbl = document.getElementById('campaign-loss-ranking');
+    tbl.innerHTML = html;
+    tbl.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort');
+        if (sortState.col === col) sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
+        else { sortState.col = col; sortState.dir = (col === 'campaign' || col === 'top_motivo') ? 'asc' : 'desc'; }
+        render();
+      });
+    });
+  }
+  render();
+})();
+
+// === % Perda por Motivo — tabela ordenável ===
+(function motivoLossRanking(){
+  const rows = (D.loss?.motivo_stats || []).slice();
+  if (!rows.length) return;
+
+  const SORT_KEY = 'motivo_loss_sort_v1';
+  let sortState = (() => {
+    try { return JSON.parse(localStorage.getItem(SORT_KEY)) || { col: 'count', dir: 'desc' }; }
+    catch { return { col: 'count', dir: 'desc' }; }
+  })();
+
+  const cols = [
+    { key: 'motivo',          label: 'Motivo',         align: 'left',   color: null },
+    { key: 'count',           label: 'Qtd Perdidos',   align: 'center', color: '#ef4444' },
+    { key: 'pct_perdidos',    label: '% dos Perdidos', align: 'center', color: '#fbbf24' },
+    { key: 'pct_total_leads', label: '% dos Leads',    align: 'center', color: '#94a3b8' },
+  ];
+
+  function render() {
+    try { localStorage.setItem(SORT_KEY, JSON.stringify(sortState)); } catch {}
+    const sorted = [...rows].sort((a, b) => {
+      const va = a[sortState.col], vb = b[sortState.col];
+      if (typeof va === 'string') return sortState.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      return sortState.dir === 'asc' ? va - vb : vb - va;
+    });
+
+    let html = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
+      <tr><th style="padding:8px; text-align:center; width:40px;">#</th>`;
+    cols.forEach(c => {
+      const isActive = sortState.col === c.key;
+      const arrow = isActive ? (sortState.dir === 'desc' ? ' ▼' : ' ▲') : ' ⇅';
+      const colStyle = c.color ? `color:${c.color};` : '';
+      const activeStyle = isActive ? 'background:rgba(168,85,247,0.15);' : '';
+      html += `<th data-sort="${c.key}" style="padding:8px; text-align:${c.align}; ${colStyle} ${activeStyle} cursor:pointer; user-select:none;">
+        ${c.label} <span style="opacity:${isActive ? 1 : 0.4}; font-size:9px;">${arrow}</span>
+      </th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    let totCount = 0;
+    sorted.forEach((x, idx) => {
+      totCount += x.count;
+      const pos = idx + 1;
+      const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+      html += `<tr style="border-bottom:1px solid #1e293b;">
+        <td style="padding:6px 8px; text-align:center; font-weight:bold;">${medal}</td>
+        <td style="padding:6px 8px;">${x.motivo}</td>
+        <td style="padding:6px 8px; text-align:center; color:#ef4444; font-weight:bold;">${x.count}</td>
+        <td style="padding:6px 8px; text-align:center; color:#fbbf24;">${x.pct_perdidos.toFixed(1)}%</td>
+        <td style="padding:6px 8px; text-align:center; color:#94a3b8;">${x.pct_total_leads.toFixed(1)}%</td>
+      </tr>`;
+    });
+
+    const totLeads = D.loss?.total_leads || 0;
+    const totPerd = D.loss?.total_perdidos || 0;
+    const pctOfLeads = totLeads > 0 ? (totCount / totLeads * 100) : 0;
+    html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
+      <td style="padding:8px; text-align:center;">—</td>
+      <td style="padding:8px;">TOTAL (${sorted.length} motivos)</td>
+      <td style="padding:8px; text-align:center; color:#ef4444;">${totCount}</td>
+      <td style="padding:8px; text-align:center; color:#fbbf24;">100.0%</td>
+      <td style="padding:8px; text-align:center; color:#94a3b8;">${pctOfLeads.toFixed(1)}%</td>
+    </tr></tbody>`;
+
+    const tbl = document.getElementById('motivo-loss-ranking');
+    tbl.innerHTML = html;
+    tbl.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort');
+        if (sortState.col === col) sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
+        else { sortState.col = col; sortState.dir = col === 'motivo' ? 'asc' : 'desc'; }
+        render();
+      });
+    });
+  }
   render();
 })();
 
