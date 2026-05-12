@@ -538,10 +538,11 @@ function renderPaceMeta(startDate, endDate) {
           <span style="color:#fbbf24;">Meta do período: ${paceTargetRe.toFixed(0)}</span>
         </div>
         <div style="margin-top:10px; padding:10px 12px; background:#0f172a; border-left:3px solid #ef4444; border-radius:4px;">
-          <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Onde deveria estar hoje (acumulado do mês)</div>
+          <div style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">${isFullMonth ? 'Onde deveria estar hoje (acumulado do mês)' : 'Meta proporcional do período filtrado'}</div>
           <div style="font-size:22px; font-weight:bold; color:#fbbf24; line-height:1.2; margin-top:2px;">
-            ${todayTargetRe.toFixed(0)} <span style="color:#64748b; font-size:13px; font-weight:normal;">de ${goalRe} · dia útil ${elapsedWd}/${totalWd}</span>
+            ${paceTargetRe.toFixed(0)} <span style="color:#64748b; font-size:13px; font-weight:normal;">de ${goalRe} · ${wdInPeriod} ${wdInPeriod===1?'dia útil':'dias úteis'} ${isFullMonth?`(${elapsedWd}/${totalWd})`:`selecionados`}</span>
           </div>
+          ${!isFullMonth ? `<div style="font-size:10.5px; color:#94a3b8; margin-top:4px;">Acumulado do mês inteiro (referência): <b style="color:#cbd5e1;">${todayTargetRe.toFixed(0)} de ${goalRe}</b> (dia útil ${elapsedWd}/${totalWd})</div>` : ''}
         </div>
       </div>
       <div>
@@ -2063,15 +2064,44 @@ buildHeat('motivo-produto', D.loss.by_reason_product, PROD_LABELS);
       </div>
     </div>
 
-    <!-- Insight de assimetria -->
-    <div style="margin-top:16px; padding:14px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:8px;">
-      <div style="color:#fbbf24; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">📊 Assimetria observada</div>
-      <div style="color:#e2e8f0; font-size:13px; margin-top:6px; line-height:1.5;">
-        FRANQUIA vaza para PARTNER <b style="color:#fbbf24;">${asym}× mais</b> do que o caminho inverso
-        (${frToPt} vs ${ptToFr}). Se conseguíssemos redirecionar leads PARTNER com perfil de
-        franqueado para o funil de FRANQUIA, teríamos mais reuniões de franquia — que é o produto principal.
-      </div>
-    </div>
+    <!-- Insight de assimetria (corrigido conforme a direção predominante) -->
+    ${(() => {
+      if (frToPt === 0 && ptToFr === 0) return '';
+      const ptFrRatio = frToPt > 0 ? (ptToFr / frToPt) : Infinity;
+      const frPtRatio = ptToFr > 0 ? (frToPt / ptToFr) : Infinity;
+      // Direção predominante
+      if (ptToFr > frToPt) {
+        const x = isFinite(ptFrRatio) ? ptFrRatio.toFixed(1) : '∞';
+        return `
+        <div style="margin-top:16px; padding:14px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.3); border-radius:8px;">
+          <div style="color:#22c55e; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">✅ Conversão reversa predominante</div>
+          <div style="color:#e2e8f0; font-size:13px; margin-top:6px; line-height:1.5;">
+            O time está redirecionando <b style="color:#3b82f6;">${x}× mais</b> leads PARTNER → FRANQUIA do que o vazamento inverso
+            (<b>${ptToFr}</b> vs <b>${frToPt}</b>). Isso é positivo: SDRs estão capturando leads Partner com perfil
+            de franqueado e mandando pro funil de Franquia (produto principal).
+          </div>
+        </div>`;
+      } else if (frToPt > ptToFr) {
+        const x = isFinite(frPtRatio) ? frPtRatio.toFixed(1) : '∞';
+        return `
+        <div style="margin-top:16px; padding:14px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:8px;">
+          <div style="color:#fbbf24; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">⚠️ Vazamento dominante</div>
+          <div style="color:#e2e8f0; font-size:13px; margin-top:6px; line-height:1.5;">
+            FRANQUIA vaza para PARTNER <b style="color:#fbbf24;">${x}× mais</b> do que o caminho inverso
+            (<b>${frToPt}</b> vs <b>${ptToFr}</b>). Vale revisar se SDRs estão redirecionando leads de franquia
+            corretamente — quando o perfil não combina, agendar com parceria pode estar desnecessariamente comum.
+          </div>
+        </div>`;
+      } else {
+        return `
+        <div style="margin-top:16px; padding:14px; background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.3); border-radius:8px;">
+          <div style="color:#cbd5e1; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">⚖️ Fluxos equilibrados</div>
+          <div style="color:#e2e8f0; font-size:13px; margin-top:6px; line-height:1.5;">
+            FRANQUIA ↔ PARTNER têm volumes iguais de redirecionamento (${frToPt} vs ${ptToFr}).
+          </div>
+        </div>`;
+      }
+    })()}
 
     ${table}
 
