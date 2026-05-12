@@ -343,7 +343,12 @@
   <!-- Closer atividades -->
   <div class="section-title">Atividade Closer</div>
   <div class="card"><h3>Realizadas / Para acontecer / No Show por Closer</h3>
-    <div class="canvas-wrap tall"><canvas id="closer-chart"></canvas></div>
+    <table id="closer-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      <b>👆 Clique em qualquer coluna do header para ordenar.</b><br/>
+      <b>Show Rate</b> = RE / (RE + NS) — quantos efetivamente compareceram do que era pra acontecer.<br/>
+      <b>Total</b> = RE + Para acontecer + NS.
+    </div>
   </div>
 
   <!-- Por produto -->
@@ -1149,51 +1154,121 @@ function makeSdrChart(canvasId, dataObj, color, title) {
 makeSdrChart('sdr-ag-chart', D.sdr.ag, COLORS.ag, 'Agendamentos');
 makeSdrChart('sdr-re-chart', D.sdr.re, COLORS.re, 'Realizadas');
 
-// === Closer combined - stacked horizontal bars ===
-const closerNames = [...new Set([...Object.keys(D.closer.re), ...Object.keys(D.closer.future), ...Object.keys(D.closer.ns)])];
-closerNames.sort((a,b) => ((D.closer.re[b]||0)+(D.closer.future[b]||0)+(D.closer.ns[b]||0)) - ((D.closer.re[a]||0)+(D.closer.future[a]||0)+(D.closer.ns[a]||0)));
-new Chart(document.getElementById('closer-chart'), {
-  type: 'bar',
-  data: {
-    labels: closerNames,
-    datasets: [
-      {label:'Realizadas', data: closerNames.map(n=>D.closer.re[n]||0), backgroundColor: COLORS.re},
-      {label:'Para acontecer', data: closerNames.map(n=>D.closer.future[n]||0), backgroundColor: COLORS.future},
-      {label:'No Show', data: closerNames.map(n=>D.closer.ns[n]||0), backgroundColor: COLORS.ns},
-    ]
-  },
-  options: {
-    indexAxis:'y', maintainAspectRatio:false, responsive:true,
-    plugins:{legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index'}},
-    scales:{x:{stacked:true, grid:gridOpt, beginAtZero:true}, y:{stacked:true, grid:{display:false}}}
-  },
-  plugins: [{
-    id: 'stack-labels',
-    afterDatasetsDraw(chart) {
-      const {ctx} = chart;
-      ctx.font = 'bold 10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      chart.data.datasets.forEach((ds, dsi) => {
-        ds.data.forEach((v, i) => {
-          if (v < 3) return;
-          const meta = chart.getDatasetMeta(dsi).data[i];
-          ctx.fillStyle = '#fff';
-          ctx.fillText(v, (meta.base + meta.x)/2, meta.y);
-        });
+// === Closer ranking — tabela ordenável (substitui chart de barras) ===
+(function closerRanking(){
+  const closerSet = new Set([
+    ...Object.keys(D.closer.re || {}),
+    ...Object.keys(D.closer.future || {}),
+    ...Object.keys(D.closer.ns || {}),
+  ]);
+  const teamFr = new Set(D.closer_team?.franquia || []);
+  const teamPt = new Set(D.closer_team?.partner || []);
+  const allRows = [...closerSet].map(name => {
+    const r = D.closer.re?.[name] || 0;
+    const f = D.closer.future?.[name] || 0;
+    const n = D.closer.ns?.[name] || 0;
+    const total = r + f + n;
+    const attended = r + n;
+    const showRate = attended > 0 ? (r / attended) * 100 : 0;
+    const nsRate = attended > 0 ? (n / attended) * 100 : 0;
+    const team = teamFr.has(name) ? 'Franquia' : teamPt.has(name) ? 'Partner' : '—';
+    return { name, team, r, f, n, total, showRate, nsRate };
+  }).filter(x => x.total > 0);
+
+  const SORT_KEY = 'closer_ranking_sort_v1';
+  let sortState = (() => {
+    try { return JSON.parse(localStorage.getItem(SORT_KEY)) || { col: 'total', dir: 'desc' }; }
+    catch { return { col: 'total', dir: 'desc' }; }
+  })();
+
+  const cols = [
+    { key: 'name',     label: 'Closer',         align: 'left',   color: null },
+    { key: 'team',     label: 'Time',           align: 'center', color: '#94a3b8' },
+    { key: 'r',        label: 'Realizadas',     align: 'center', color: '#22c55e' },
+    { key: 'f',        label: 'Para acontecer', align: 'center', color: '#a855f7' },
+    { key: 'n',        label: 'No Show',        align: 'center', color: '#f97316' },
+    { key: 'total',    label: 'Total',          align: 'center', color: '#e2e8f0' },
+    { key: 'showRate', label: 'Show Rate',      align: 'center', color: '#86efac', sub: 'RE/(RE+NS)' },
+    { key: 'nsRate',   label: 'Taxa NS',        align: 'center', color: '#fca5a5', sub: 'NS/(RE+NS)' },
+  ];
+
+  function render() {
+    try { localStorage.setItem(SORT_KEY, JSON.stringify(sortState)); } catch {}
+    const sorted = [...allRows].sort((a, b) => {
+      const va = a[sortState.col], vb = b[sortState.col];
+      if (typeof va === 'string') return sortState.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      return sortState.dir === 'asc' ? va - vb : vb - va;
+    });
+
+    let html = `<thead style="background:#1f2937; color:#94a3b8; text-transform:uppercase; font-size:10px; letter-spacing:0.4px;">
+      <tr><th style="padding:8px; text-align:center; width:40px;">#</th>`;
+    cols.forEach(c => {
+      const isActive = sortState.col === c.key;
+      const arrow = isActive ? (sortState.dir === 'desc' ? ' ▼' : ' ▲') : ' ⇅';
+      const colStyle = c.color ? `color:${c.color};` : '';
+      const activeStyle = isActive ? 'background:rgba(168,85,247,0.15);' : '';
+      html += `<th data-sort="${c.key}" style="padding:8px; text-align:${c.align}; ${colStyle} ${activeStyle} cursor:pointer; user-select:none;" title="Clique para ordenar">
+        ${c.label}${c.sub ? `<br/><span style="font-weight:400; text-transform:none; color:#94a3b8;">${c.sub}</span>` : ''}
+        <span style="opacity:${isActive ? 1 : 0.4}; font-size:9px;">${arrow}</span>
+      </th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    let totR = 0, totF = 0, totN = 0;
+    sorted.forEach((x, idx) => {
+      totR += x.r; totF += x.f; totN += x.n;
+      const pos = idx + 1;
+      const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos + 'º';
+      const showColor = x.showRate >= 70 ? '#22c55e' : x.showRate >= 50 ? '#fbbf24' : '#ef4444';
+      const teamCls = x.team === 'Franquia' ? 'agro' : x.team === 'Partner' ? 'partner' : '';
+      const rowBg = pos <= 3 ? 'background:rgba(34,197,94,0.04);' : '';
+      html += `<tr style="border-bottom:1px solid #1e293b; ${rowBg}">
+        <td style="padding:6px 8px; text-align:center; font-weight:bold;">${medal}</td>
+        <td style="padding:6px 8px;">${x.name}</td>
+        <td style="padding:6px 8px; text-align:center;">${teamCls ? `<span class="pill ${teamCls}" style="font-size:10px;">${x.team}</span>` : '—'}</td>
+        <td style="padding:6px 8px; text-align:center; color:#22c55e; font-weight:bold;">${x.r}</td>
+        <td style="padding:6px 8px; text-align:center; color:#a855f7;">${x.f}</td>
+        <td style="padding:6px 8px; text-align:center; color:#f97316;">${x.n}</td>
+        <td style="padding:6px 8px; text-align:center; color:#e2e8f0; font-weight:bold;">${x.total}</td>
+        <td style="padding:6px 8px; text-align:center; font-weight:bold; color:${showColor};">${x.showRate.toFixed(1)}%</td>
+        <td style="padding:6px 8px; text-align:center; color:#fca5a5;">${x.nsRate.toFixed(1)}%</td>
+      </tr>`;
+    });
+
+    const tTot = totR + totF + totN;
+    const tShow = (totR + totN) > 0 ? (totR / (totR + totN)) * 100 : 0;
+    const tNs = (totR + totN) > 0 ? (totN / (totR + totN)) * 100 : 0;
+    html += `<tr style="background:#0f172a; font-weight:bold; border-top:2px solid #475569;">
+      <td style="padding:8px; text-align:center;">—</td>
+      <td style="padding:8px;">TOTAL CLOSERS</td>
+      <td style="padding:8px; text-align:center;">—</td>
+      <td style="padding:8px; text-align:center; color:#22c55e;">${totR}</td>
+      <td style="padding:8px; text-align:center; color:#a855f7;">${totF}</td>
+      <td style="padding:8px; text-align:center; color:#f97316;">${totN}</td>
+      <td style="padding:8px; text-align:center;">${tTot}</td>
+      <td style="padding:8px; text-align:center; color:#86efac;">${tShow.toFixed(1)}%</td>
+      <td style="padding:8px; text-align:center; color:#fca5a5;">${tNs.toFixed(1)}%</td>
+    </tr></tbody>`;
+
+    const tbl = document.getElementById('closer-ranking');
+    tbl.innerHTML = html;
+
+    tbl.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort');
+        if (sortState.col === col) {
+          sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
+        } else {
+          sortState.col = col;
+          sortState.dir = (col === 'name' || col === 'team') ? 'asc' : 'desc';
+        }
+        render();
       });
-      // Total at end
-      ctx.font = 'bold 11px sans-serif';
-      ctx.textAlign = 'left';
-      closerNames.forEach((n, i) => {
-        const total = (D.closer.re[n]||0) + (D.closer.future[n]||0) + (D.closer.ns[n]||0);
-        const lastMeta = chart.getDatasetMeta(2).data[i];
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillText(total, lastMeta.x + 6, lastMeta.y);
-      });
-    }
-  }]
-});
+    });
+  }
+
+  render();
+})();
 
 // === Por produto - bar charts (replacing donuts) ===
 // Lista padrão: 4 produtos. Em Maio, filtramos para os em escopo (definido em meta).
