@@ -657,7 +657,7 @@ function renderPaceMeta(startDate, endDate) {
     frAgMeta += meta.agendadas || 0;
   });
   const frReTarget = frReMeta * wdInPeriod / totalWd;
-  const frReTodayTarget = frReMeta * wdElapsedInPeriod / totalWd;
+  const frReTodayTarget = frReTarget; // meta proporcional ao período selecionado
   const frReAttPct = frReMeta>0 ? (frReV/frReMeta*100) : 0;
   const frReTargetPct = frReTarget>0 ? (frReV/frReTarget*100) : 0;
   const frCard = document.getElementById('pace-franquia-total-card');
@@ -668,10 +668,10 @@ function renderPaceMeta(startDate, endDate) {
   const _sdrDailyFut = sumDailyByPerson(D.sdr_daily?.future,  startDate, endDate);
   const _sdrRe  = Object.values(_sdrDailyRe).reduce((a,b)=>a+b,0);
   const _sdrFut = Object.values(_sdrDailyFut).reduce((a,b)=>a+b,0);
-  const _sdrTarget = SDR_GOAL * wdElapsedInPeriod / totalWd * _sdrCnt;
+  const _sdrTarget = SDR_GOAL * wdInPeriod / totalWd * _sdrCnt;
   document.getElementById('sdr-total').textContent = fmt(_sdrRe);
   document.getElementById('sdr-pace-info').innerHTML =
-    `Onde deveriam estar hoje: <b>${fmt(Math.round(_sdrTarget))}</b> · Faltam <b class="${_sdrRe>=_sdrTarget?'ok':'danger'}">${fmt(Math.max(0,Math.round(_sdrTarget-_sdrRe)))}</b> para o pace · Faltam <b>${fmt(_sdrMeta-_sdrRe)}</b> para meta total`;
+    `Meta do período (${wdInPeriod} d.u.): <b>${fmt(Math.round(_sdrTarget))}</b> · Faltam <b class="${_sdrRe>=_sdrTarget?'ok':'danger'}">${fmt(Math.max(0,Math.round(_sdrTarget-_sdrRe)))}</b> para o pace · Faltam <b>${fmt(_sdrMeta-_sdrRe)}</b> para meta total`;
   document.getElementById('sdr-bar-fill').style.width   = Math.min(100, (_sdrRe/_sdrMeta)*100) + '%';
   document.getElementById('sdr-bar-future').style.left  = Math.min(100, (_sdrRe/_sdrMeta)*100) + '%';
   document.getElementById('sdr-bar-future').style.width = Math.min(100 - Math.min(100,(_sdrRe/_sdrMeta)*100), (_sdrFut/_sdrMeta)*100) + '%';
@@ -684,10 +684,10 @@ function renderPaceMeta(startDate, endDate) {
   const _clDailyFut = sumDailyByPerson(D.closer_daily?.future, startDate, endDate);
   const _clRe  = Object.values(_clDailyRe).reduce((a,b)=>a+b,0);
   const _clFut = Object.values(_clDailyFut).reduce((a,b)=>a+b,0);
-  const _clTarget = CLOSER_GOAL * wdElapsedInPeriod / totalWd * _clCnt;
+  const _clTarget = CLOSER_GOAL * wdInPeriod / totalWd * _clCnt;
   document.getElementById('closer-total').textContent = fmt(_clRe);
   document.getElementById('closer-pace-info').innerHTML =
-    `Onde deveriam estar hoje: <b>${fmt(Math.round(_clTarget))}</b> · Faltam <b class="${_clRe>=_clTarget?'ok':'danger'}">${fmt(Math.max(0,Math.round(_clTarget-_clRe)))}</b> para o pace · Faltam <b>${fmt(_clMeta-_clRe)}</b> para meta total`;
+    `Meta do período (${wdInPeriod} d.u.): <b>${fmt(Math.round(_clTarget))}</b> · Faltam <b class="${_clRe>=_clTarget?'ok':'danger'}">${fmt(Math.max(0,Math.round(_clTarget-_clRe)))}</b> para o pace · Faltam <b>${fmt(_clMeta-_clRe)}</b> para meta total`;
   document.getElementById('closer-bar-fill').style.width   = Math.min(100, (_clRe/_clMeta)*100) + '%';
   document.getElementById('closer-bar-future').style.left  = Math.min(100, (_clRe/_clMeta)*100) + '%';
   document.getElementById('closer-bar-future').style.width = Math.min(100 - Math.min(100,(_clRe/_clMeta)*100), (_clFut/_clMeta)*100) + '%';
@@ -711,11 +711,11 @@ function renderPaceMeta(startDate, endDate) {
           <div style="margin-top:14px; height:18px; background:#1e293b; border-radius:9px; overflow:hidden; position:relative;">
             <div style="height:100%; width:${frReFillPct}%; background:linear-gradient(90deg, #22c55e, #4ade80); transition:width 0.5s;"></div>
             <div style="height:100%; width:${frFutFillPct}%; background:linear-gradient(90deg, rgba(168,85,247,0.85), rgba(168,85,247,0.65)); position:absolute; top:0; left:${frReFillPct}%;"></div>
-            <div style="position:absolute; top:0; height:100%; width:2px; background:#ef4444; left:${frTodayPct}%; box-shadow:0 0 4px rgba(239,68,68,0.8);" title="Onde deveria estar hoje"></div>
+            <div style="position:absolute; top:0; height:100%; width:2px; background:#ef4444; left:${frTodayPct}%; box-shadow:0 0 4px rgba(239,68,68,0.8);" title="Meta do período"></div>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-top:6px;">
             <span><span style="color:#22c55e;">●</span> Realizadas: ${frReV} &nbsp; <span style="color:#a855f7;">●</span> Para acontecer: ${frFutV}</span>
-            <span style="color:#ef4444;">● Onde deveria estar hoje: ${frReTodayTarget.toFixed(0)}</span>
+            <span style="color:#ef4444;">● Meta do período (${wdInPeriod} d.u.): ${frReTodayTarget.toFixed(0)}</span>
             <span>Meta: ${frReMeta}</span>
           </div>
         </div>
