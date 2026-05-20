@@ -657,30 +657,42 @@ function renderPaceMeta(startDate, endDate) {
     frAgMeta += meta.agendadas || 0;
   });
   const frReTarget = frReMeta * wdInPeriod / totalWd;
-  const frReTodayTarget = frReMeta * elapsedWd / totalWd;
+  const frReTodayTarget = frReMeta * wdElapsedInPeriod / totalWd;
   const frReAttPct = frReMeta>0 ? (frReV/frReMeta*100) : 0;
   const frReTargetPct = frReTarget>0 ? (frReV/frReTarget*100) : 0;
   const frCard = document.getElementById('pace-franquia-total-card');
-  // Atualiza target SDR/Closer com elapsedWd dinâmico (responde ao filtro de data)
+  // SDR/Closer pace bar — filtrado pelo período; target usa wdElapsedInPeriod
   const _sdrCnt = Math.max(Object.keys(D.sdr.ag || {}).length, 10);
   const _sdrMeta = SDR_GOAL * _sdrCnt;
-  const _sdrRe = Object.values(D.sdr.re || {}).reduce((a,b)=>a+b,0);
-  const _sdrFut = Object.values(D.sdr.future || {}).reduce((a,b)=>a+b,0);
-  const _sdrTarget = SDR_GOAL * elapsedWd / totalWd * _sdrCnt;
+  const _sdrDailyRe  = sumDailyByPerson(D.sdr_daily?.re,     startDate, endDate);
+  const _sdrDailyFut = sumDailyByPerson(D.sdr_daily?.future,  startDate, endDate);
+  const _sdrRe  = Object.values(_sdrDailyRe).reduce((a,b)=>a+b,0);
+  const _sdrFut = Object.values(_sdrDailyFut).reduce((a,b)=>a+b,0);
+  const _sdrTarget = SDR_GOAL * wdElapsedInPeriod / totalWd * _sdrCnt;
+  document.getElementById('sdr-total').textContent = fmt(_sdrRe);
   document.getElementById('sdr-pace-info').innerHTML =
     `Onde deveriam estar hoje: <b>${fmt(Math.round(_sdrTarget))}</b> · Faltam <b class="${_sdrRe>=_sdrTarget?'ok':'danger'}">${fmt(Math.max(0,Math.round(_sdrTarget-_sdrRe)))}</b> para o pace · Faltam <b>${fmt(_sdrMeta-_sdrRe)}</b> para meta total`;
-  document.getElementById('sdr-bar-target').style.left = Math.min(100, (_sdrTarget/_sdrMeta)*100) + '%';
-  document.getElementById('sdr-bar-label').textContent = fmt(Math.round(_sdrTarget));
+  document.getElementById('sdr-bar-fill').style.width   = Math.min(100, (_sdrRe/_sdrMeta)*100) + '%';
+  document.getElementById('sdr-bar-future').style.left  = Math.min(100, (_sdrRe/_sdrMeta)*100) + '%';
+  document.getElementById('sdr-bar-future').style.width = Math.min(100 - Math.min(100,(_sdrRe/_sdrMeta)*100), (_sdrFut/_sdrMeta)*100) + '%';
+  document.getElementById('sdr-bar-target').style.left  = Math.min(100, (_sdrTarget/_sdrMeta)*100) + '%';
+  document.getElementById('sdr-bar-label').textContent  = fmt(Math.round(_sdrTarget));
 
   const _clCnt = Object.keys(D.closer.re || {}).length;
   const _clMeta = CLOSER_GOAL * _clCnt;
-  const _clRe = Object.values(D.closer.re || {}).reduce((a,b)=>a+b,0);
-  const _clFut = Object.values(D.closer.future || {}).reduce((a,b)=>a+b,0);
-  const _clTarget = CLOSER_GOAL * elapsedWd / totalWd * _clCnt;
+  const _clDailyRe  = sumDailyByPerson(D.closer_daily?.re,    startDate, endDate);
+  const _clDailyFut = sumDailyByPerson(D.closer_daily?.future, startDate, endDate);
+  const _clRe  = Object.values(_clDailyRe).reduce((a,b)=>a+b,0);
+  const _clFut = Object.values(_clDailyFut).reduce((a,b)=>a+b,0);
+  const _clTarget = CLOSER_GOAL * wdElapsedInPeriod / totalWd * _clCnt;
+  document.getElementById('closer-total').textContent = fmt(_clRe);
   document.getElementById('closer-pace-info').innerHTML =
     `Onde deveriam estar hoje: <b>${fmt(Math.round(_clTarget))}</b> · Faltam <b class="${_clRe>=_clTarget?'ok':'danger'}">${fmt(Math.max(0,Math.round(_clTarget-_clRe)))}</b> para o pace · Faltam <b>${fmt(_clMeta-_clRe)}</b> para meta total`;
-  document.getElementById('closer-bar-target').style.left = Math.min(100, (_clTarget/_clMeta)*100) + '%';
-  document.getElementById('closer-bar-label').textContent = fmt(Math.round(_clTarget));
+  document.getElementById('closer-bar-fill').style.width   = Math.min(100, (_clRe/_clMeta)*100) + '%';
+  document.getElementById('closer-bar-future').style.left  = Math.min(100, (_clRe/_clMeta)*100) + '%';
+  document.getElementById('closer-bar-future').style.width = Math.min(100 - Math.min(100,(_clRe/_clMeta)*100), (_clFut/_clMeta)*100) + '%';
+  document.getElementById('closer-bar-target').style.left  = Math.min(100, (_clTarget/_clMeta)*100) + '%';
+  document.getElementById('closer-bar-label').textContent  = fmt(Math.round(_clTarget));
 
   if (frCard) {
     const frReFillPct = frReMeta>0 ? Math.min(100, frReV/frReMeta*100) : 0;
@@ -1104,38 +1116,11 @@ new Chart(document.getElementById('pace-cum'), {
   }
 });
 
-// === Pace headlines ===
-const sdrTotalRe = Object.values(D.sdr.re).reduce((a,b)=>a+b,0);
-const sdrTotalFut = Object.values(D.sdr.future).reduce((a,b)=>a+b,0);
+// === Pace meta totals (estáticos — não mudam com filtro) ===
 const sdrCount = Math.max(Object.keys(D.sdr.ag).length, 10);
-const sdrMetaTotal = SDR_GOAL * sdrCount;
-const sdrTargetNow = SDR_PACE * sdrCount;
-
-document.getElementById('sdr-total').textContent = fmt(sdrTotalRe);
-document.getElementById('sdr-meta-total').innerHTML = `${fmt(sdrMetaTotal)} <small>(${sdrCount} SDRs × ${SDR_GOAL})</small>`;
-document.getElementById('sdr-pace-info').innerHTML =
-  `Onde deveriam estar hoje: <b>${fmt(Math.round(sdrTargetNow))}</b> · Faltam <b class="${sdrTotalRe>=sdrTargetNow?'ok':'danger'}">${fmt(Math.max(0, Math.round(sdrTargetNow - sdrTotalRe)))}</b> para o pace · Faltam <b>${fmt(sdrMetaTotal - sdrTotalRe)}</b> para meta total`;
-document.getElementById('sdr-bar-fill').style.width = Math.min(100, (sdrTotalRe/sdrMetaTotal)*100) + '%';
-document.getElementById('sdr-bar-future').style.left = Math.min(100, (sdrTotalRe/sdrMetaTotal)*100) + '%';
-document.getElementById('sdr-bar-future').style.width = Math.min(100 - (sdrTotalRe/sdrMetaTotal)*100, (sdrTotalFut/sdrMetaTotal)*100) + '%';
-document.getElementById('sdr-bar-target').style.left = Math.min(100, (sdrTargetNow/sdrMetaTotal)*100) + '%';
-document.getElementById('sdr-bar-label').textContent = `Hoje · ${fmt(Math.round(sdrTargetNow))}`;
-
-const closerTotalRe = Object.values(D.closer.re).reduce((a,b)=>a+b,0);
-const closerTotalFut = Object.values(D.closer.future).reduce((a,b)=>a+b,0);
+document.getElementById('sdr-meta-total').innerHTML = `${fmt(SDR_GOAL * sdrCount)} <small>(${sdrCount} SDRs × ${SDR_GOAL})</small>`;
 const closerCount = Object.keys(D.closer.re).length;
-const closerMetaTotal = CLOSER_GOAL * closerCount;
-const closerTargetNow = CLOSER_PACE * closerCount;
-
-document.getElementById('closer-total').textContent = fmt(closerTotalRe);
-document.getElementById('closer-meta-total').innerHTML = `${fmt(closerMetaTotal)} <small>(${closerCount} closers × ${CLOSER_GOAL})</small>`;
-document.getElementById('closer-pace-info').innerHTML =
-  `Onde deveriam estar hoje: <b>${fmt(Math.round(closerTargetNow))}</b> · Faltam <b class="${closerTotalRe>=closerTargetNow?'ok':'danger'}">${fmt(Math.max(0, Math.round(closerTargetNow - closerTotalRe)))}</b> para o pace · Faltam <b>${fmt(closerMetaTotal - closerTotalRe)}</b> para meta total`;
-document.getElementById('closer-bar-fill').style.width = Math.min(100, (closerTotalRe/closerMetaTotal)*100) + '%';
-document.getElementById('closer-bar-future').style.left = Math.min(100, (closerTotalRe/closerMetaTotal)*100) + '%';
-document.getElementById('closer-bar-future').style.width = Math.min(100 - (closerTotalRe/closerMetaTotal)*100, (closerTotalFut/closerMetaTotal)*100) + '%';
-document.getElementById('closer-bar-target').style.left = Math.min(100, (closerTargetNow/closerMetaTotal)*100) + '%';
-document.getElementById('closer-bar-label').textContent = `Hoje · ${fmt(Math.round(closerTargetNow))}`;
+document.getElementById('closer-meta-total').innerHTML = `${fmt(CLOSER_GOAL * closerCount)} <small>(${closerCount} closers × ${CLOSER_GOAL})</small>`;
 
 // === Per-person pace — RANKING + FILTER-AWARE ===
 // Soma valores diários filtrados por período (start..end) por pessoa
