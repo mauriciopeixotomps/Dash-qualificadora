@@ -33,7 +33,6 @@ html, body {
   font-size: 11px;
 }
 
-/* ── GRID ROOT ─────────────────────────────── */
 body {
   display: grid;
   grid-template-rows: 46px 68px 1fr 1fr;
@@ -41,7 +40,7 @@ body {
   overflow: hidden;
 }
 
-/* ── ROW 0 — HEADER ────────────────────────── */
+/* ── HEADER ─────────────────────────────────────────── */
 #header {
   display: flex;
   align-items: center;
@@ -50,41 +49,13 @@ body {
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
-
-#header .h-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.04em;
-}
-
-#header .h-clock {
-  font-size: 20px;
-  font-weight: 700;
-  color: #f1f5f9;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
-}
-
-#header .h-update {
-  font-size: 12px;
-  color: var(--green);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.pulse-dot {
-  display: inline-block;
-  width: 7px; height: 7px;
-  background: var(--green);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
+#header .h-title  { font-size:16px; font-weight:700; color:#fff; letter-spacing:.04em; }
+#header .h-clock  { font-size:20px; font-weight:700; color:#f1f5f9; font-variant-numeric:tabular-nums; letter-spacing:.06em; }
+#header .h-update { font-size:12px; color:var(--green); display:flex; align-items:center; gap:5px; }
+.pulse-dot { display:inline-block; width:7px; height:7px; background:var(--green); border-radius:50%; animation:pulse 2s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
 
-/* ── ROW 1 — KPI CARDS ─────────────────────── */
+/* ── KPI ROW ─────────────────────────────────────────── */
 #kpi-row {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -93,7 +64,6 @@ body {
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
-
 .kpi-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -102,47 +72,33 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 4px;
+  padding: 4px;
   gap: 2px;
 }
+.kpi-num   { font-size:28px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+.kpi-label { font-size:9px; font-weight:600; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; text-align:center; }
 
-.kpi-num {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.kpi-label {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  text-transform: uppercase;
-  text-align: center;
-}
-
-/* ── ROW 2 ──────────────────────────────────── */
+/* ── ROW 2 ───────────────────────────────────────────── */
 #row2 {
   display: grid;
-  grid-template-columns: 30% 30% 40%;
+  grid-template-columns: 28% 28% 44%;
   gap: 6px;
   padding: 6px 12px 3px;
   min-height: 0;
   overflow: hidden;
 }
 
-/* ── ROW 3 ──────────────────────────────────── */
+/* ── ROW 3 ───────────────────────────────────────────── */
 #row3 {
   display: grid;
-  grid-template-columns: 35% 35% 30%;
+  grid-template-columns: 22% 40% 38%;
   gap: 6px;
   padding: 3px 12px 6px;
   min-height: 0;
   overflow: hidden;
 }
 
-/* ── PANEL BASE ─────────────────────────────── */
+/* ── PANEL BASE ──────────────────────────────────────── */
 .panel {
   background: var(--card);
   border: 1px solid var(--border);
@@ -153,339 +109,138 @@ body {
   padding: 8px;
   min-height: 0;
 }
-
 .panel-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); padding-bottom:5px; border-bottom:1px solid var(--border);
+  flex-shrink:0; display:flex; align-items:center; gap:6px;
 }
-
 .panel-title::before {
-  content: '';
-  display: inline-block;
-  width: 3px; height: 12px;
-  border-radius: 2px;
-  background: var(--accent-color, var(--muted));
-  flex-shrink: 0;
+  content:''; display:inline-block; width:3px; height:12px;
+  border-radius:2px; background:var(--accent-color, var(--muted)); flex-shrink:0;
 }
-
 .panel-body {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-top: 5px;
-  min-height: 0;
+  flex:1; overflow:hidden; display:flex; flex-direction:column;
+  gap:2px; margin-top:4px; min-height:0;
 }
 
-/* ── RANKING (SDR/CLOSER) ───────────────────── */
+/* ── RANKING ─────────────────────────────────────────── */
 .legend-row {
-  display: flex;
-  gap: 10px;
-  font-size: 9px;
-  color: var(--muted);
-  flex-shrink: 0;
-  margin-bottom: 2px;
-  align-items: center;
+  display:flex; gap:10px; font-size:9px; color:var(--muted);
+  flex-shrink:0; margin-bottom:2px; align-items:center;
 }
-
-.legend-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 2px;
-}
-
-.legend-line {
-  display: inline-block;
-  width: 14px; height: 2px;
-  background: var(--red);
-  margin-right: 2px;
-  vertical-align: middle;
-}
+.legend-dot  { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:2px; }
+.legend-line { display:inline-block; width:14px; height:2px; background:var(--red); margin-right:2px; vertical-align:middle; }
 
 .rank-row {
   display: grid;
-  grid-template-columns: 100px 1fr 28px 34px;
+  grid-template-columns: 86px 1fr 52px 28px;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   flex-shrink: 0;
 }
-
 .rank-name {
-  font-size: 10px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size:10px; font-weight:500;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-
 .bar-wrap {
-  position: relative;
-  height: 10px;
-  background: #1e293b;
-  border-radius: 3px;
-  overflow: visible;
+  position:relative; height:10px; background:#1e293b; border-radius:3px; overflow:visible;
 }
-
-.bar-real {
-  position: absolute;
-  left: 0; top: 0;
-  height: 100%;
-  border-radius: 3px;
-}
-
-.bar-future {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  opacity: 0.55;
-}
-
+.bar-real   { position:absolute; left:0; top:0; height:100%; border-radius:3px; }
+.bar-future { position:absolute; top:0; height:100%; opacity:.55; }
 .bar-pace-marker {
-  position: absolute;
-  top: -2px;
-  width: 2px;
-  height: 14px;
-  background: var(--red);
-  border-radius: 1px;
-  z-index: 5;
+  position:absolute; top:-2px; width:2px; height:14px;
+  background:var(--red); border-radius:1px; z-index:5;
 }
-
-.rank-re {
-  font-size: 11px;
-  font-weight: 700;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+.rank-nums {
+  text-align:right;
+  line-height: 1.15;
 }
+.rank-re   { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; display:block; }
+.rank-sub  { font-size:8px; color:var(--muted); white-space:nowrap; }
+.rank-fut  { font-size:9px; color:var(--orange); text-align:right; white-space:nowrap; }
 
-.rank-fut {
-  font-size: 9px;
-  color: var(--orange);
-  text-align: right;
-  white-space: nowrap;
-}
-
-/* ── COL C — PRODUTOS + NEGÓCIOS ────────────── */
-#col-c {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-#col-c-products {
-  flex: 6;
-  min-height: 0;
-}
-
-#col-c-negocios {
-  flex: 4;
-  min-height: 0;
-}
-
-.prod-row {
-  display: grid;
-  grid-template-columns: 110px 1fr 48px;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  margin-bottom: 2px;
-}
-
-.prod-name {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.prod-bar-wrap {
-  background: #1e293b;
-  border-radius: 3px;
-  height: 10px;
-  overflow: hidden;
-}
-
-.prod-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width .3s;
-}
-
-.prod-nums {
-  font-size: 10px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.prod-total-card {
-  background: #0f1d35;
-  border: 1px solid #2d4a6e;
-  border-radius: 5px;
-  padding: 4px 6px;
-  margin-bottom: 3px;
-}
-
-/* negócios bar */
-.neg-row {
-  display: grid;
-  grid-template-columns: 110px 1fr 42px;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.neg-name {
-  font-size: 10px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.neg-bar-wrap {
-  background: #1e293b;
-  border-radius: 3px;
-  height: 9px;
-  overflow: hidden;
-}
-
-.neg-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-}
-
-.neg-val {
-  font-size: 10px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
-
-/* ── CHARTS ─────────────────────────────────── */
-.chart-wrap {
-  flex: 1;
-  position: relative;
-  min-height: 0;
-}
-
-.chart-note {
-  font-size: 9px;
-  color: var(--muted);
-  text-align: center;
+/* ── GRUPO HEADER (closers Franquia/Partner) ─────────── */
+.group-hdr {
+  font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  padding: 3px 0 2px;
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-/* ── COL F — TABELA + PERDIDOS ──────────────── */
-#col-f {
-  display: flex;
-  flex-direction: column;
+/* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
+#col-c { display:flex; flex-direction:column; gap:6px; }
+#col-c-products  { flex:6; min-height:0; }
+#col-c-negocios  { flex:4; min-height:0; }
+
+.prod-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 70px;
+  align-items: center;
   gap: 6px;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+.prod-name {
+  font-size:10px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.prod-bar-wrap   { background:#1e293b; border-radius:3px; height:10px; overflow:hidden; }
+.prod-bar-fill   { height:100%; border-radius:3px; transition:width .3s; }
+.prod-nums       { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.prod-sub        { font-size:8px; color:var(--muted); text-align:right; white-space:nowrap; }
+
+.prod-total-card {
+  background:#0f1d35; border:1px solid #2d4a6e; border-radius:5px;
+  padding:4px 6px; margin-bottom:3px;
 }
 
-#col-f-daily {
-  flex: 6;
-  min-height: 0;
-}
+/* negócios bar */
+.neg-row { display:grid; grid-template-columns:110px 1fr 42px; align-items:center; gap:6px; flex-shrink:0; }
+.neg-name { font-size:10px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.neg-bar-wrap { background:#1e293b; border-radius:3px; height:9px; overflow:hidden; }
+.neg-bar-fill { height:100%; border-radius:3px; }
+.neg-val { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
 
-#col-f-perdidos {
-  flex: 4;
-  min-height: 0;
-}
+/* ── CHARTS ──────────────────────────────────────────── */
+.chart-wrap { flex:1; position:relative; min-height:0; }
+.chart-note { font-size:9px; color:var(--muted); text-align:center; flex-shrink:0; margin-top:2px; }
+
+/* ── COL D — SDR DO DIA ──────────────────────────────── */
+#col-d { display:flex; flex-direction:column; gap:6px; }
+#col-d-today { flex:6; min-height:0; }
+#col-d-perdidos { flex:4; min-height:0; }
 
 /* compact table */
-.tbl {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9px;
-}
-
+.tbl { width:100%; border-collapse:collapse; font-size:9px; }
 .tbl th {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 2px 4px;
-  border-bottom: 1px solid var(--border);
-  text-align: right;
+  font-size:8px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); padding:2px 3px; border-bottom:1px solid var(--border); text-align:right;
 }
-
-.tbl th:first-child { text-align: left; }
-
+.tbl th:first-child { text-align:left; }
 .tbl td {
-  padding: 2px 4px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  color: var(--text);
+  padding:2px 3px; font-variant-numeric:tabular-nums; text-align:right; color:var(--text);
 }
-
-.tbl td:first-child { text-align: left; }
-
-.tbl tr:nth-child(even) td { background: #0d1526; }
-
-.tbl tr.tbl-total td {
-  font-weight: 700;
-  border-top: 1px solid var(--border);
-  color: #fff;
-}
+.tbl td:first-child { text-align:left; font-size:9px; }
+.tbl tr:nth-child(even) td { background:#0d1526; }
+.tbl tr.tbl-total td { font-weight:700; border-top:1px solid var(--border); color:#fff; }
 
 /* perdidos */
-.perd-row {
-  display: grid;
-  grid-template-columns: 105px 1fr 34px;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-}
+.perd-row { display:grid; grid-template-columns:105px 1fr 34px; align-items:center; gap:5px; flex-shrink:0; }
+.perd-name { font-size:9px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.perd-bar-wrap { background:#1e293b; border-radius:2px; height:8px; overflow:hidden; }
+.perd-bar-fill { height:100%; border-radius:2px; background:var(--red); opacity:.7; }
+.perd-val { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; color:var(--red); }
 
-.perd-name {
-  font-size: 9px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.perd-bar-wrap {
-  background: #1e293b;
-  border-radius: 2px;
-  height: 8px;
-  overflow: hidden;
-}
-
-.perd-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  background: var(--red);
-  opacity: 0.7;
-}
-
-.perd-val {
-  font-size: 9px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: var(--red);
-}
+/* ── COL F — CHARTS + PERDIDOS ───────────────────────── */
+#col-f { display:flex; flex-direction:column; gap:6px; }
+#col-f-meta    { flex:6; min-height:0; }
+#col-f-perdidos { flex:4; min-height:0; }
 </style>
 </head>
 <body>
 
-<!-- ── ROW 0 — HEADER ─────────────────────────────────────── -->
+<!-- ROW 0 — HEADER -->
 <header id="header">
   <div class="h-title">🎯 QUALIFICADORA — MAIO 2026</div>
   <div class="h-clock" id="clock">--:--:--</div>
@@ -495,7 +250,7 @@ body {
   </div>
 </header>
 
-<!-- ── ROW 1 — KPI CARDS ─────────────────────────────────── -->
+<!-- ROW 1 — KPIs -->
 <div id="kpi-row">
   <div class="kpi-card">
     <span class="kpi-num" style="color:#60a5fa" id="k-leads">—</span>
@@ -531,7 +286,7 @@ body {
   </div>
 </div>
 
-<!-- ── ROW 2 ─────────────────────────────────────────────── -->
+<!-- ROW 2 -->
 <div id="row2">
 
   <!-- Col A — SDR CC1 Realizadas -->
@@ -545,7 +300,7 @@ body {
     <div class="panel-body" id="sdr-list"></div>
   </div>
 
-  <!-- Col B — Closer CC1 Realizadas -->
+  <!-- Col B — Closer CC1 por Franquia / Partner -->
   <div class="panel" style="--accent-color:#3b82f6">
     <div class="panel-title">CC1 Realizadas — Closer</div>
     <div class="legend-row">
@@ -559,13 +314,11 @@ body {
   <!-- Col C — Produtos + Negócios -->
   <div id="col-c">
 
-    <!-- Produtos -->
     <div class="panel" id="col-c-products" style="--accent-color:#a855f7">
       <div class="panel-title">Por Produto</div>
       <div class="panel-body" id="prod-list"></div>
     </div>
 
-    <!-- Negócios por Modelo -->
     <div class="panel" id="col-c-negocios" style="--accent-color:#3b82f6">
       <div class="panel-title">Negócios Iniciados</div>
       <div class="panel-body" id="neg-list"></div>
@@ -574,10 +327,36 @@ body {
   </div>
 </div>
 
-<!-- ── ROW 3 ─────────────────────────────────────────────── -->
+<!-- ROW 3 -->
 <div id="row3">
 
-  <!-- Col D — Pace Acumulado -->
+  <!-- Col D — SDR do Dia + Perdidos -->
+  <div id="col-d">
+    <div class="panel" id="col-d-today" style="--accent-color:#f97316">
+      <div class="panel-title">SDR — Hoje</div>
+      <div class="panel-body" style="overflow:auto">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>SDR</th>
+              <th style="color:#a855f7">AG</th>
+              <th style="color:#22c55e">RE</th>
+              <th style="color:#f97316">Fut</th>
+              <th style="color:#ef4444">NS</th>
+            </tr>
+          </thead>
+          <tbody id="sdr-today-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="col-d-perdidos" style="--accent-color:#ef4444">
+      <div class="panel-title">Motivos de Perda</div>
+      <div class="panel-body" id="perd-list"></div>
+    </div>
+  </div>
+
+  <!-- Col E — Pace Acumulado -->
   <div class="panel" style="--accent-color:#3b82f6">
     <div class="panel-title">Pace Acumulado — Maio 2026</div>
     <div class="chart-wrap">
@@ -585,70 +364,40 @@ body {
     </div>
   </div>
 
-  <!-- Col E — Pace vs Meta -->
-  <div class="panel" style="--accent-color:#22c55e">
-    <div class="panel-title">Pace vs Meta — Realizadas</div>
-    <div class="chart-wrap">
-      <canvas id="chart-meta"></canvas>
-    </div>
-    <div class="chart-note">Linhas tracejadas = meta proporcional aos dias úteis</div>
-  </div>
-
-  <!-- Col F — Tabela diária + Perdidos -->
+  <!-- Col F — Pace vs Meta + Perdidos -->
   <div id="col-f">
-
-    <!-- Tabela diária -->
-    <div class="panel" id="col-f-daily" style="--accent-color:#818cf8">
-      <div class="panel-title">Leads × Conversão — Diário</div>
-      <div class="panel-body" style="overflow:auto">
-        <table class="tbl" id="daily-table">
-          <thead>
-            <tr>
-              <th>Dia</th>
-              <th>Leads</th>
-              <th>% NS</th>
-              <th>% Perda</th>
-              <th>% Agend</th>
-              <th>% Realiz</th>
-            </tr>
-          </thead>
-          <tbody id="daily-tbody"></tbody>
-        </table>
+    <div class="panel" id="col-f-meta" style="--accent-color:#22c55e">
+      <div class="panel-title">Pace vs Meta — Realizadas</div>
+      <div class="chart-wrap">
+        <canvas id="chart-meta"></canvas>
       </div>
+      <div class="chart-note">Linhas tracejadas = meta proporcional aos dias úteis</div>
     </div>
-
-    <!-- Perdidos por Motivo -->
-    <div class="panel" id="col-f-perdidos" style="--accent-color:#ef4444">
-      <div class="panel-title">Motivos de Perda</div>
-      <div class="panel-body" id="perd-list"></div>
-    </div>
-
   </div>
+
 </div>
 
 <script>
-// ── DADOS INJETADOS ────────────────────────────────────────
+// ── DADOS ─────────────────────────────────────────────────
 const D  = {"totals": {"leads": 4185, "lost": 2805, "qual": 809, "ag": 762, "re": 481, "ns": 292, "future_re": 76}, "daily_series": [{"date": "2026-05-01", "leads": 175, "lost": 6, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-02", "leads": 198, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-03", "leads": 205, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-04", "leads": 188, "lost": 360, "qual": 39, "ag": 31, "re": 22, "ns": 5}, {"date": "2026-05-05", "leads": 190, "lost": 89, "qual": 35, "ag": 35, "re": 24, "ns": 2}, {"date": "2026-05-06", "leads": 238, "lost": 147, "qual": 59, "ag": 56, "re": 23, "ns": 16}, {"date": "2026-05-07", "leads": 207, "lost": 175, "qual": 43, "ag": 45, "re": 32, "ns": 24}, {"date": "2026-05-08", "leads": 180, "lost": 142, "qual": 33, "ag": 32, "re": 28, "ns": 19}, {"date": "2026-05-09", "leads": 204, "lost": 0, "qual": 5, "ag": 5, "re": 3, "ns": 4}, {"date": "2026-05-10", "leads": 229, "lost": 0, "qual": 7, "ag": 7, "re": 0, "ns": 0}, {"date": "2026-05-11", "leads": 211, "lost": 316, "qual": 87, "ag": 78, "re": 28, "ns": 28}, {"date": "2026-05-12", "leads": 232, "lost": 188, "qual": 60, "ag": 58, "re": 54, "ns": 30}, {"date": "2026-05-13", "leads": 204, "lost": 178, "qual": 71, "ag": 74, "re": 42, "ns": 29}, {"date": "2026-05-14", "leads": 247, "lost": 184, "qual": 64, "ag": 62, "re": 44, "ns": 26}, {"date": "2026-05-15", "leads": 138, "lost": 163, "qual": 43, "ag": 42, "re": 36, "ns": 22}, {"date": "2026-05-16", "leads": 103, "lost": 6, "qual": 0, "ag": 0, "re": 1, "ns": 3}, {"date": "2026-05-17", "leads": 199, "lost": 1, "qual": 2, "ag": 3, "re": 0, "ns": 0}, {"date": "2026-05-18", "leads": 269, "lost": 289, "qual": 76, "ag": 62, "re": 31, "ns": 35}, {"date": "2026-05-19", "leads": 267, "lost": 230, "qual": 67, "ag": 69, "re": 47, "ns": 15}, {"date": "2026-05-20", "leads": 184, "lost": 209, "qual": 75, "ag": 68, "re": 52, "ns": 22}, {"date": "2026-05-21", "leads": 117, "lost": 122, "qual": 43, "ag": 35, "re": 14, "ns": 12}, {"date": "2026-05-22", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-23", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-24", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-25", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-26", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-27", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-28", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-29", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-30", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-31", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}], "daily_product": {"ag": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 10, "Studio Fiscal": 3, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 11}, "2026-05-05": {"Studio Agro": 4, "Studio Fiscal": 3, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 22}, "2026-05-06": {"Studio Agro": 16, "Studio Fiscal": 6, "Franquia Partner": 0, "PJ360": 1, "GS PARTNER": 23}, "2026-05-07": {"Studio Agro": 6, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 24}, "2026-05-08": {"Studio Agro": 8, "Studio Fiscal": 3, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 17}, "2026-05-09": {"Studio Agro": 3, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-10": {"Studio Agro": 3, "Studio Fiscal": 2, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 10}, "2026-05-11": {"Studio Agro": 22, "Studio Fiscal": 8, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 39}, "2026-05-12": {"Studio Agro": 12, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 36}, "2026-05-13": {"Studio Agro": 17, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 41}, "2026-05-14": {"Studio Agro": 9, "Studio Fiscal": 10, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 36}, "2026-05-15": {"Studio Agro": 11, "Studio Fiscal": 4, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 23}, "2026-05-16": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-17": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-18": {"Studio Agro": 15, "Studio Fiscal": 7, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 42}, "2026-05-19": {"Studio Agro": 19, "Studio Fiscal": 4, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 38}, "2026-05-20": {"Studio Agro": 13, "Studio Fiscal": 7, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 39}, "2026-05-21": {"Studio Agro": 15, "Studio Fiscal": 3, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 16}, "2026-05-22": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-26": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}, "re": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 8, "Studio Fiscal": 3, "Franquia Partner": 2, "PJ360": 0, "GS PARTNER": 9}, "2026-05-05": {"Studio Agro": 1, "Studio Fiscal": 6, "Franquia Partner": 3, "PJ360": 0, "GS PARTNER": 14}, "2026-05-06": {"Studio Agro": 5, "Studio Fiscal": 2, "Franquia Partner": 2, "PJ360": 0, "GS PARTNER": 13}, "2026-05-07": {"Studio Agro": 8, "Studio Fiscal": 5, "Franquia Partner": 2, "PJ360": 0, "GS PARTNER": 11}, "2026-05-08": {"Studio Agro": 9, "Studio Fiscal": 3, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 15}, "2026-05-09": {"Studio Agro": 2, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 8, "Studio Fiscal": 4, "Franquia Partner": 6, "PJ360": 0, "GS PARTNER": 12}, "2026-05-12": {"Studio Agro": 12, "Studio Fiscal": 2, "Franquia Partner": 9, "PJ360": 0, "GS PARTNER": 25}, "2026-05-13": {"Studio Agro": 11, "Studio Fiscal": 3, "Franquia Partner": 6, "PJ360": 0, "GS PARTNER": 18}, "2026-05-14": {"Studio Agro": 8, "Studio Fiscal": 9, "Franquia Partner": 13, "PJ360": 0, "GS PARTNER": 14}, "2026-05-15": {"Studio Agro": 7, "Studio Fiscal": 6, "Franquia Partner": 7, "PJ360": 0, "GS PARTNER": 13}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 9, "Studio Fiscal": 1, "Franquia Partner": 8, "PJ360": 0, "GS PARTNER": 12}, "2026-05-19": {"Studio Agro": 10, "Studio Fiscal": 1, "Franquia Partner": 12, "PJ360": 0, "GS PARTNER": 24}, "2026-05-20": {"Studio Agro": 11, "Studio Fiscal": 4, "Franquia Partner": 12, "PJ360": 0, "GS PARTNER": 19}, "2026-05-21": {"Studio Agro": 2, "Studio Fiscal": 3, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 3}, "2026-05-22": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-26": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}, "re_fut": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-05": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-06": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-07": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-08": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-09": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-12": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-13": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-14": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-15": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-19": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-20": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-21": {"Studio Agro": 12, "Studio Fiscal": 3, "Franquia Partner": 13, "PJ360": 0, "GS PARTNER": 9}, "2026-05-22": {"Studio Agro": 6, "Studio Fiscal": 4, "Franquia Partner": 9, "PJ360": 0, "GS PARTNER": 3}, "2026-05-23": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 2, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 3}, "2026-05-26": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 2, "Studio Fiscal": 0, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 0}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}, "ns": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 2, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-05": {"Studio Agro": 1, "Studio Fiscal": 1, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 0}, "2026-05-06": {"Studio Agro": 6, "Studio Fiscal": 1, "Franquia Partner": 1, "PJ360": 1, "GS PARTNER": 5}, "2026-05-07": {"Studio Agro": 4, "Studio Fiscal": 3, "Franquia Partner": 6, "PJ360": 1, "GS PARTNER": 6}, "2026-05-08": {"Studio Agro": 6, "Studio Fiscal": 2, "Franquia Partner": 4, "PJ360": 0, "GS PARTNER": 8}, "2026-05-09": {"Studio Agro": 2, "Studio Fiscal": 3, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 1}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 9, "Studio Fiscal": 6, "Franquia Partner": 3, "PJ360": 0, "GS PARTNER": 8}, "2026-05-12": {"Studio Agro": 6, "Studio Fiscal": 4, "Franquia Partner": 4, "PJ360": 0, "GS PARTNER": 12}, "2026-05-13": {"Studio Agro": 11, "Studio Fiscal": 0, "Franquia Partner": 7, "PJ360": 0, "GS PARTNER": 9}, "2026-05-14": {"Studio Agro": 4, "Studio Fiscal": 5, "Franquia Partner": 6, "PJ360": 0, "GS PARTNER": 10}, "2026-05-15": {"Studio Agro": 7, "Studio Fiscal": 3, "Franquia Partner": 4, "PJ360": 0, "GS PARTNER": 6}, "2026-05-16": {"Studio Agro": 4, "Studio Fiscal": 0, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 2}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 8, "Studio Fiscal": 4, "Franquia Partner": 7, "PJ360": 0, "GS PARTNER": 7}, "2026-05-19": {"Studio Agro": 5, "Studio Fiscal": 1, "Franquia Partner": 4, "PJ360": 0, "GS PARTNER": 4}, "2026-05-20": {"Studio Agro": 2, "Studio Fiscal": 6, "Franquia Partner": 6, "PJ360": 0, "GS PARTNER": 6}, "2026-05-21": {"Studio Agro": 2, "Studio Fiscal": 1, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 3}, "2026-05-22": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-26": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}}, "working_days": ["2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29"], "sdr": {"ag": {"João Gabriel Dutra": 89, "Leonardo Soares": 80, "Glauber Bagetti": 43, "Jonatans Junior": 63, "Lorenzo Meneghetti": 42, "Mélodi Nirvana": 88, "Izadora Zacker": 60, "Rafael dallarosa longo": 97, "Amanda Oliveira": 48, "Andriely Oliveira": 30, "Henri Meneghetti": 79, "Camily Nadal": 42}, "re": {"João Gabriel Dutra": 61, "Jonatans Junior": 50, "Lorenzo Meneghetti": 25, "Henri Meneghetti": 56, "Andriely Oliveira": 25, "Izadora Zacker": 46, "Leonardo Soares": 48, "Mélodi Nirvana": 57, "Glauber Bagetti": 15, "Amanda Oliveira": 22, "Rafael dallarosa longo": 54, "Camily Nadal": 22}, "ns": {"Izadora Zacker": 19, "Glauber Bagetti": 25, "Leonardo Soares": 46, "Lorenzo Meneghetti": 20, "Henri Meneghetti": 29, "Jonatans Junior": 23, "Andriely Oliveira": 7, "Camily Nadal": 18, "João Gabriel Dutra": 27, "Mélodi Nirvana": 26, "Rafael dallarosa longo": 33, "Amanda Oliveira": 19}, "future": {"Leonardo Soares": 8, "Henri Meneghetti": 9, "Amanda Oliveira": 5, "Mélodi Nirvana": 10, "Glauber Bagetti": 5, "Camily Nadal": 9, "Rafael dallarosa longo": 10, "João Gabriel Dutra": 7, "Andriely Oliveira": 5, "Jonatans Junior": 2, "Lorenzo Meneghetti": 3, "Izadora Zacker": 3}}, "sdr_daily": {"re": {"2026-05-04": {"João Gabriel Dutra": 5, "Jonatans Junior": 4, "Lorenzo Meneghetti": 4, "Henri Meneghetti": 4, "Andriely Oliveira": 1, "Izadora Zacker": 2, "Leonardo Soares": 2}, "2026-05-05": {"Lorenzo Meneghetti": 1, "Jonatans Junior": 3, "João Gabriel Dutra": 4, "Izadora Zacker": 3, "Henri Meneghetti": 7, "Mélodi Nirvana": 2, "Leonardo Soares": 3, "Glauber Bagetti": 2}, "2026-05-06": {"Henri Meneghetti": 3, "Izadora Zacker": 4, "Mélodi Nirvana": 3, "João Gabriel Dutra": 6, "Amanda Oliveira": 1, "Andriely Oliveira": 2, "Jonatans Junior": 3, "Leonardo Soares": 1, "Rafael dallarosa longo": 1}, "2026-05-07": {"João Gabriel Dutra": 4, "Rafael dallarosa longo": 3, "Leonardo Soares": 3, "Mélodi Nirvana": 4, "Jonatans Junior": 3, "Izadora Zacker": 7, "Lorenzo Meneghetti": 2, "Henri Meneghetti": 1, "Amanda Oliveira": 2, "Camily Nadal": 1, "Andriely Oliveira": 1}, "2026-05-08": {"Henri Meneghetti": 6, "Rafael dallarosa longo": 5, "João Gabriel Dutra": 5, "Andriely Oliveira": 1, "Lorenzo Meneghetti": 1, "Izadora Zacker": 3, "Mélodi Nirvana": 1, "Leonardo Soares": 3, "Camily Nadal": 3}, "2026-05-09": {"Jonatans Junior": 1, "João Gabriel Dutra": 1, "Andriely Oliveira": 1}, "2026-05-11": {"Leonardo Soares": 4, "João Gabriel Dutra": 4, "Rafael dallarosa longo": 5, "Izadora Zacker": 3, "Henri Meneghetti": 4, "Jonatans Junior": 4, "Andriely Oliveira": 1, "Camily Nadal": 3, "Amanda Oliveira": 1, "Lorenzo Meneghetti": 1}, "2026-05-12": {"Henri Meneghetti": 5, "Leonardo Soares": 8, "Rafael dallarosa longo": 7, "Lorenzo Meneghetti": 5, "Glauber Bagetti": 3, "Mélodi Nirvana": 7, "Andriely Oliveira": 3, "João Gabriel Dutra": 8, "Camily Nadal": 1, "Jonatans Junior": 4, "Izadora Zacker": 1, "Amanda Oliveira": 1}, "2026-05-13": {"Jonatans Junior": 7, "Rafael dallarosa longo": 5, "Camily Nadal": 4, "Andriely Oliveira": 1, "João Gabriel Dutra": 4, "Lorenzo Meneghetti": 3, "Henri Meneghetti": 2, "Mélodi Nirvana": 8, "Leonardo Soares": 3, "Izadora Zacker": 3, "Amanda Oliveira": 1}, "2026-05-14": {"Izadora Zacker": 7, "Camily Nadal": 3, "Henri Meneghetti": 1, "Amanda Oliveira": 3, "Rafael dallarosa longo": 6, "Mélodi Nirvana": 9, "Leonardo Soares": 4, "Jonatans Junior": 2, "João Gabriel Dutra": 5, "Andriely Oliveira": 3, "Glauber Bagetti": 2, "Lorenzo Meneghetti": 1}, "2026-05-15": {"João Gabriel Dutra": 5, "Leonardo Soares": 1, "Andriely Oliveira": 4, "Henri Meneghetti": 7, "Mélodi Nirvana": 1, "Rafael dallarosa longo": 4, "Jonatans Junior": 6, "Amanda Oliveira": 2, "Izadora Zacker": 1, "Glauber Bagetti": 2, "Lorenzo Meneghetti": 1}, "2026-05-16": {"Henri Meneghetti": 1}, "2026-05-18": {"Leonardo Soares": 4, "Rafael dallarosa longo": 2, "Andriely Oliveira": 3, "Jonatans Junior": 2, "Lorenzo Meneghetti": 2, "Amanda Oliveira": 5, "Izadora Zacker": 2, "Mélodi Nirvana": 4, "João Gabriel Dutra": 3, "Henri Meneghetti": 1, "Camily Nadal": 4}, "2026-05-19": {"Izadora Zacker": 4, "Mélodi Nirvana": 8, "João Gabriel Dutra": 4, "Jonatans Junior": 6, "Andriely Oliveira": 1, "Henri Meneghetti": 7, "Rafael dallarosa longo": 6, "Leonardo Soares": 6, "Glauber Bagetti": 1, "Camily Nadal": 1, "Lorenzo Meneghetti": 1, "Amanda Oliveira": 2}, "2026-05-20": {"Henri Meneghetti": 6, "Amanda Oliveira": 4, "João Gabriel Dutra": 2, "Glauber Bagetti": 4, "Izadora Zacker": 5, "Rafael dallarosa longo": 7, "Jonatans Junior": 5, "Andriely Oliveira": 2, "Mélodi Nirvana": 8, "Lorenzo Meneghetti": 3, "Leonardo Soares": 4, "Camily Nadal": 1}, "2026-05-21": {"Rafael dallarosa longo": 3, "João Gabriel Dutra": 1, "Glauber Bagetti": 1, "Andriely Oliveira": 1, "Mélodi Nirvana": 2, "Leonardo Soares": 2, "Izadora Zacker": 1, "Camily Nadal": 1, "Henri Meneghetti": 1}}, "ag": {"2026-05-04": {"João Gabriel Dutra": 7, "Leonardo Soares": 4, "Glauber Bagetti": 4, "Jonatans Junior": 5, "Lorenzo Meneghetti": 6, "Henri Meneghetti": 3, "Andriely Oliveira": 1, "Izadora Zacker": 1}, "2026-05-05": {"João Gabriel Dutra": 9, "Jonatans Junior": 4, "Mélodi Nirvana": 3, "Izadora Zacker": 4, "Glauber Bagetti": 3, "Leonardo Soares": 3, "Rafael dallarosa longo": 1, "Amanda Oliveira": 1, "Henri Meneghetti": 6, "Andriely Oliveira": 1}, "2026-05-06": {"Mélodi Nirvana": 12, "João Gabriel Dutra": 4, "Leonardo Soares": 5, "Jonatans Junior": 5, "Rafael dallarosa longo": 6, "Izadora Zacker": 6, "Andriely Oliveira": 3, "Glauber Bagetti": 3, "Amanda Oliveira": 5, "Camily Nadal": 4, "Henri Meneghetti": 4}, "2026-05-07": {"João Gabriel Dutra": 8, "Amanda Oliveira": 3, "Leonardo Soares": 2, "Jonatans Junior": 5, "Lorenzo Meneghetti": 4, "Izadora Zacker": 7, "Rafael dallarosa longo": 4, "Henri Meneghetti": 5, "Mélodi Nirvana": 1, "Camily Nadal": 1, "Andriely Oliveira": 2}, "2026-05-08": {"João Gabriel Dutra": 5, "Rafael dallarosa longo": 8, "Leonardo Soares": 5, "Glauber Bagetti": 1, "Lorenzo Meneghetti": 2, "Izadora Zacker": 3, "Camily Nadal": 3, "Henri Meneghetti": 5}, "2026-05-09": {"João Gabriel Dutra": 2, "Rafael dallarosa longo": 2, "Camily Nadal": 1}, "2026-05-11": {"Camily Nadal": 6, "João Gabriel Dutra": 7, "Izadora Zacker": 4, "Henri Meneghetti": 7, "Amanda Oliveira": 4, "Jonatans Junior": 7, "Lorenzo Meneghetti": 6, "Leonardo Soares": 6, "Rafael dallarosa longo": 13, "Glauber Bagetti": 7, "Andriely Oliveira": 6}, "2026-05-12": {"Camily Nadal": 2, "Rafael dallarosa longo": 7, "Lorenzo Meneghetti": 3, "João Gabriel Dutra": 8, "Mélodi Nirvana": 12, "Amanda Oliveira": 6, "Glauber Bagetti": 3, "Izadora Zacker": 3, "Jonatans Junior": 8, "Leonardo Soares": 3, "Andriely Oliveira": 1, "Henri Meneghetti": 3}, "2026-05-13": {"João Gabriel Dutra": 9, "Amanda Oliveira": 5, "Izadora Zacker": 5, "Leonardo Soares": 11, "Lorenzo Meneghetti": 4, "Jonatans Junior": 6, "Glauber Bagetti": 4, "Mélodi Nirvana": 14, "Henri Meneghetti": 3, "Rafael dallarosa longo": 9, "Camily Nadal": 2}, "2026-05-14": {"Amanda Oliveira": 3, "João Gabriel Dutra": 5, "Mélodi Nirvana": 8, "Jonatans Junior": 7, "Lorenzo Meneghetti": 2, "Izadora Zacker": 6, "Leonardo Soares": 3, "Glauber Bagetti": 2, "Rafael dallarosa longo": 8, "Henri Meneghetti": 10, "Camily Nadal": 2, "Andriely Oliveira": 4}, "2026-05-15": {"Camily Nadal": 3, "Mélodi Nirvana": 3, "Amanda Oliveira": 4, "João Gabriel Dutra": 4, "Izadora Zacker": 5, "Rafael dallarosa longo": 7, "Glauber Bagetti": 3, "Jonatans Junior": 2, "Lorenzo Meneghetti": 3, "Henri Meneghetti": 5, "Leonardo Soares": 1, "Andriely Oliveira": 1}, "2026-05-17": {"Rafael dallarosa longo": 2, "Glauber Bagetti": 1}, "2026-05-18": {"Camily Nadal": 5, "Lorenzo Meneghetti": 5, "João Gabriel Dutra": 7, "Amanda Oliveira": 6, "Rafael dallarosa longo": 8, "Glauber Bagetti": 3, "Henri Meneghetti": 6, "Mélodi Nirvana": 6, "Jonatans Junior": 4, "Izadora Zacker": 6, "Leonardo Soares": 6, "Andriely Oliveira": 4}, "2026-05-19": {"João Gabriel Dutra": 7, "Glauber Bagetti": 3, "Jonatans Junior": 6, "Mélodi Nirvana": 12, "Amanda Oliveira": 7, "Lorenzo Meneghetti": 4, "Leonardo Soares": 5, "Rafael dallarosa longo": 6, "Izadora Zacker": 5, "Camily Nadal": 3, "Henri Meneghetti": 6, "Andriely Oliveira": 1}, "2026-05-20": {"Rafael dallarosa longo": 11, "Leonardo Soares": 7, "Glauber Bagetti": 5, "Amanda Oliveira": 2, "Mélodi Nirvana": 11, "João Gabriel Dutra": 3, "Lorenzo Meneghetti": 2, "Jonatans Junior": 4, "Camily Nadal": 2, "Henri Meneghetti": 10, "Izadora Zacker": 5, "Andriely Oliveira": 5}, "2026-05-21": {"Camily Nadal": 6, "João Gabriel Dutra": 4, "Mélodi Nirvana": 6, "Amanda Oliveira": 2, "Glauber Bagetti": 1, "Leonardo Soares": 5, "Rafael dallarosa longo": 4, "Henri Meneghetti": 6, "Lorenzo Meneghetti": 1, "Andriely Oliveira": 1}, "2026-05-10": {"Leonardo Soares": 14, "Rafael dallarosa longo": 1}, "2026-05-16": {"Camily Nadal": 1}, "2026-05-22": {"Camily Nadal": 1}}, "ns": {"2026-05-04": {"Izadora Zacker": 1, "Glauber Bagetti": 2, "Leonardo Soares": 1, "Lorenzo Meneghetti": 1}, "2026-05-05": {"Henri Meneghetti": 2, "Jonatans Junior": 1}, "2026-05-06": {"Andriely Oliveira": 1, "Izadora Zacker": 1, "Leonardo Soares": 2, "Camily Nadal": 2, "João Gabriel Dutra": 3, "Jonatans Junior": 3, "Mélodi Nirvana": 1, "Henri Meneghetti": 1}, "2026-05-07": {"Glauber Bagetti": 3, "Rafael dallarosa longo": 1, "Leonardo Soares": 2, "Camily Nadal": 2, "Henri Meneghetti": 3, "Lorenzo Meneghetti": 2, "João Gabriel Dutra": 1, "Jonatans Junior": 1, "Andriely Oliveira": 2, "Mélodi Nirvana": 3, "Amanda Oliveira": 3}, "2026-05-08": {"João Gabriel Dutra": 4, "Rafael dallarosa longo": 2, "Leonardo Soares": 4, "Amanda Oliveira": 1, "Henri Meneghetti": 3, "Izadora Zacker": 2, "Jonatans Junior": 3, "Lorenzo Meneghetti": 1, "Mélodi Nirvana": 1}, "2026-05-09": {"João Gabriel Dutra": 1, "Camily Nadal": 1, "Lorenzo Meneghetti": 1, "Rafael dallarosa longo": 3, "Henri Meneghetti": 1}, "2026-05-11": {"Lorenzo Meneghetti": 2, "Leonardo Soares": 9, "Jonatans Junior": 3, "Amanda Oliveira": 4, "Mélodi Nirvana": 2, "Rafael dallarosa longo": 2, "Camily Nadal": 3, "Glauber Bagetti": 1, "Henri Meneghetti": 1, "João Gabriel Dutra": 2, "Izadora Zacker": 1}, "2026-05-12": {"Izadora Zacker": 3, "Jonatans Junior": 2, "Glauber Bagetti": 4, "Camily Nadal": 1, "Rafael dallarosa longo": 2, "Leonardo Soares": 6, "Henri Meneghetti": 1, "Mélodi Nirvana": 3, "João Gabriel Dutra": 3, "Lorenzo Meneghetti": 1}, "2026-05-13": {"Leonardo Soares": 3, "Lorenzo Meneghetti": 3, "Rafael dallarosa longo": 4, "Glauber Bagetti": 2, "Mélodi Nirvana": 4, "Amanda Oliveira": 3, "Camily Nadal": 1, "João Gabriel Dutra": 3, "Izadora Zacker": 1, "Henri Meneghetti": 1, "Jonatans Junior": 3, "Andriely Oliveira": 1}, "2026-05-14": {"Leonardo Soares": 5, "Rafael dallarosa longo": 4, "Glauber Bagetti": 2, "Mélodi Nirvana": 3, "Jonatans Junior": 2, "Camily Nadal": 2, "Henri Meneghetti": 3, "João Gabriel Dutra": 1, "Amanda Oliveira": 1, "Lorenzo Meneghetti": 2, "Izadora Zacker": 2}, "2026-05-15": {"Camily Nadal": 2, "João Gabriel Dutra": 1, "Mélodi Nirvana": 4, "Leonardo Soares": 2, "Henri Meneghetti": 3, "Glauber Bagetti": 3, "Jonatans Junior": 1, "Amanda Oliveira": 1, "Rafael dallarosa longo": 3, "Izadora Zacker": 1}, "2026-05-16": {"Leonardo Soares": 3, "Lorenzo Meneghetti": 1, "Rafael dallarosa longo": 1, "Camily Nadal": 1, "Henri Meneghetti": 2, "Glauber Bagetti": 1, "Mélodi Nirvana": 1, "João Gabriel Dutra": 1}, "2026-05-18": {"Amanda Oliveira": 2, "Leonardo Soares": 5, "Glauber Bagetti": 3, "Rafael dallarosa longo": 4, "João Gabriel Dutra": 4, "Henri Meneghetti": 1, "Jonatans Junior": 1, "Camily Nadal": 2, "Andriely Oliveira": 1, "Izadora Zacker": 2, "Lorenzo Meneghetti": 3}, "2026-05-20": {"Amanda Oliveira": 2, "Glauber Bagetti": 2, "Izadora Zacker": 3, "Leonardo Soares": 3, "Andriely Oliveira": 2, "Rafael dallarosa longo": 4, "Jonatans Junior": 2, "João Gabriel Dutra": 1, "Camily Nadal": 1, "Lorenzo Meneghetti": 2}, "2026-05-19": {"Izadora Zacker": 1, "Lorenzo Meneghetti": 1, "Henri Meneghetti": 3, "Mélodi Nirvana": 2, "Amanda Oliveira": 2, "Rafael dallarosa longo": 2, "Leonardo Soares": 1, "Glauber Bagetti": 1, "João Gabriel Dutra": 1}, "2026-05-21": {"Glauber Bagetti": 1, "Mélodi Nirvana": 2, "Jonatans Junior": 1, "João Gabriel Dutra": 1, "Henri Meneghetti": 4, "Izadora Zacker": 1, "Rafael dallarosa longo": 1}}, "future": {"2026-05-21": {"Leonardo Soares": 6, "Henri Meneghetti": 7, "Amanda Oliveira": 3, "Mélodi Nirvana": 3, "Glauber Bagetti": 3, "Camily Nadal": 3, "Rafael dallarosa longo": 8, "João Gabriel Dutra": 3, "Andriely Oliveira": 2, "Jonatans Junior": 1}, "2026-05-22": {"Amanda Oliveira": 2, "João Gabriel Dutra": 4, "Rafael dallarosa longo": 2, "Mélodi Nirvana": 6, "Henri Meneghetti": 2, "Camily Nadal": 2, "Glauber Bagetti": 2, "Andriely Oliveira": 1, "Lorenzo Meneghetti": 2, "Izadora Zacker": 1}, "2026-05-23": {"Andriely Oliveira": 1}, "2026-05-25": {"Camily Nadal": 3, "Jonatans Junior": 1, "Leonardo Soares": 1, "Izadora Zacker": 1}, "2026-05-26": {"Mélodi Nirvana": 1}, "2026-05-27": {"Camily Nadal": 1, "Leonardo Soares": 1, "Izadora Zacker": 1}, "2026-05-28": {"Lorenzo Meneghetti": 1}, "2026-05-30": {"Andriely Oliveira": 1}}}, "closer": {"re": {"Samuel Almeida": 45, "Maria Luísa": 44, "Haynnã": 45, "Suzanny Mauren Dihelem": 22, "Émerson Cavitchoni": 33, "Leonardo Ribeiro": 21, "Felippe Porcella": 16, "William Dias": 32, "Thuany Ghabril": 37, "Djulia Silva": 42, "Andresa Caldas": 8, "Laura Feijó Junqueira": 4, "Adalberto Neto": 37, "Samuel Brião": 15, "Lorenzo Coronel": 22, "Raissa Antunes": 20, "Manuella Oliveira": 30, "Fred": 7, "Gabriel Meneses": 1}, "future": {"William Dias": 9, "Fred": 3, "Émerson Cavitchoni": 6, "Djulia Silva": 8, "Adalberto Neto": 13, "Samuel Brião": 4, "Suzanny Mauren Dihelem": 4, "Manuella Oliveira": 3, "Thuany Ghabril": 5, "Haynnã": 3, "Lorenzo Coronel": 6, "Maria Luísa": 3, "Leonardo Ribeiro": 3, "Samuel Almeida": 1, "Felippe Porcella": 4, "Raissa Antunes": 1}, "ns": {"Samuel Brião": 11, "Suzanny Mauren Dihelem": 24, "Leonardo Ribeiro": 18, "Djulia Silva": 19, "Felippe Porcella": 18, "Andresa Caldas": 4, "Thuany Ghabril": 23, "Maria Luísa": 11, "Adalberto Neto": 15, "Raissa Antunes": 10, "Lorenzo Coronel": 26, "Samuel Almeida": 22, "William Dias": 26, "Émerson Cavitchoni": 15, "Haynnã": 21, "Laura Feijó Junqueira": 4, "Bruna Salazar": 1, "Fred": 6, "Manuella Oliveira": 17, "Maria Eduarda Figueiredo": 1}}, "closer_team": {"franquia": ["Adalberto Neto", "Andresa Caldas", "Felippe Porcella", "Fred", "Gabriel Meneses", "Leonardo Ribeiro", "Lorenzo Coronel", "Samuel Brião", "Suzanny Mauren Dihelem", "Thuany Ghabril", "William Dias", "Émerson Cavitchoni"], "partner": ["Djulia Silva", "Haynnã", "Laura Feijó Junqueira", "Manuella Oliveira", "Maria Luísa", "Raissa Antunes", "Samuel Almeida"]}, "closer_daily": {"re": {"2026-05-04": {"Samuel Almeida": 4, "Maria Luísa": 2, "Haynnã": 1, "Suzanny Mauren Dihelem": 1, "Émerson Cavitchoni": 1, "Leonardo Ribeiro": 1, "Felippe Porcella": 2, "William Dias": 2, "Thuany Ghabril": 2, "Djulia Silva": 1, "Andresa Caldas": 1, "Laura Feijó Junqueira": 1, "Adalberto Neto": 1, "Samuel Brião": 1, "Lorenzo Coronel": 1}, "2026-05-05": {"Djulia Silva": 3, "Haynnã": 3, "Raissa Antunes": 3, "Andresa Caldas": 2, "Samuel Almeida": 2, "Maria Luísa": 3, "Thuany Ghabril": 2, "Adalberto Neto": 2, "Émerson Cavitchoni": 1, "Lorenzo Coronel": 2, "William Dias": 2}, "2026-05-06": {"Andresa Caldas": 1, "Thuany Ghabril": 3, "Haynnã": 3, "Djulia Silva": 3, "Raissa Antunes": 4, "Suzanny Mauren Dihelem": 1, "Adalberto Neto": 2, "Émerson Cavitchoni": 1, "Maria Luísa": 4, "William Dias": 1, "Samuel Almeida": 1}, "2026-05-07": {"William Dias": 4, "Andresa Caldas": 3, "Djulia Silva": 4, "Haynnã": 3, "Felippe Porcella": 1, "Suzanny Mauren Dihelem": 3, "Maria Luísa": 5, "Adalberto Neto": 2, "Samuel Brião": 1, "Leonardo Ribeiro": 1, "Samuel Almeida": 2, "Raissa Antunes": 1, "Émerson Cavitchoni": 1}, "2026-05-08": {"Émerson Cavitchoni": 1, "Thuany Ghabril": 3, "Andresa Caldas": 1, "Raissa Antunes": 4, "William Dias": 3, "Haynnã": 3, "Samuel Almeida": 4, "Djulia Silva": 1, "Maria Luísa": 3, "Felippe Porcella": 1, "Adalberto Neto": 1, "Samuel Brião": 1, "Lorenzo Coronel": 1, "Suzanny Mauren Dihelem": 1}, "2026-05-09": {"Thuany Ghabril": 2, "Adalberto Neto": 1}, "2026-05-11": {"Adalberto Neto": 1, "Leonardo Ribeiro": 2, "Djulia Silva": 5, "Felippe Porcella": 2, "Lorenzo Coronel": 2, "William Dias": 2, "Samuel Almeida": 3, "Thuany Ghabril": 3, "Émerson Cavitchoni": 2, "Haynnã": 2, "Manuella Oliveira": 2, "Fred": 1, "Maria Luísa": 1, "Samuel Brião": 1, "Raissa Antunes": 1}, "2026-05-12": {"Émerson Cavitchoni": 6, "Raissa Antunes": 1, "William Dias": 4, "Samuel Almeida": 5, "Djulia Silva": 6, "Felippe Porcella": 1, "Haynnã": 5, "Lorenzo Coronel": 2, "Laura Feijó Junqueira": 2, "Thuany Ghabril": 3, "Leonardo Ribeiro": 2, "Adalberto Neto": 5, "Manuella Oliveira": 6, "Maria Luísa": 4, "Samuel Brião": 1}, "2026-05-13": {"Samuel Almeida": 4, "Djulia Silva": 3, "Raissa Antunes": 1, "Émerson Cavitchoni": 3, "William Dias": 4, "Samuel Brião": 1, "Maria Luísa": 4, "Thuany Ghabril": 2, "Haynnã": 5, "Felippe Porcella": 4, "Adalberto Neto": 3, "Manuella Oliveira": 4, "Laura Feijó Junqueira": 1, "Leonardo Ribeiro": 1, "Lorenzo Coronel": 1}, "2026-05-14": {"Émerson Cavitchoni": 4, "Leonardo Ribeiro": 2, "William Dias": 3, "Haynnã": 2, "Gabriel Meneses": 1, "Adalberto Neto": 5, "Manuella Oliveira": 5, "Raissa Antunes": 1, "Samuel Almeida": 3, "Maria Luísa": 4, "Suzanny Mauren Dihelem": 1, "Lorenzo Coronel": 2, "Fred": 2, "Thuany Ghabril": 4, "Samuel Brião": 3, "Djulia Silva": 4}, "2026-05-15": {"William Dias": 1, "Adalberto Neto": 4, "Leonardo Ribeiro": 3, "Thuany Ghabril": 3, "Samuel Almeida": 4, "Felippe Porcella": 2, "Émerson Cavitchoni": 3, "Haynnã": 1, "Maria Luísa": 4, "Manuella Oliveira": 2, "Lorenzo Coronel": 3, "Raissa Antunes": 1, "Suzanny Mauren Dihelem": 2, "Djulia Silva": 1}, "2026-05-16": {"Samuel Almeida": 1}, "2026-05-18": {"William Dias": 3, "Felippe Porcella": 1, "Thuany Ghabril": 2, "Fred": 1, "Samuel Almeida": 4, "Lorenzo Coronel": 3, "Djulia Silva": 1, "Haynnã": 3, "Émerson Cavitchoni": 2, "Suzanny Mauren Dihelem": 2, "Adalberto Neto": 2, "Manuella Oliveira": 2, "Maria Luísa": 2, "Raissa Antunes": 1, "Leonardo Ribeiro": 3}, "2026-05-19": {"Samuel Almeida": 6, "Maria Luísa": 4, "Raissa Antunes": 1, "Lorenzo Coronel": 1, "Haynnã": 8, "Leonardo Ribeiro": 3, "Thuany Ghabril": 2, "Suzanny Mauren Dihelem": 4, "Adalberto Neto": 4, "Samuel Brião": 2, "Émerson Cavitchoni": 3, "Manuella Oliveira": 3, "Djulia Silva": 4, "Fred": 1, "William Dias": 1}, "2026-05-20": {"Émerson Cavitchoni": 5, "Felippe Porcella": 2, "William Dias": 2, "Manuella Oliveira": 5, "Lorenzo Coronel": 3, "Thuany Ghabril": 4, "Leonardo Ribeiro": 2, "Adalberto Neto": 3, "Suzanny Mauren Dihelem": 7, "Djulia Silva": 5, "Samuel Brião": 2, "Haynnã": 5, "Fred": 1, "Maria Luísa": 4, "Samuel Almeida": 1}, "2026-05-21": {"Leonardo Ribeiro": 1, "Adalberto Neto": 1, "Manuella Oliveira": 1, "Thuany Ghabril": 2, "Samuel Almeida": 1, "Samuel Brião": 2, "Fred": 1, "Raissa Antunes": 1, "Lorenzo Coronel": 1, "Djulia Silva": 1, "Haynnã": 1}}, "ns": {"2026-05-04": {"Samuel Brião": 1, "Suzanny Mauren Dihelem": 1, "Leonardo Ribeiro": 1, "Djulia Silva": 1, "Felippe Porcella": 1}, "2026-05-05": {"Andresa Caldas": 1, "Thuany Ghabril": 2}, "2026-05-06": {"Djulia Silva": 1, "Maria Luísa": 1, "Adalberto Neto": 2, "Raissa Antunes": 2, "Lorenzo Coronel": 1, "Samuel Almeida": 1, "Leonardo Ribeiro": 1, "William Dias": 2, "Samuel Brião": 1, "Thuany Ghabril": 2}, "2026-05-07": {"Suzanny Mauren Dihelem": 5, "Émerson Cavitchoni": 2, "Leonardo Ribeiro": 1, "Haynnã": 2, "Lorenzo Coronel": 3, "Raissa Antunes": 1, "Andresa Caldas": 2, "Samuel Brião": 2, "Adalberto Neto": 1, "Djulia Silva": 1, "Laura Feijó Junqueira": 1, "Samuel Almeida": 1, "Felippe Porcella": 1}, "2026-05-08": {"Leonardo Ribeiro": 3, "Samuel Almeida": 2, "William Dias": 3, "Felippe Porcella": 1, "Maria Luísa": 1, "Raissa Antunes": 3, "Thuany Ghabril": 1, "Haynnã": 3, "Lorenzo Coronel": 1, "Samuel Brião": 1, "Émerson Cavitchoni": 1, "Andresa Caldas": 1}, "2026-05-09": {"Adalberto Neto": 1, "Felippe Porcella": 1, "Lorenzo Coronel": 2, "Haynnã": 1, "Thuany Ghabril": 1, "Émerson Cavitchoni": 1}, "2026-05-11": {"Lorenzo Coronel": 2, "William Dias": 4, "Bruna Salazar": 1, "Leonardo Ribeiro": 4, "Djulia Silva": 4, "Émerson Cavitchoni": 2, "Suzanny Mauren Dihelem": 3, "Felippe Porcella": 2, "Haynnã": 3, "Laura Feijó Junqueira": 1, "Adalberto Neto": 2, "Thuany Ghabril": 1, "Samuel Brião": 1}, "2026-05-12": {"Maria Luísa": 2, "Samuel Almeida": 3, "Haynnã": 3, "Lorenzo Coronel": 2, "Djulia Silva": 2, "Émerson Cavitchoni": 1, "Leonardo Ribeiro": 1, "Suzanny Mauren Dihelem": 2, "Raissa Antunes": 1, "William Dias": 4, "Fred": 1, "Thuany Ghabril": 1, "Manuella Oliveira": 2, "Felippe Porcella": 1}, "2026-05-13": {"Leonardo Ribeiro": 2, "Djulia Silva": 1, "Thuany Ghabril": 3, "Manuella Oliveira": 4, "Lorenzo Coronel": 2, "Haynnã": 1, "Adalberto Neto": 2, "Maria Luísa": 2, "Suzanny Mauren Dihelem": 3, "Samuel Brião": 2, "Samuel Almeida": 3, "Émerson Cavitchoni": 2, "Laura Feijó Junqueira": 1, "William Dias": 1}, "2026-05-14": {"Leonardo Ribeiro": 2, "Thuany Ghabril": 3, "Fred": 1, "Suzanny Mauren Dihelem": 2, "Felippe Porcella": 1, "Samuel Almeida": 4, "Samuel Brião": 1, "Lorenzo Coronel": 4, "Djulia Silva": 3, "Manuella Oliveira": 1, "Laura Feijó Junqueira": 1, "Maria Luísa": 1, "Raissa Antunes": 1, "William Dias": 1, "Haynnã": 1}, "2026-05-15": {"Felippe Porcella": 2, "Adalberto Neto": 1, "Manuella Oliveira": 5, "Fred": 1, "Maria Luísa": 2, "Leonardo Ribeiro": 2, "Djulia Silva": 1, "Lorenzo Coronel": 1, "William Dias": 2, "Suzanny Mauren Dihelem": 2, "Haynnã": 1, "Samuel Almeida": 1}, "2026-05-16": {"William Dias": 3, "Lorenzo Coronel": 2, "Samuel Almeida": 1, "Samuel Brião": 1, "Émerson Cavitchoni": 1, "Suzanny Mauren Dihelem": 2, "Haynnã": 1}, "2026-05-18": {"Samuel Brião": 1, "Leonardo Ribeiro": 1, "Fred": 2, "Lorenzo Coronel": 2, "Samuel Almeida": 3, "Adalberto Neto": 2, "Suzanny Mauren Dihelem": 2, "Haynnã": 2, "William Dias": 2, "Manuella Oliveira": 2, "Djulia Silva": 2, "Raissa Antunes": 1, "Felippe Porcella": 3, "Thuany Ghabril": 2, "Émerson Cavitchoni": 1}, "2026-05-20": {"Felippe Porcella": 3, "Djulia Silva": 1, "Maria Luísa": 1, "William Dias": 3, "Samuel Almeida": 2, "Adalberto Neto": 3, "Raissa Antunes": 1, "Haynnã": 3, "Thuany Ghabril": 2, "Lorenzo Coronel": 1, "Manuella Oliveira": 1, "Suzanny Mauren Dihelem": 1}, "2026-05-19": {"Thuany Ghabril": 3, "Manuella Oliveira": 2, "Suzanny Mauren Dihelem": 1, "Djulia Silva": 1, "Samuel Almeida": 1, "Fred": 1, "Émerson Cavitchoni": 2, "Lorenzo Coronel": 2, "Felippe Porcella": 1}, "2026-05-21": {"Djulia Silva": 1, "Felippe Porcella": 1, "Maria Luísa": 1, "William Dias": 1, "Émerson Cavitchoni": 2, "Thuany Ghabril": 2, "Maria Eduarda Figueiredo": 1, "Lorenzo Coronel": 1, "Adalberto Neto": 1}}, "future": {"2026-05-21": {"William Dias": 5, "Fred": 3, "Émerson Cavitchoni": 3, "Djulia Silva": 4, "Adalberto Neto": 8, "Samuel Brião": 3, "Suzanny Mauren Dihelem": 1, "Manuella Oliveira": 2, "Thuany Ghabril": 3, "Haynnã": 1, "Lorenzo Coronel": 2, "Maria Luísa": 2, "Leonardo Ribeiro": 1, "Samuel Almeida": 1}, "2026-05-22": {"Émerson Cavitchoni": 2, "William Dias": 2, "Felippe Porcella": 3, "Samuel Brião": 1, "Djulia Silva": 3, "Haynnã": 1, "Suzanny Mauren Dihelem": 3, "Adalberto Neto": 5, "Leonardo Ribeiro": 1, "Thuany Ghabril": 1, "Manuella Oliveira": 1, "Lorenzo Coronel": 1}, "2026-05-23": {"William Dias": 1}, "2026-05-25": {"Lorenzo Coronel": 3, "Haynnã": 1, "Raissa Antunes": 1, "Maria Luísa": 1}, "2026-05-26": {"Felippe Porcella": 1}, "2026-05-27": {"Émerson Cavitchoni": 1, "Leonardo Ribeiro": 1, "Thuany Ghabril": 1}, "2026-05-28": {"Djulia Silva": 1}, "2026-05-30": {"William Dias": 1}}}, "product": {"ag": {"Studio Agro": 185, "Studio Fiscal": 76, "GS PARTNER": 420, "Franquia Partner": 1, "PJ360": 1}, "re": {"GS PARTNER": 203, "Studio Agro": 111, "Studio Fiscal": 53, "Franquia Partner": 88}, "ns": {"Studio Agro": 79, "Studio Fiscal": 41, "GS PARTNER": 88, "Franquia Partner": 64, "PJ360": 2}, "leads": {"GS PARTNER": 1737, "Studio Fiscal": 1017, "Studio Agro": 704}, "lost": {"GS PARTNER": 1083, "Studio Fiscal": 1017, "Studio Agro": 704, "None": 1}, "loss_rate": {"GS PARTNER": 62.3, "Studio Fiscal": 100.0, "Studio Agro": 100.0}, "mql_rate": {"GS PARTNER": 24.2, "Studio Fiscal": 7.5, "Studio Agro": 26.3}}, "loss": {"by_reason_product": {"Sem perfil": {"Studio Agro": 347, "Studio Fiscal": 689, "GS PARTNER": 536}, "Sem Contato": {"Studio Agro": 104, "GS PARTNER": 148, "Studio Fiscal": 85}, "Sem interesse": {"Studio Fiscal": 93, "GS PARTNER": 183, "Studio Agro": 110}, "Sem Retorno": {"GS PARTNER": 209, "Studio Agro": 129, "Studio Fiscal": 132}, "Perfil Fake": {"GS PARTNER": 6, "Studio Agro": 13, "Studio Fiscal": 18}, "Buscando Parceria": {"GS PARTNER": 1, "Studio Agro": 1}}, "by_reason_campaign": {"Sem perfil": {"[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 17, "[LEAD][ABO][FORM NATIVO] [LISTA]": 21, "[LEAD][ABO][FORM NATIVO LISTA]": 56, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 39, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 34, "FF - GS PARTNER [Formulario Direto][ABO]": 377, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 53, "search_cadastro_franquia_12_03_v2": 3, "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 22, "[LEAD][ABO][FORM NATIVO] [4]": 17, "[LEAD][ABO][FORM NATIVO] [CONTADOR]": 8, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 43, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 78, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 48, "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]": 7, "[LEAD][ABO][LAL QUENTES PIPE]": 13, "search_cadastro_franquia_12_03": 9, "[LEAD][ABO][FORM NATIVO] [ABO]": 72, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 43, "[LEAD][ABO][FORM NATIVO] [ABO] [2]": 4, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 49, "[LEAD][ABO][FORM NATIVO] [1]": 49, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 29, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 2, "pmax_franquia_studio_agro": 14, "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]": 3, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 3, "Conversao": 2, "[LEAD] FORMS_NATIVO] [ESCALA]": 197, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 155, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA] [2]": 1, "[LEAD][ABO][LAL FRANQUEADOS]": 4, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 6, "[LEAD][ABO][FORM NATIVO] [2]": 3, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 5, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 7, "[LEAD][ABO][FORM NATIVO] [3]": 23, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 32, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 7, "[LEAD][ABO][LAL CLIENTES FINAIS]": 7, "120245950706600013": 1, "search_studio_agro": 3, "120242298180730013": 1}, "Sem Contato": {"[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 5, "FF - GS PARTNER [Formulario Direto][ABO]": 87, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 20, "[LEAD][ABO][FORM NATIVO] [CONTADOR]": 1, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 15, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 26, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 2, "search_cadastro_franquia_12_03": 4, "[LEAD][ABO][LAL QUENTES PIPE]": 4, "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 5, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 15, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 10, "[LEAD][ABO][FORM NATIVO] [1]": 21, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 5, "[LEAD][ABO][FORM NATIVO] [ABO]": 20, "[LEAD][ABO][FORM NATIVO LISTA]": 6, "[LEAD] FORMS_NATIVO] [ESCALA]": 23, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 6, "[LEAD][ABO][FORM NATIVO] [ABO] [2]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 10, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 5, "search_cadastro_franquia_12_03_v2": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 10, "[LEAD][ABO][FORM NATIVO] [4]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 3, "aquisicao_topofrio": 1, "[LEAD][ABO][LAL FRANQUEADOS]": 3, "[LEAD][ABO][FORM NATIVO] [2]": 1, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 2, "[LEAD][ABO][LAL CLIENTES FINAIS]": 2, "[LEAD][ABO][FORM NATIVO] [LISTA]": 8, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 6, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 1, "ebook_topo_-_envio_1_-_base_agro": 1, "[LEAD][ABO][FORM NATIVO] [3]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [03]": 1}, "Sem interesse": {"[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 4, "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 10, "[LEAD][ABO][FORM NATIVO] [ABO]": 28, "FF - GS PARTNER [Formulario Direto][ABO]": 116, "[LEAD][ABO][LAL QUENTES PIPE]": 5, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 10, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 28, "[LEAD][ABO][FORM NATIVO] [LISTA]": 10, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 13, "[LEAD][ABO][FORM NATIVO] [4]": 3, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 16, "[LEAD][ABO][FORM NATIVO] [ABO] [2]": 1, "pmax_franquia_studio_agro": 1, "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]": 3, "Conversao": 1, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 5, "Studio Agro - FF - Branding": 1, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 3, "[LEAD][ABO][FORM NATIVO] [CONTADOR]": 3, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 18, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 18, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 2, "[LEAD] FORMS_NATIVO] [ESCALA]": 22, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 5, "search_cadastro_franquia_12_03": 4, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 17, "[LEAD][ABO][FORM NATIVO LISTA]": 3, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 9, "[LEAD][ABO][FORM NATIVO] [1]": 5, "[LEAD][ABO][LAL FRANQUEADOS]": 2, "120237951210160013": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 7, "[LEAD][ABO][REMARKETING]": 1, "[LEAD][ABO][FORM NATIVO] [3]": 4, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 2, "search_studio_agro": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]": 2}, "Sem Retorno": {"FF - GS PARTNER [Formulario Direto][ABO]": 141, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 21, "[LEAD][ABO][FORM NATIVO] [ABO]": 28, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 2, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 16, "[LEAD][ABO][FORM NATIVO LISTA]": 12, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 24, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 10, "[LEAD][ABO][FORM NATIVO] [LISTA]": 16, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 19, "[LEAD][ABO][LAL QUENTES PIPE]": 7, "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 5, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 14, "search_cadastro_franquia_12_03_v2": 1, "[LEAD] FORMS_NATIVO] [ESCALA]": 30, "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]": 1, "[LEAD][ABO][LAL FRANQUEADOS]": 3, "[LEAD][ABO][FORM NATIVO] [1]": 20, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 17, "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]": 1, "[LEAD][ABO][FORM NATIVO] [4]": 4, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 18, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 13, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 13, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 8, "search_cadastro_franquia_12_03": 1, "120247283937380013": 1, "[LEAD][ABO][FORM NATIVO] [3]": 7, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1, "[LEAD][ABO][FORM NATIVO] [2]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 5, "[LEAD][ABO][LAL CLIENTES FINAIS]": 5, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 1, "120225035574020013": 1, "120242298180730013": 1}, "Perfil Fake": {"FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 2, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 1, "[LEAD][ABO][FORM NATIVO] [LISTA]": 3, "FF - GS PARTNER [Formulario Direto][ABO]": 4, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 3, "[LEAD][ABO][LAL QUENTES PIPE]": 1, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 1, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 3, "[LEAD][ABO][FORM NATIVO] [4]": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 4, "[LEAD][ABO][FORM NATIVO LISTA]": 4, "[LEAD][ABO][FORM NATIVO] [1]": 1, "[LEAD][ABO][FORM NATIVO] [3]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 1, "[LEAD][ABO][FORM NATIVO] [ABO]": 1, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 1, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1}, "Buscando Parceria": {"FF - GS PARTNER [Formulario Direto][ABO] [03]": 1, "[LEAD][ABO][FORM NATIVO] [1]": 1}}, "top_campaigns": ["FF - GS PARTNER [Formulario Direto][ABO]", "[LEAD] FORMS_NATIVO] [ESCALA]", "[LEAD] FORMS_NATIVO] [ESCALA] [2]", "[LEAD][ABO][FORM NATIVO] [ABO]", "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]", "FF - GS PARTNER [Formulario Direto][ABO] [EST]", "FF - GS PARTNER [Formulario Direto][ABO] [03]", "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]", "[LEAD][ABO][FORM NATIVO] [1]", "FF - GS PARTNER [Formulario Direto][ABO] [04]", "[LEAD][ABO][FORM NATIVO LISTA]", "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]", "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]", "[LEAD][ABO][FORM NATIVO] [CONSULTOR]", "[LEAD][ABO][FORM NATIVO] [LISTA]"], "campaign_stats": [{"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [EST]", "leads": 202, "lost": 113, "ag": 0, "open": 89, "loss_pct": 55.9, "ag_pct": 0.0, "saldo": -55.9, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO]", "leads": 1080, "lost": 725, "ag": 0, "open": 355, "loss_pct": 67.1, "ag_pct": 0.0, "saldo": -67.1, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]", "leads": 131, "lost": 74, "ag": 0, "open": 57, "loss_pct": 56.5, "ag_pct": 0.0, "saldo": -56.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO]", "leads": 206, "lost": 149, "ag": 0, "open": 57, "loss_pct": 72.3, "ag_pct": 0.0, "saldo": -72.3, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [2]", "leads": 206, "lost": 192, "ag": 0, "open": 14, "loss_pct": 93.2, "ag_pct": 0.0, "saldo": -93.2, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]", "leads": 164, "lost": 108, "ag": 0, "open": 56, "loss_pct": 65.9, "ag_pct": 0.0, "saldo": -65.9, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [3]", "leads": 40, "lost": 35, "ag": 0, "open": 5, "loss_pct": 87.5, "ag_pct": 0.0, "saldo": -87.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [1]", "leads": 156, "lost": 97, "ag": 0, "open": 59, "loss_pct": 62.2, "ag_pct": 0.0, "saldo": -62.2, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [CONSULTOR]", "leads": 105, "lost": 71, "ag": 0, "open": 34, "loss_pct": 67.6, "ag_pct": 0.0, "saldo": -67.6, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA]", "leads": 302, "lost": 272, "ag": 0, "open": 30, "loss_pct": 90.1, "ag_pct": 0.0, "saldo": -90.1, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [3]", "leads": 47, "lost": 37, "ag": 0, "open": 10, "loss_pct": 78.7, "ag_pct": 0.0, "saldo": -78.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]", "leads": 59, "lost": 34, "ag": 0, "open": 25, "loss_pct": 57.6, "ag_pct": 0.0, "saldo": -57.6, "top_motivo": "Sem Retorno"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]", "leads": 169, "lost": 114, "ag": 0, "open": 55, "loss_pct": 67.5, "ag_pct": 0.0, "saldo": -67.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [LISTA]", "leads": 75, "lost": 58, "ag": 0, "open": 17, "loss_pct": 77.3, "ag_pct": 0.0, "saldo": -77.3, "top_motivo": "Sem perfil"}, {"campaign": "search_studio_agro", "leads": 9, "lost": 4, "ag": 0, "open": 5, "loss_pct": 44.4, "ag_pct": 0.0, "saldo": -44.4, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]", "leads": 34, "lost": 21, "ag": 0, "open": 13, "loss_pct": 61.8, "ag_pct": 0.0, "saldo": -61.8, "top_motivo": "Sem Retorno"}, {"campaign": "[LEAD][ABO][LAL QUENTES PIPE]", "leads": 42, "lost": 30, "ag": 0, "open": 12, "loss_pct": 71.4, "ag_pct": 0.0, "saldo": -71.4, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][CBO][REMARKETING VIDEOVIEW]", "leads": 12, "lost": 11, "ag": 0, "open": 1, "loss_pct": 91.7, "ag_pct": 0.0, "saldo": -91.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [2]", "leads": 9, "lost": 5, "ag": 0, "open": 4, "loss_pct": 55.6, "ag_pct": 0.0, "saldo": -55.6, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]", "leads": 94, "lost": 73, "ag": 0, "open": 21, "loss_pct": 77.7, "ag_pct": 0.0, "saldo": -77.7, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [03]", "leads": 241, "lost": 111, "ag": 0, "open": 130, "loss_pct": 46.1, "ag_pct": 0.0, "saldo": -46.1, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [04]", "leads": 190, "lost": 88, "ag": 0, "open": 102, "loss_pct": 46.3, "ag_pct": 0.0, "saldo": -46.3, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [4]", "leads": 40, "lost": 27, "ag": 0, "open": 13, "loss_pct": 67.5, "ag_pct": 0.0, "saldo": -67.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [4]", "leads": 55, "lost": 51, "ag": 0, "open": 4, "loss_pct": 92.7, "ag_pct": 0.0, "saldo": -92.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO LISTA]", "leads": 98, "lost": 81, "ag": 0, "open": 17, "loss_pct": 82.7, "ag_pct": 0.0, "saldo": -82.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]", "leads": 54, "lost": 29, "ag": 0, "open": 25, "loss_pct": 53.7, "ag_pct": 0.0, "saldo": -53.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]", "leads": 21, "lost": 11, "ag": 0, "open": 10, "loss_pct": 52.4, "ag_pct": 0.0, "saldo": -52.4, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [CONTADOR]", "leads": 29, "lost": 12, "ag": 0, "open": 17, "loss_pct": 41.4, "ag_pct": 0.0, "saldo": -41.4, "top_motivo": "Sem perfil"}, {"campaign": "search_cadastro_franquia_12_03", "leads": 31, "lost": 18, "ag": 0, "open": 13, "loss_pct": 58.1, "ag_pct": 0.0, "saldo": -58.1, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]", "leads": 98, "lost": 44, "ag": 0, "open": 54, "loss_pct": 44.9, "ag_pct": 0.0, "saldo": -44.9, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]", "leads": 12, "lost": 4, "ag": 0, "open": 8, "loss_pct": 33.3, "ag_pct": 0.0, "saldo": -33.3, "top_motivo": "Sem perfil"}, {"campaign": "search_cadastro_franquia_12_03_v2", "leads": 10, "lost": 5, "ag": 0, "open": 5, "loss_pct": 50.0, "ag_pct": 0.0, "saldo": -50.0, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [2]", "leads": 14, "lost": 7, "ag": 0, "open": 7, "loss_pct": 50.0, "ag_pct": 0.0, "saldo": -50.0, "top_motivo": "Sem perfil"}, {"campaign": "pmax_franquia_studio_agro", "leads": 21, "lost": 15, "ag": 0, "open": 6, "loss_pct": 71.4, "ag_pct": 0.0, "saldo": -71.4, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][LAL FRANQUEADOS]", "leads": 17, "lost": 12, "ag": 0, "open": 5, "loss_pct": 70.6, "ag_pct": 0.0, "saldo": -70.6, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [5]", "leads": 11, "lost": 9, "ag": 0, "open": 2, "loss_pct": 81.8, "ag_pct": 0.0, "saldo": -81.8, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]", "leads": 13, "lost": 8, "ag": 0, "open": 5, "loss_pct": 61.5, "ag_pct": 0.0, "saldo": -61.5, "top_motivo": "Sem interesse"}, {"campaign": "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]", "leads": 25, "lost": 9, "ag": 0, "open": 16, "loss_pct": 36.0, "ag_pct": 0.0, "saldo": -36.0, "top_motivo": "Sem interesse"}, {"campaign": "Conversao", "leads": 7, "lost": 3, "ag": 0, "open": 4, "loss_pct": 42.9, "ag_pct": 0.0, "saldo": -42.9, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][LAL CLIENTES FINAIS]", "leads": 17, "lost": 16, "ag": 0, "open": 1, "loss_pct": 94.1, "ag_pct": 0.0, "saldo": -94.1, "top_motivo": "Sem perfil"}], "motivo_stats": [{"motivo": "Sem perfil", "count": 1572, "pct_total_leads": 37.6, "pct_perdidos": 56.0}, {"motivo": "Sem Contato", "count": 337, "pct_total_leads": 8.1, "pct_perdidos": 12.0}, {"motivo": "Sem interesse", "count": 386, "pct_total_leads": 9.2, "pct_perdidos": 13.8}, {"motivo": "Sem Retorno", "count": 471, "pct_total_leads": 11.3, "pct_perdidos": 16.8}, {"motivo": "Perfil Fake", "count": 37, "pct_total_leads": 0.9, "pct_perdidos": 1.3}, {"motivo": "Buscando Parceria", "count": 2, "pct_total_leads": 0.0, "pct_perdidos": 0.1}], "total_leads": 4185, "total_perdidos": 2805}, "cross_funnel": {"Partner": {"PARTNER": 172, "FRANQUIA": 88}, "Studio Agro": {"FRANQUIA": 94, "PARTNER": 12}, "Studio Fiscal": {"FRANQUIA": 39, "PARTNER": 4}}, "cross_summary": {"franquia_origin_total": 149, "franquia_to_franquia": 133, "franquia_to_partner": 16, "partner_origin_total": 260, "partner_to_partner": 172, "partner_to_franquia": 88}, "meta": {"sdr_goal": 70, "closer_goal": 40, "sdr_pace_target": 49.0, "closer_pace_target": 28.0, "working_days_elapsed": 14, "working_days_total": 20, "last_data_date": "Maio 2026 — em andamento, dia útil 14 de 20", "team_total_re_goal": 600, "team_total_ag_goal": 794, "team_pace_target_re": 420.0, "team_pace_target_ag": 555.8, "metas_por_produto": {"Studio Agro": {"agendadas": 311, "realizadas": 225, "contratos": null}, "Studio Fiscal": {"agendadas": 288, "realizadas": 225, "contratos": null}, "Franquia Partner": {"agendadas": 0, "realizadas": 0, "contratos": null}, "GS PARTNER": {"agendadas": 195, "realizadas": 150, "contratos": null}}, "produtos_em_escopo": ["Studio Agro", "Studio Fiscal", "Franquia Partner", "GS PARTNER"]}};
-const DS = {"reag": 114, "leads_by_etiqueta": {"Lead Partner": 1537, "Lead Studio Agro": 903, "Lead Studio Fiscal": 1116, "Lead PJ360º": 1}, "perdidos_por_motivo": {"Sem perfil": {"Studio Agro": 347, "Studio Fiscal": 689, "GS PARTNER": 536}, "Sem Retorno": {"GS PARTNER": 209, "Studio Agro": 129, "Studio Fiscal": 132, "Franquia Partner": 1}, "Sem interesse": {"Studio Fiscal": 93, "GS PARTNER": 183, "Studio Agro": 110}, "Sem Contato": {"Studio Agro": 104, "GS PARTNER": 148, "Studio Fiscal": 85}, "Perfil Fake": {"GS PARTNER": 6, "Studio Agro": 13, "Studio Fiscal": 18}, "Buscando Parceria": {"GS PARTNER": 1, "Studio Agro": 1}}};
+const DS = {"reag": 114, "leads_by_etiqueta": {"Lead Partner": 1537, "Lead Studio Agro": 903, "Lead Studio Fiscal": 1116, "Lead PJ360º": 1}, "perdidos_por_motivo": {"Sem perfil": {"Studio Agro": 347, "Studio Fiscal": 689, "GS PARTNER": 536}, "Sem Retorno": {"GS PARTNER": 209, "Studio Agro": 129, "Studio Fiscal": 132, "Franquia Partner": 1}, "Sem interesse": {"Studio Fiscal": 93, "GS PARTNER": 183, "Studio Agro": 110}, "Sem Contato": {"Studio Agro": 104, "GS PARTNER": 148, "Studio Fiscal": 85}, "Perfil Fake": {"GS PARTNER": 6, "Studio Agro": 13, "Studio Fiscal": 18}, "Buscando Parceria": {"GS PARTNER": 1, "Studio Agro": 1}}, "closer_by_funil": {"FRANQUIA": {"Adalberto Neto": 30, "William Dias": 27, "Émerson Cavitchoni": 24, "Lorenzo Coronel": 22, "Thuany Ghabril": 21, "Suzanny Mauren Dihelem": 18, "Leonardo Ribeiro": 18, "Felippe Porcella": 13, "Samuel Brião": 8, "Fred": 6, "Andresa Caldas": 5, "Haynnã": 2, "Gabriel Meneses": 1, "Manuella Oliveira": 1}, "PARTNER": {"Maria Luísa": 40, "Djulia Silva": 40, "Samuel Almeida": 36, "Haynnã": 36, "Manuella Oliveira": 28, "Raissa Antunes": 18, "Thuany Ghabril": 13, "Samuel Brião": 7, "Émerson Cavitchoni": 7, "Adalberto Neto": 4, "Laura Feijó Junqueira": 3, "Felippe Porcella": 2, "Andresa Caldas": 1, "William Dias": 1, "Suzanny Mauren Dihelem": 1, "Fred": 1}}, "sdr_today": {"ag": {"João Gabriel Dutra": 4, "Mélodi Nirvana": 6, "Camily Nadal": 5, "Amanda Oliveira": 2, "Glauber Bagetti": 1, "Leonardo Soares": 5, "Rafael dallarosa longo": 4, "Henri Meneghetti": 6, "Lorenzo Meneghetti": 1, "Andriely Oliveira": 1}, "re": {"Izadora Zacker": 2, "Rafael dallarosa longo": 3, "João Gabriel Dutra": 1, "Glauber Bagetti": 1, "Andriely Oliveira": 1, "Mélodi Nirvana": 2, "Leonardo Soares": 2, "Camily Nadal": 1, "Henri Meneghetti": 1}, "ns": {"Glauber Bagetti": 1, "Mélodi Nirvana": 2, "Jonatans Junior": 1, "Leonardo Soares": 1, "João Gabriel Dutra": 1, "Henri Meneghetti": 4, "Izadora Zacker": 1, "Rafael dallarosa longo": 1}, "fut": {"Leonardo Soares": 6, "Henri Meneghetti": 7, "Amanda Oliveira": 3, "Mélodi Nirvana": 3, "Glauber Bagetti": 3, "Camily Nadal": 3, "Rafael dallarosa longo": 8, "João Gabriel Dutra": 3, "Andriely Oliveira": 2, "Jonatans Junior": 1}}};
 const today      = '2026-05-21';
-const LAST_UPDATE = '21/05/2026 12:12';
+const LAST_UPDATE = '21/05/2026 14:10';
 
 // ── HELPERS ───────────────────────────────────────────────
 const $ = id => document.getElementById(id);
-const fmt = n => (n == null ? '—' : (n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n)));
-const pct = (a,b) => b > 0 ? Math.min(100, Math.round(a/b*100)) : 0;
+const fmt  = n => (n == null ? '—' : (n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n)));
+const pct  = (a,b) => b > 0 ? Math.min(100, Math.round(a/b*100)) : 0;
 const clamp = (v,mn,mx) => Math.max(mn, Math.min(mx, v));
-function sumObj(obj){ return obj ? Object.values(obj).reduce((a,b)=>a+(b||0),0) : 0; }
 
 // ── RELÓGIO ───────────────────────────────────────────────
 function updateClock(){
   const n=new Date();
-  $('clock').textContent = [n.getHours(),n.getMinutes(),n.getSeconds()]
+  $('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()]
     .map(x=>String(x).padStart(2,'0')).join(':');
 }
 updateClock();
-setInterval(updateClock, 1000);
-
+setInterval(updateClock,1000);
 $('last-update-txt').textContent = LAST_UPDATE;
 
 // ── KPIs ──────────────────────────────────────────────────
@@ -662,17 +411,45 @@ $('k-ns').textContent     = fmt(T.ns);
 $('k-future').textContent = fmt(T.future_re);
 $('k-lost').textContent   = fmt(T.lost);
 
-// ── CALCULAR RE POR PRODUTO ────────────────────────────────
+// ── CALC RE POR PRODUTO ────────────────────────────────────
 function calcReByProduct(){
   const result = {};
   if (D.daily_product && D.daily_product.re){
     Object.values(D.daily_product.re).forEach(dayObj => {
-      Object.entries(dayObj).forEach(([prod, cnt]) => {
+      Object.entries(dayObj).forEach(([prod,cnt]) => {
         result[prod] = (result[prod]||0) + (cnt||0);
       });
     });
   }
   return result;
+}
+
+// ── RANKING helper ────────────────────────────────────────
+function buildRankRow(name, re, fut, paceTarget, meta, color){
+  const pReal = pct(re,  meta);
+  const pFut  = clamp(pct(fut, meta), 0, 100 - pReal);
+  const pPace = clamp(pct(paceTarget, meta), 0, 100);
+  const shortName = name.split(' ').slice(0,2).join(' ').slice(0,13);
+  const gap = re - paceTarget;
+  const gapColor = gap >= 0 ? '#22c55e' : '#ef4444';
+  const gapStr   = gap >= 0 ? `+${gap}` : String(gap);
+
+  const div = document.createElement('div');
+  div.className = 'rank-row';
+  div.innerHTML = `
+    <span class="rank-name" title="${name}">${shortName}</span>
+    <div class="bar-wrap">
+      <div class="bar-real"   style="background:${color};width:${pReal}%"></div>
+      <div class="bar-future" style="background:#f97316;left:${pReal}%;width:${pFut}%"></div>
+      <div class="bar-pace-marker" style="left:${pPace}%"></div>
+    </div>
+    <div class="rank-nums">
+      <span class="rank-re" style="color:${color}">${re}</span>
+      <span class="rank-sub">→${paceTarget} <span style="color:${gapColor};font-weight:700">${gapStr}</span></span>
+    </div>
+    <span class="rank-fut">${fut ? '▶'+fut : ''}</span>
+  `;
+  return div;
 }
 
 // ── SDR RANKING ───────────────────────────────────────────
@@ -691,79 +468,63 @@ function calcReByProduct(){
   const container = $('sdr-list');
   entries.forEach(([name, re])=>{
     const fut = futObj[name] || 0;
-    const pReal = pct(re, GOAL);
-    const pFut  = clamp(pct(fut, GOAL), 0, 100 - pReal);
-    const pPace = clamp(pct(paceTarget, GOAL), 0, 100);
-    const shortName = name.split(' ').slice(0,2).join(' ').slice(0,14);
-
-    const row = document.createElement('div');
-    row.className = 'rank-row';
-    row.innerHTML = `
-      <span class="rank-name" title="${name}">${shortName}</span>
-      <div class="bar-wrap">
-        <div class="bar-real" style="background:#22c55e;width:${pReal}%"></div>
-        <div class="bar-future" style="background:#f97316;left:${pReal}%;width:${pFut}%"></div>
-        <div class="bar-pace-marker" style="left:${pPace}%"></div>
-      </div>
-      <span class="rank-re" style="color:#22c55e">${re}</span>
-      <span class="rank-fut">${fut ? '▶'+fut : ''}</span>
-    `;
-    container.appendChild(row);
+    container.appendChild(buildRankRow(name, re, fut, paceTarget, GOAL, '#22c55e'));
   });
 })();
 
-// ── CLOSER RANKING ────────────────────────────────────────
+// ── CLOSER RANKING — split FRANQUIA / PARTNER ─────────────
 (function renderCloser(){
-  const reObj  = (D.closer && D.closer.re)     ? D.closer.re     : {};
-  const futObj = (D.closer && D.closer.future) ? D.closer.future : {};
-  const meta   = D.meta || {};
-  const GOAL   = meta.closer_goal || 40;
-  const elapsed = meta.working_days_elapsed || 1;
-  const total_d = meta.working_days_total   || 20;
+  const cbf     = DS.closer_by_funil || {};
+  const franqObj = cbf.FRANQUIA || {};
+  const partObj  = cbf.PARTNER  || {};
+  const futObj   = (D.closer && D.closer.future) ? D.closer.future : {};
+  const meta     = D.meta || {};
+  const GOAL     = meta.closer_goal || 40;
+  const elapsed  = meta.working_days_elapsed || 1;
+  const total_d  = meta.working_days_total   || 20;
   const paceTarget = Math.round(GOAL * elapsed / total_d);
 
-  const entries = Object.entries(reObj).sort((a,b)=>b[1]-a[1]);
-  if(!entries.length){ $('closer-list').innerHTML='<div style="color:var(--muted);padding:6px">Sem dados</div>'; return; }
-
   const container = $('closer-list');
-  entries.forEach(([name, re])=>{
-    const fut = futObj[name] || 0;
-    const pReal = pct(re, GOAL);
-    const pFut  = clamp(pct(fut, GOAL), 0, 100 - pReal);
-    const pPace = clamp(pct(paceTarget, GOAL), 0, 100);
-    const shortName = name.split(' ').slice(0,2).join(' ').slice(0,14);
 
-    const row = document.createElement('div');
-    row.className = 'rank-row';
-    row.innerHTML = `
-      <span class="rank-name" title="${name}">${shortName}</span>
-      <div class="bar-wrap">
-        <div class="bar-real" style="background:#3b82f6;width:${pReal}%"></div>
-        <div class="bar-future" style="background:#f97316;left:${pReal}%;width:${pFut}%"></div>
-        <div class="bar-pace-marker" style="left:${pPace}%"></div>
-      </div>
-      <span class="rank-re" style="color:#3b82f6">${re}</span>
-      <span class="rank-fut">${fut ? '▶'+fut : ''}</span>
-    `;
-    container.appendChild(row);
-  });
+  function renderGroup(obj, label, color){
+    if(!Object.keys(obj).length) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'group-hdr';
+    hdr.style.color = color;
+    hdr.textContent = label;
+    container.appendChild(hdr);
+
+    Object.entries(obj).sort((a,b)=>b[1]-a[1]).forEach(([name, re])=>{
+      const fut = futObj[name] || 0;
+      container.appendChild(buildRankRow(name, re, fut, paceTarget, GOAL, color));
+    });
+  }
+
+  renderGroup(franqObj, 'FRANQUIA', '#22c55e');
+  renderGroup(partObj,  'PARTNER',  '#a855f7');
 })();
 
 // ── PRODUTOS ──────────────────────────────────────────────
 (function renderProdutos(){
   const rp = calcReByProduct();
   const container = $('prod-list');
+  const meta   = D.meta || {};
+  const elapsed = meta.working_days_elapsed || 1;
+  const total_d = meta.working_days_total   || 20;
 
-  // Configuração dos produtos
   const PRODS = [
-    { key:'Studio Agro',      label:'Studio Agro',       meta:150, color:'#22c55e' },
-    { key:'Studio Fiscal',    label:'Studio Fiscal',     meta:150, color:'#818cf8' },
-    { key:'Franquia Partner', label:'Franquia Partner',  meta:150, color:'#a855f7' },
+    { key:'Studio Agro',      label:'Studio Agro',      meta:150, color:'#22c55e' },
+    { key:'Studio Fiscal',    label:'Studio Fiscal',    meta:150, color:'#818cf8' },
+    { key:'Franquia Partner', label:'Franquia Partner', meta:150, color:'#a855f7' },
   ];
 
   PRODS.forEach(p => {
-    const re = rp[p.key] || 0;
-    const pc = pct(re, p.meta);
+    const re    = rp[p.key] || 0;
+    const pc    = pct(re, p.meta);
+    const hoje  = Math.round(p.meta * elapsed / total_d);
+    const falta = re - hoje;
+    const faltaColor = falta >= 0 ? '#22c55e' : '#ef4444';
+    const faltaStr   = falta >= 0 ? `+${falta}` : String(falta);
     const row = document.createElement('div');
     row.className = 'prod-row';
     row.innerHTML = `
@@ -771,26 +532,36 @@ function calcReByProduct(){
       <div class="prod-bar-wrap">
         <div class="prod-bar-fill" style="background:${p.color};width:${pc}%"></div>
       </div>
-      <span class="prod-nums" style="color:${p.color}">${re}<span style="color:var(--muted);font-size:9px"> /${p.meta}</span></span>
+      <div>
+        <div class="prod-nums" style="color:${p.color}">${re}<span style="color:var(--muted);font-size:9px"> /${p.meta}</span></div>
+        <div class="prod-sub">→${hoje} <span style="color:${faltaColor};font-weight:700">${faltaStr}</span></div>
+      </div>
     `;
     container.appendChild(row);
   });
 
   // TOTAL FRANQUIA
-  const franqKeys = ['Studio Agro','Studio Fiscal','Franquia Partner'];
+  const franqKeys  = ['Studio Agro','Studio Fiscal','Franquia Partner'];
   const totalFranq = franqKeys.reduce((s,k)=>s+(rp[k]||0), 0);
   const metaFranq  = 450;
   const pcFranq    = pct(totalFranq, metaFranq);
+  const hojeFranq  = Math.round(metaFranq * elapsed / total_d);
+  const faltaFranq = totalFranq - hojeFranq;
+  const fcColor    = faltaFranq >= 0 ? '#22c55e' : '#ef4444';
+  const fcStr      = faltaFranq >= 0 ? `+${faltaFranq}` : String(faltaFranq);
 
   const cardFranq = document.createElement('div');
   cardFranq.className = 'prod-total-card';
   cardFranq.innerHTML = `
-    <div class="prod-row" style="margin-bottom:3px">
+    <div class="prod-row" style="margin-bottom:0">
       <span class="prod-name" style="color:#22c55e;font-size:10px">▶ TOTAL FRANQUIA</span>
       <div class="prod-bar-wrap" style="height:11px">
         <div class="prod-bar-fill" style="background:#22c55e;width:${pcFranq}%"></div>
       </div>
-      <span class="prod-nums" style="color:#22c55e">${totalFranq}<span style="color:var(--muted);font-size:9px"> /450</span></span>
+      <div>
+        <div class="prod-nums" style="color:#22c55e">${totalFranq}<span style="color:var(--muted);font-size:9px"> /450</span></div>
+        <div class="prod-sub">→${hojeFranq} <span style="color:${fcColor};font-weight:700">${fcStr}</span></div>
+      </div>
     </div>
   `;
   container.appendChild(cardFranq);
@@ -799,14 +570,21 @@ function calcReByProduct(){
   const gsRe   = rp['GS PARTNER'] || 0;
   const metaGs = 150;
   const pcGs   = pct(gsRe, metaGs);
-  const rowGs  = document.createElement('div');
+  const hojeGs = Math.round(metaGs * elapsed / total_d);
+  const faltaGs = gsRe - hojeGs;
+  const gcColor = faltaGs >= 0 ? '#22c55e' : '#ef4444';
+  const gcStr   = faltaGs >= 0 ? `+${faltaGs}` : String(faltaGs);
+  const rowGs   = document.createElement('div');
   rowGs.className = 'prod-row';
   rowGs.innerHTML = `
     <span class="prod-name" style="color:#a855f7">GS PARTNER</span>
     <div class="prod-bar-wrap">
       <div class="prod-bar-fill" style="background:#a855f7;width:${pcGs}%"></div>
     </div>
-    <span class="prod-nums" style="color:#a855f7">${gsRe}<span style="color:var(--muted);font-size:9px"> /150</span></span>
+    <div>
+      <div class="prod-nums" style="color:#a855f7">${gsRe}<span style="color:var(--muted);font-size:9px"> /150</span></div>
+      <div class="prod-sub">→${hojeGs} <span style="color:${gcColor};font-weight:700">${gcStr}</span></div>
+    </div>
   `;
   container.appendChild(rowGs);
 })();
@@ -819,32 +597,134 @@ function calcReByProduct(){
     'Lead Studio Agro':   '#22c55e',
     'Lead Studio Fiscal': '#f59e0b',
   };
-  const entries = Object.entries(etiq).sort((a,b)=>b[1]-a[1]);
+  const entries = Object.entries(etiq)
+    .filter(([k])=>k!=='Lead PJ360º')
+    .sort((a,b)=>b[1]-a[1]);
   const maxVal  = entries.length ? entries[0][1] : 1;
   const container = $('neg-list');
-
-  entries.forEach(([name, val])=>{
+  entries.forEach(([name,val])=>{
     const color = etiqColors[name] || '#94a3b8';
     const pc = pct(val, maxVal);
     const row = document.createElement('div');
     row.className = 'neg-row';
     row.innerHTML = `
       <span class="neg-name" title="${name}">${name}</span>
-      <div class="neg-bar-wrap">
-        <div class="neg-bar-fill" style="background:${color};width:${pc}%"></div>
-      </div>
+      <div class="neg-bar-wrap"><div class="neg-bar-fill" style="background:${color};width:${pc}%"></div></div>
       <span class="neg-val" style="color:${color}">${fmt(val)}</span>
     `;
     container.appendChild(row);
   });
 })();
 
+// ── SDR DO DIA ────────────────────────────────────────────
+(function renderSdrToday(){
+  const st  = DS.sdr_today || {};
+  const ag_t  = st.ag  || {};
+  const re_t  = st.re  || {};
+  const ns_t  = st.ns  || {};
+  const fut_t = st.fut || {};
+
+  const sdrs = Object.keys((D.sdr && D.sdr.re) ? D.sdr.re : {})
+    .sort((a,b)=>{
+      const ra = D.sdr.re[a]||0, rb = D.sdr.re[b]||0;
+      return rb - ra;
+    });
+
+  const tbody = $('sdr-today-tbody');
+  let totAg=0, totRe=0, totNs=0, totFut=0;
+
+  sdrs.forEach(name => {
+    const shortName = name.split(' ').slice(0,2).join(' ').slice(0,12);
+    const ag  = ag_t[name]  || 0;
+    const re  = re_t[name]  || 0;
+    const ns  = ns_t[name]  || 0;
+    const fut = fut_t[name] || 0;
+    totAg+=ag; totRe+=re; totNs+=ns; totFut+=fut;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${shortName}</td>
+      <td style="color:#a855f7">${ag||'—'}</td>
+      <td style="color:#22c55e">${re||'—'}</td>
+      <td style="color:#f97316">${fut||'—'}</td>
+      <td style="color:#ef4444">${ns||'—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // total row
+  const tr = document.createElement('tr');
+  tr.className = 'tbl-total';
+  tr.innerHTML = `
+    <td>TOTAL</td>
+    <td style="color:#a855f7">${totAg||'—'}</td>
+    <td style="color:#22c55e">${totRe||'—'}</td>
+    <td style="color:#f97316">${totFut||'—'}</td>
+    <td style="color:#ef4444">${totNs||'—'}</td>
+  `;
+  tbody.appendChild(tr);
+})();
+
+// ── PERDIDOS POR MOTIVO ────────────────────────────────────
+(function renderPerdidos(){
+  const pm = DS.perdidos_por_motivo || {};
+  const container = $('perd-list');
+  const totals = Object.entries(pm).map(([motivo,produtos])=>{
+    return [motivo, Object.values(produtos).reduce((s,v)=>s+(v||0),0)];
+  }).sort((a,b)=>b[1]-a[1]);
+  const top5 = totals.slice(0,5);
+  const maxV = top5.length ? top5[0][1] : 1;
+  top5.forEach(([motivo,total])=>{
+    const pc = pct(total, maxV);
+    const row = document.createElement('div');
+    row.className = 'perd-row';
+    row.innerHTML = `
+      <span class="perd-name" title="${motivo}">${motivo}</span>
+      <div class="perd-bar-wrap"><div class="perd-bar-fill" style="width:${pc}%"></div></div>
+      <span class="perd-val">${fmt(total)}</span>
+    `;
+    container.appendChild(row);
+  });
+})();
+
+// ── PLUGIN: valores visíveis nas pontas das linhas ─────────
+const endLabelPlugin = {
+  id: 'endLabels',
+  afterDatasetsDraw(chart) {
+    const {ctx} = chart;
+    chart.data.datasets.forEach((ds, i) => {
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) return;
+      // último ponto com valor > 0
+      let lastIdx = -1;
+      for (let j = ds.data.length - 1; j >= 0; j--) {
+        if (ds.data[j] != null && ds.data[j] > 0) { lastIdx = j; break; }
+      }
+      if (lastIdx < 0) return;
+      const pt  = meta.data[lastIdx];
+      if (!pt) return;
+      const val = ds.data[lastIdx];
+      const label = val >= 1000 ? (val/1000).toFixed(1)+'k' : String(val);
+      ctx.save();
+      ctx.font = 'bold 9px -apple-system,sans-serif';
+      // fundo para legibilidade
+      const w = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(7,12,24,0.75)';
+      ctx.fillRect(pt.x + 2, pt.y - 8, w + 6, 14);
+      ctx.fillStyle = ds.borderColor;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, pt.x + 5, pt.y);
+      ctx.restore();
+    });
+  }
+};
+
 // ── CHART: PACE ACUMULADO ─────────────────────────────────
 (function buildChartPace(){
   const series = D.daily_series || [];
   const labels = series.map(d => d.date ? d.date.slice(5) : '');
+  const tickLabels = labels.map((l,i)=> i%5===0 ? l : '');
 
-  // cumsum
   let sLeads=0, sLost=0, sAg=0, sRe=0;
   const cumLeads=[], cumLost=[], cumAg=[], cumRe=[];
   series.forEach(d=>{
@@ -854,26 +734,24 @@ function calcReByProduct(){
     sRe   +=(d.re   ||0); cumRe   .push(sRe);
   });
 
-  // Mostrar label a cada 5 dias
-  const tickLabels = labels.map((l,i)=> i % 5 === 0 ? l : '');
-
-  const ctx = document.getElementById('chart-pace');
-  new Chart(ctx, {
+  new Chart(document.getElementById('chart-pace'), {
     type:'line',
+    plugins:[endLabelPlugin],
     data:{
       labels,
       datasets:[
-        { label:'Leads Gerados', data:cumLeads, borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,.08)', tension:.3, pointRadius:0, borderWidth:1.5 },
-        { label:'Perdidos',      data:cumLost,  borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.06)',  tension:.3, pointRadius:0, borderWidth:1.5 },
-        { label:'AG CC1',        data:cumAg,    borderColor:'#a855f7', backgroundColor:'rgba(168,85,247,.06)', tension:.3, pointRadius:0, borderWidth:1.5 },
-        { label:'CC1 Realiz.',   data:cumRe,    borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)',  tension:.3, pointRadius:0, borderWidth:2 },
+        { label:'Leads Gerados', data:cumLeads, borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,.08)',  tension:.3, pointRadius:0, borderWidth:1.5 },
+        { label:'Perdidos',      data:cumLost,  borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.06)',   tension:.3, pointRadius:0, borderWidth:1.5 },
+        { label:'AG CC1',        data:cumAg,    borderColor:'#a855f7', backgroundColor:'rgba(168,85,247,.06)',  tension:.3, pointRadius:0, borderWidth:1.5 },
+        { label:'CC1 Realiz.',   data:cumRe,    borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.08)',   tension:.3, pointRadius:0, borderWidth:2   },
       ]
     },
     options:{
-      maintainAspectRatio:false,
-      animation:false,
+      maintainAspectRatio:false, animation:false,
+      layout:{ padding:{ right:30 } },
       plugins:{
-        legend:{ display:true, position:'top', labels:{ color:'#94a3b8', font:{size:9}, boxWidth:10, padding:8 } }
+        legend:{ display:true, position:'top', labels:{ color:'#94a3b8', font:{size:9}, boxWidth:10, padding:8 } },
+        tooltip:{ enabled:true }
       },
       scales:{
         x:{ ticks:{ color:'#64748b', font:{size:8}, maxRotation:0, callback:(v,i)=>tickLabels[i]||'' }, grid:{ color:'#1e293b' } },
@@ -885,136 +763,51 @@ function calcReByProduct(){
 
 // ── CHART: PACE VS META ───────────────────────────────────
 (function buildChartMeta(){
-  const series    = D.daily_series || [];
-  const meta      = D.meta || {};
-  const GOAL_SDR  = meta.sdr_goal    || 70;
-  const GOAL_CLO  = meta.closer_goal || 40;
-  const nSDRs     = Object.keys((D.sdr && D.sdr.re) || {}).length || 10;
-  const nClosers  = Object.keys((D.closer && D.closer.re) || {}).length || 3;
-  const TOTAL_D   = meta.working_days_total || 20;
-  const WD        = D.working_days || [];
-
-  const labels = series.map(d=>d.date ? d.date.slice(5) : '');
+  const series  = D.daily_series || [];
+  const meta    = D.meta || {};
+  const GOAL_S  = meta.sdr_goal    || 70;
+  const GOAL_C  = meta.closer_goal || 40;
+  const nSDRs   = Object.keys((D.sdr && D.sdr.re) || {}).length || 10;
+  const nClosers= Object.keys((D.closer && D.closer.re) || {}).length || 3;
+  const TOTAL_D = meta.working_days_total || 20;
+  const WD      = D.working_days || [];
+  const labels  = series.map(d=>d.date ? d.date.slice(5) : '');
   const tickLabels = labels.map((l,i)=> i%5===0 ? l : '');
 
-  // CC1 Realizadas acumuladas reais
   let sRe=0;
   const cumRe = series.map(d=>{ sRe+=(d.re||0); return sRe; });
-
-  // Meta linear SDR: GOAL_SDR * nSDRs * (dias_úteis_passados_até_data / total)
   const cumMetaSDR = series.map(d=>{
-    const daysElapsed = WD.filter(wd=>wd<=d.date).length;
-    return Math.round(GOAL_SDR * nSDRs * daysElapsed / TOTAL_D);
+    const de = WD.filter(wd=>wd<=d.date).length;
+    return Math.round(GOAL_S * nSDRs * de / TOTAL_D);
   });
-
-  // Meta linear Closer
   const cumMetaClo = series.map(d=>{
-    const daysElapsed = WD.filter(wd=>wd<=d.date).length;
-    return Math.round(GOAL_CLO * nClosers * daysElapsed / TOTAL_D);
+    const de = WD.filter(wd=>wd<=d.date).length;
+    return Math.round(GOAL_C * nClosers * de / TOTAL_D);
   });
 
-  const ctx = document.getElementById('chart-meta');
-  new Chart(ctx, {
+  new Chart(document.getElementById('chart-meta'), {
     type:'line',
+    plugins:[endLabelPlugin],
     data:{
       labels,
       datasets:[
-        { label:'CC1 Realiz. (real)',   data:cumRe,       borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.1)', tension:.3, pointRadius:0, borderWidth:2 },
-        { label:`Meta SDR (${nSDRs}×${GOAL_SDR})`,   data:cumMetaSDR,  borderColor:'#22c55e', borderDash:[5,3], tension:.1, pointRadius:0, borderWidth:1.2, backgroundColor:'transparent' },
-        { label:`Meta Closer (${nClosers}×${GOAL_CLO})`, data:cumMetaClo,  borderColor:'#a855f7', borderDash:[5,3], tension:.1, pointRadius:0, borderWidth:1.2, backgroundColor:'transparent' },
+        { label:'CC1 Realiz.',                        data:cumRe,      borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.1)', tension:.3, pointRadius:0, borderWidth:2 },
+        { label:`Meta SDR (${nSDRs}×${GOAL_S})`,     data:cumMetaSDR, borderColor:'#22c55e', borderDash:[5,3], tension:.1, pointRadius:0, borderWidth:1.2, backgroundColor:'transparent' },
+        { label:`Meta Closer (${nClosers}×${GOAL_C})`,data:cumMetaClo, borderColor:'#a855f7', borderDash:[5,3], tension:.1, pointRadius:0, borderWidth:1.2, backgroundColor:'transparent' },
       ]
     },
     options:{
-      maintainAspectRatio:false,
-      animation:false,
+      maintainAspectRatio:false, animation:false,
+      layout:{ padding:{ right:30 } },
       plugins:{
-        legend:{ display:true, position:'top', labels:{ color:'#94a3b8', font:{size:9}, boxWidth:10, padding:8 } }
+        legend:{ display:true, position:'top', labels:{ color:'#94a3b8', font:{size:9}, boxWidth:10, padding:8 } },
+        tooltip:{ enabled:true }
       },
       scales:{
         x:{ ticks:{ color:'#64748b', font:{size:8}, maxRotation:0, callback:(v,i)=>tickLabels[i]||'' }, grid:{ color:'#1e293b' } },
         y:{ ticks:{ color:'#64748b', font:{size:8} }, grid:{ color:'#1e293b' } }
       }
     }
-  });
-})();
-
-// ── TABELA DIÁRIA ─────────────────────────────────────────
-(function renderDailyTable(){
-  const series = (D.daily_series || []).filter(d=>d.leads>0);
-  const last10  = series.slice(-10);
-  const tbody   = $('daily-tbody');
-
-  // acumulados globais para % de realiz (coluna 6 = acumulado do mês)
-  let cumRe = 0;
-  const allRe = (D.daily_series||[]).reduce((s,d)=>s+(d.re||0),0);
-  const allLd = (D.daily_series||[]).reduce((s,d)=>s+(d.leads||0),0);
-
-  last10.forEach(d=>{
-    cumRe += (d.re||0);
-    const dia   = d.date ? d.date.slice(5).replace('-','/') : '';
-    const pNs   = d.leads ? Math.round(d.ns  /d.leads*100) : 0;
-    const pPerda= d.leads ? Math.round(d.lost /d.leads*100) : 0;
-    const pAg   = d.leads ? Math.round(d.ag   /d.leads*100) : 0;
-    const pRe   = allLd   ? Math.round(cumRe  /allLd *100) : 0;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${dia}</td>
-      <td>${fmt(d.leads)}</td>
-      <td style="color:${pNs>20?'#ef4444':'var(--muted)'}">${pNs}%</td>
-      <td style="color:${pPerda>40?'#ef4444':'var(--muted)'}">${pPerda}%</td>
-      <td>${pAg}%</td>
-      <td>${pRe}%</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  // linha TOTAL MAIO
-  const totLd  = allLd;
-  const totNs  = (D.totals||{}).ns||0;
-  const totLost= (D.totals||{}).lost||0;
-  const totAg  = (D.totals||{}).ag||0;
-  const totRe  = (D.totals||{}).re||0;
-  const totTr  = document.createElement('tr');
-  totTr.className = 'tbl-total';
-  totTr.innerHTML = `
-    <td>TOTAL</td>
-    <td>${fmt(totLd)}</td>
-    <td>${totLd?Math.round(totNs/totLd*100):0}%</td>
-    <td>${totLd?Math.round(totLost/totLd*100):0}%</td>
-    <td>${totLd?Math.round(totAg/totLd*100):0}%</td>
-    <td>${totLd?Math.round(totRe/totLd*100):0}%</td>
-  `;
-  tbody.appendChild(totTr);
-})();
-
-// ── PERDIDOS POR MOTIVO ────────────────────────────────────
-(function renderPerdidos(){
-  const pm = DS.perdidos_por_motivo || {};
-  const container = $('perd-list');
-
-  // somar por motivo
-  const totals = Object.entries(pm).map(([motivo, produtos])=>{
-    const total = Object.values(produtos).reduce((s,v)=>s+(v||0),0);
-    return [motivo, total];
-  });
-
-  totals.sort((a,b)=>b[1]-a[1]);
-  const top5  = totals.slice(0,5);
-  const maxV  = top5.length ? top5[0][1] : 1;
-
-  top5.forEach(([motivo, total])=>{
-    const pc = pct(total, maxV);
-    const row = document.createElement('div');
-    row.className = 'perd-row';
-    row.innerHTML = `
-      <span class="perd-name" title="${motivo}">${motivo}</span>
-      <div class="perd-bar-wrap">
-        <div class="perd-bar-fill" style="width:${pc}%"></div>
-      </div>
-      <span class="perd-val">${fmt(total)}</span>
-    `;
-    container.appendChild(row);
   });
 })();
 
