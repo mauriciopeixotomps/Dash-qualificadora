@@ -339,8 +339,8 @@
   <!-- SDR atividades -->
   <div class="section-title">Atividade SDR</div>
   <div class="grid grid-2">
-    <div class="card"><h3>Agendamentos por SDR</h3><div class="canvas-wrap"><canvas id="sdr-ag-chart"></canvas></div></div>
-    <div class="card"><h3>Realizadas por SDR</h3><div class="canvas-wrap"><canvas id="sdr-re-chart"></canvas></div></div>
+    <div class="card"><h3>Agendamentos por SDR</h3><div class="canvas-wrap tall"><canvas id="sdr-ag-chart"></canvas></div></div>
+    <div class="card"><h3>Realizadas por SDR</h3><div class="canvas-wrap tall"><canvas id="sdr-re-chart"></canvas></div></div>
   </div>
 
   <!-- Closer atividades -->
@@ -662,7 +662,7 @@ function renderPaceMeta(startDate, endDate) {
   const frReTargetPct = frReTarget>0 ? (frReV/frReTarget*100) : 0;
   const frCard = document.getElementById('pace-franquia-total-card');
   // SDR/Closer pace bar — filtrado pelo período; target usa wdElapsedInPeriod
-  const _sdrCnt = Math.max(Object.keys(D.sdr.ag || {}).length, 10);
+  const _sdrCnt = Object.keys(D.sdr.ag || {}).length || 1;
   const _sdrMeta = SDR_GOAL * _sdrCnt;
   const _sdrDailyRe  = sumDailyByPerson(D.sdr_daily?.re,     startDate, endDate);
   const _sdrDailyFut = sumDailyByPerson(D.sdr_daily?.future,  startDate, endDate);
@@ -1064,7 +1064,7 @@ new Chart(document.getElementById('curve-cum'), {
 
 // === Pace Acumulado vs Meta (SDR + Closer) ===
 // Build linear meta line: only working days progress, weekends stay flat
-const sdrGoalTotal = SDR_GOAL * 10;  // 10 SDRs × 70 = 700
+const sdrGoalTotal = SDR_GOAL * Object.keys(D.sdr.re || D.sdr.ag || {}).length;
 const closerGoalTotal = CLOSER_GOAL * Object.keys(D.closer.re).length;
 const perWorkdayInc_sdr = sdrGoalTotal / TOTAL_DAYS;
 const perWorkdayInc_closer = closerGoalTotal / TOTAL_DAYS;
@@ -1125,7 +1125,7 @@ new Chart(document.getElementById('pace-cum'), {
 });
 
 // === Pace meta totals (estáticos — não mudam com filtro) ===
-const sdrCount = Math.max(Object.keys(D.sdr.ag).length, 10);
+const sdrCount = Object.keys(D.sdr.ag || {}).length || 1;
 document.getElementById('sdr-meta-total').innerHTML = `${fmt(SDR_GOAL * sdrCount)} <small>(${sdrCount} SDRs × ${SDR_GOAL})</small>`;
 const closerCount = Object.keys(D.closer.re).length;
 document.getElementById('closer-meta-total').innerHTML = `${fmt(CLOSER_GOAL * closerCount)} <small>(${closerCount} closers × ${CLOSER_GOAL})</small>`;
