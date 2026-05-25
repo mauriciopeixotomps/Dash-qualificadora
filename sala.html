@@ -146,9 +146,12 @@ body {
   grid-template-columns: 86px 1fr 52px 28px;
   align-items: center;
   gap: 4px;
-  flex: 1;
-  min-height: 0;
+  flex-shrink: 0;
 }
+/* Apenas em painéis de row2: crescer para preencher o espaço */
+#sdr-list .rank-row,
+#closer-franquia .rank-row,
+#closer-partner .rank-row { flex: 1; min-height: 0; }
 .rank-name {
   font-size:10px; font-weight:500;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -289,9 +292,9 @@ body {
 
 /* ── COL F — CHARTS + PERDIDOS PÓS CC1 ──────────────── */
 #col-f { display:flex; flex-direction:column; gap:4px; }
-#col-f-meta     { flex:5; min-height:0; }
-#col-f-motivos  { flex:3; min-height:0; }
-#col-f-perdidos { flex:4; min-height:0; }
+#col-f-meta     { flex:1; min-height:0; }
+#col-f-motivos  { flex:0 0 auto; }
+#col-f-perdidos { flex:1; min-height:0; }
 
 /* perda pós cc1 */
 .ppc1-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; flex:1; min-height:0; }
@@ -423,8 +426,8 @@ body {
   <div id="col-d">
     <div class="panel" id="col-d-today" style="--accent-color:#f97316">
       <div class="panel-title">SDR — Hoje</div>
-      <div class="panel-body" style="overflow:hidden; height:100%">
-        <table class="tbl" style="height:100%">
+      <div class="panel-body" style="overflow:auto">
+        <table class="tbl">
           <thead>
             <tr>
               <th>SDR</th>
