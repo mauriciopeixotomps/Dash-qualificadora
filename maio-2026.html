@@ -998,12 +998,9 @@ for (let i = D.daily_series.length-1; i >= 0; i--) {
   if (d.leads || d.lost || d.ag || d.re) { lastIdx = i; break; }
 }
 
-// Show value only at weekly checkpoints + last point to avoid clutter
+// Show value only on the last data point to avoid clutter
 const cumDl = (color) => ({
-  display: ctx => {
-    if (ctx.dataIndex > lastIdx || ctx.dataset.data[ctx.dataIndex] <= 0) return false;
-    return ctx.dataIndex === lastIdx || (ctx.dataIndex + 1) % 7 === 0;
-  },
+  display: ctx => ctx.dataIndex === lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
   color: '#fff',
   backgroundColor: color,
   borderRadius: 3,
@@ -1152,10 +1149,7 @@ for (const d of D.daily_series) {
 // Build cumulative closer (from D.daily_series; same as cumRe but it represents the team's total CC1)
 // Use cumRe as the proxy (SDR-attributed RE)
 const labelDl = (color) => ({
-  display: ctx => {
-    if (ctx.dataIndex > lastIdx || ctx.dataset.data[ctx.dataIndex] <= 0) return false;
-    return ctx.dataIndex === lastIdx || (ctx.dataIndex + 1) % 5 === 0;
-  },
+  display: ctx => ctx.dataIndex === lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
   color: '#fff', backgroundColor: color, borderRadius: 3,
   padding: { top: 2, bottom: 2, left: 4, right: 4 },
   font: { size: 9, weight: 'bold' },
@@ -1286,9 +1280,9 @@ function paceList(elId, dailyData, dailyFuture, goalFull, totalWorkingDays, star
         <span class="gap-num ${statusGap}">${gapTxt}</span>
         <span class="gap-meta" style="color:#fbbf24;">Meta: ${paceTarget.toFixed(0)}</span>
       </div>
-      <div class="person-stat" style="min-width:130px; text-align:right;">
-        <div><span style="color:#22c55e; font-weight:bold;">${r.re}</span> realizadas / ${goalFull}</div>
-        <div style="font-size:11px; color:#a855f7;">+${r.future} para acontecer</div>
+      <div class="person-stat">
+        <div><span style="color:#22c55e; font-weight:bold;">${r.re}</span><span style="color:#64748b;"> / ${goalFull}</span></div>
+        <div style="color:#a855f7;">+${r.future} p.</div>
       </div>
     `;
     container.appendChild(div);
