@@ -1,0 +1,33 @@
+name: Auto-patch mobile fixes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*-2026.html'
+
+# Evita rodar sobre os próprios commits do bot
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Aplica correções mobile e datalabels
+        run: python3 patch_html.py
+
+      - name: Commit e push (se houver mudanças)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add *-2026.html
+          if git diff --staged --quiet; then
+            echo "Nenhuma alteração necessária."
+          else
+            git commit -m "auto: aplica correções mobile e datalabels [skip ci]"
+            git push
+          fi
