@@ -115,11 +115,104 @@ def patch_file(path: pathlib.Path) -> bool:
 
 # ── Sincronização sala.html ────────────────────────────────────────────────
 
+_SALA_JS_MARKER = '/* PATCH:sala-autosync-v1 */'
+
+_FETCH_MAIO_IIFE = r"""
+// Aplica D fresco do sessionStorage (depositado pelo fetch anterior)
+/* PATCH:sala-autosync-v1 */
+(function applyStoredData(){
+  try {
+    const raw = sessionStorage.getItem('_salaD');
+    if (!raw) return;
+    const f = JSON.parse(raw);
+    D = f.D; today = f.today; LAST_UPDATE = f.LAST_UPDATE;
+    sessionStorage.removeItem('_salaD');
+  } catch(e) {}
+})();
+
+// Busca D mais recente de maio-2026.html em background
+(function fetchMaioData(){
+  fetch('maio-2026.html?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(src => {
+      const mD = src.match(/^const D\s*=\s*(.+);\s*$/m);
+      const mT = src.match(/const today\s*=\s*'([^']+)'/);
+      if (!mD || !mT) return;
+      let maioData;
+      try { maioData = JSON.parse(mD[1]); } catch(e) { return; }
+      const maioRe = maioData.totals && maioData.totals.re;
+      const curRe  = D.totals && D.totals.re;
+      if (mT[1] === today && maioRe === curRe) return;
+      const n = new Date();
+      const lu = [String(n.getDate()).padStart(2,'0'), String(n.getMonth()+1).padStart(2,'0'), n.getFullYear()].join('/')
+               + ' ' + [String(n.getHours()).padStart(2,'0'), String(n.getMinutes()).padStart(2,'0')].join(':');
+      sessionStorage.setItem('_salaD', JSON.stringify({
+        D: maioData, today: mT[1], LAST_UPDATE: lu
+      }));
+      location.reload(true);
+    })
+    .catch(() => {});
+})();
+"""
+
+_NEW_CHECK_RELOAD = """// ── AUTO-REFRESH: compara D.totals.re de maio-2026.html a cada 2 min ──
+function checkAndReload(){
+  fetch('maio-2026.html?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(src => {
+      const mD = src.match(/^const D\s*=\s*(.+);\s*$/m);
+      const mT = src.match(/const today\s*=\s*'([^']+)'/);
+      if (!mD || !mT) return;
+      let maioData;
+      try { maioData = JSON.parse(mD[1]); } catch(e) { return; }
+      const maioRe = maioData.totals && maioData.totals.re;
+      const curRe  = D.totals && D.totals.re;
+      if (mT[1] === today && maioRe === curRe) return;
+      const n = new Date();
+      const lu = [String(n.getDate()).padStart(2,'0'), String(n.getMonth()+1).padStart(2,'0'), n.getFullYear()].join('/')
+               + ' ' + [String(n.getHours()).padStart(2,'0'), String(n.getMinutes()).padStart(2,'0')].join(':');
+      sessionStorage.setItem('_salaD', JSON.stringify({
+        D: maioData, today: mT[1], LAST_UPDATE: lu
+      }));
+      location.reload(true);
+    })
+    .catch(() => {})
+    .finally(() => setTimeout(checkAndReload, 120000));
+}"""
+
+
+def _apply_sala_js_fixes(html: str) -> str:
+    """
+    Injeta applyStoredData + fetchMaioData e corrige checkAndReload.
+    Idempotente via _SALA_JS_MARKER.
+    """
+    if _SALA_JS_MARKER in html:
+        return html
+
+    # Converte const D/DS/today/LAST_UPDATE → let (para poder reatribuir)
+    html = re.sub(r'\bconst (D\b|DS\b|today\b|LAST_UPDATE\b)', r'let \1', html)
+
+    # Insere applyStoredData + fetchMaioData antes de "// ── HELPERS"
+    anchor = '// ── HELPERS'
+    if anchor in html:
+        html = html.replace(anchor, _FETCH_MAIO_IIFE + anchor, 1)
+
+    # Substitui checkAndReload antigo (monitora sala.html) pelo novo (monitora maio).
+    # O padrão captura até o setTimeout que segue a função para não deixar restos.
+    # Usa lambda porque o replacement contém \s e outros chars especiais.
+    new_reload = _NEW_CHECK_RELOAD + '\nsetTimeout(checkAndReload, 120000);'
+    html = re.sub(
+        r'// ── AUTO-REFRESH:.*?^setTimeout\(checkAndReload,\s*\d+\);',
+        lambda _: new_reload,
+        html, count=1, flags=re.DOTALL | re.MULTILINE
+    )
+
+    return html
+
 def sync_sala(repo: pathlib.Path) -> bool:
     """
-    Copia D (e DS, se presente) de maio-2026.html para sala.html.
-    Usa today + D.totals.re como indicador de mudança (maio não tem LAST_UPDATE).
-    Gera um novo LAST_UPDATE com o timestamp atual ao sincronizar.
+    Aplica JS fixes (idempotente) e sincroniza D/today de maio-2026.html para sala.html.
+    Usa today + D.totals.re como indicador de mudança de dados (maio não tem LAST_UPDATE).
     """
     maio = repo / 'maio-2026.html'
     sala = repo / 'sala.html'
@@ -128,6 +221,10 @@ def sync_sala(repo: pathlib.Path) -> bool:
 
     maio_html = maio.read_text(encoding='utf-8')
     sala_html = sala.read_text(encoding='utf-8')
+    original  = sala_html
+
+    # 1. Sempre aplica os fixes de JS (idempotente via marcador)
+    sala_html = _apply_sala_js_fixes(sala_html)
 
     m_D  = re.search(r'^const D\s*=\s*(.+);\s*$', maio_html, re.MULTILINE)
     m_DS = re.search(r'^const DS\s*=\s*(.+);\s*$', maio_html, re.MULTILINE)
@@ -135,6 +232,9 @@ def sync_sala(repo: pathlib.Path) -> bool:
 
     if not m_D or not m_T:
         print('  !  sync_sala: não encontrou D/today em maio-2026.html')
+        if sala_html != original:
+            sala.write_text(sala_html, encoding='utf-8')
+            return True
         return False
 
     new_today = m_T.group(1)
@@ -151,47 +251,42 @@ def sync_sala(repo: pathlib.Path) -> bool:
         sala_re = None
 
     cur_T = re.search(r"(?:const|let) today\s*=\s*'([^']+)'", sala_html)
-    already_synced = (
+    data_in_sync = (
         cur_T and cur_T.group(1) == new_today and
         maio_re is not None and sala_re is not None and maio_re == sala_re
     )
-    if already_synced:
-        print(f'  –  sala.html já sincronizado (today={new_today}, re={maio_re})')
-        return False
 
-    original = sala_html
-
-    sala_html = re.sub(
-        r'(?:const|let) D\s*=\s*.+;\s*$',
-        f'let D  = {m_D.group(1)};',
-        sala_html, count=1, flags=re.MULTILINE
-    )
-
-    if m_DS:
+    # 2. Sincroniza dados se necessário
+    if not data_in_sync:
         sala_html = re.sub(
-            r'(?:const|let) DS\s*=\s*.+;\s*$',
-            f'let DS = {m_DS.group(1)};',
+            r'(?:const|let) D\s*=\s*.+;\s*$',
+            f'let D  = {m_D.group(1)};',
             sala_html, count=1, flags=re.MULTILINE
         )
-
-    sala_html = re.sub(
-        r"(?:const|let) today\s*=\s*'[^']+'",
-        f"let today      = '{new_today}'",
-        sala_html, count=1
-    )
-
-    new_lu = datetime.datetime.now().strftime('%d/%m/%Y %H:%M')
-    sala_html = re.sub(
-        r"(?:const|let) LAST_UPDATE\s*=\s*'[^']+'",
-        f"let LAST_UPDATE = '{new_lu}'",
-        sala_html, count=1
-    )
+        if m_DS:
+            sala_html = re.sub(
+                r'(?:const|let) DS\s*=\s*.+;\s*$',
+                f'let DS = {m_DS.group(1)};',
+                sala_html, count=1, flags=re.MULTILINE
+            )
+        sala_html = re.sub(
+            r"(?:const|let) today\s*=\s*'[^']+'",
+            f"let today      = '{new_today}'",
+            sala_html, count=1
+        )
+        new_lu = datetime.datetime.now().strftime('%d/%m/%Y %H:%M')
+        sala_html = re.sub(
+            r"(?:const|let) LAST_UPDATE\s*=\s*'[^']+'",
+            f"let LAST_UPDATE = '{new_lu}'",
+            sala_html, count=1
+        )
+        print(f'  ✔  sala.html dados → today: {new_today}, re: {maio_re}, LAST_UPDATE: {new_lu}')
+    else:
+        print(f'  –  sala.html dados já sincronizados (today={new_today}, re={maio_re})')
 
     if sala_html != original:
         sala.write_text(sala_html, encoding='utf-8')
-        print(f'  ✔  sala.html sincronizado → today: {new_today}, re: {maio_re}, LAST_UPDATE: {new_lu}')
         return True
-
     return False
 
 
