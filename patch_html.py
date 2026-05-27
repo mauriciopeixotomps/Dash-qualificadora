@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-Aplica correções mobile + datalabels nos HTMLs gerados automaticamente.
+Aplica correções mobile + datalabels nos HTMLs gerados automaticamente,
+e sincroniza os dados de maio-2026.html para sala.html.
 
 Uso local (rodar após build_from_xlsx.py):
     python patch_html.py
 
 As correções são idempotentes — podem ser aplicadas múltiplas vezes sem problema.
 """
-import re, sys, pathlib
+import re, sys, pathlib, json, datetime
 
 # Marcador único que indica que o CSS mobile já foi injetado neste arquivo.
 _CSS_MARKER = '/* PATCH:mobile-labels-v3 */'
@@ -112,11 +113,97 @@ def patch_file(path: pathlib.Path) -> bool:
     return False
 
 
+# ── Sincronização sala.html ────────────────────────────────────────────────
+
+def sync_sala(repo: pathlib.Path) -> bool:
+    """
+    Copia D (e DS, se presente) de maio-2026.html para sala.html.
+    Usa today + D.totals.re como indicador de mudança (maio não tem LAST_UPDATE).
+    Gera um novo LAST_UPDATE com o timestamp atual ao sincronizar.
+    """
+    maio = repo / 'maio-2026.html'
+    sala = repo / 'sala.html'
+    if not maio.exists() or not sala.exists():
+        return False
+
+    maio_html = maio.read_text(encoding='utf-8')
+    sala_html = sala.read_text(encoding='utf-8')
+
+    m_D  = re.search(r'^const D\s*=\s*(.+);\s*$', maio_html, re.MULTILINE)
+    m_DS = re.search(r'^const DS\s*=\s*(.+);\s*$', maio_html, re.MULTILINE)
+    m_T  = re.search(r"const today\s*=\s*'([^']+)'", maio_html)
+
+    if not m_D or not m_T:
+        print('  !  sync_sala: não encontrou D/today em maio-2026.html')
+        return False
+
+    new_today = m_T.group(1)
+
+    try:
+        maio_re = json.loads(m_D.group(1))['totals']['re']
+    except Exception:
+        maio_re = None
+
+    cur_D_m = re.search(r'(?:const|let) D\s*=\s*(\{.+\});\s*$', sala_html, re.MULTILINE)
+    try:
+        sala_re = json.loads(cur_D_m.group(1))['totals']['re'] if cur_D_m else None
+    except Exception:
+        sala_re = None
+
+    cur_T = re.search(r"(?:const|let) today\s*=\s*'([^']+)'", sala_html)
+    already_synced = (
+        cur_T and cur_T.group(1) == new_today and
+        maio_re is not None and sala_re is not None and maio_re == sala_re
+    )
+    if already_synced:
+        print(f'  –  sala.html já sincronizado (today={new_today}, re={maio_re})')
+        return False
+
+    original = sala_html
+
+    sala_html = re.sub(
+        r'(?:const|let) D\s*=\s*.+;\s*$',
+        f'let D  = {m_D.group(1)};',
+        sala_html, count=1, flags=re.MULTILINE
+    )
+
+    if m_DS:
+        sala_html = re.sub(
+            r'(?:const|let) DS\s*=\s*.+;\s*$',
+            f'let DS = {m_DS.group(1)};',
+            sala_html, count=1, flags=re.MULTILINE
+        )
+
+    sala_html = re.sub(
+        r"(?:const|let) today\s*=\s*'[^']+'",
+        f"let today      = '{new_today}'",
+        sala_html, count=1
+    )
+
+    new_lu = datetime.datetime.now().strftime('%d/%m/%Y %H:%M')
+    sala_html = re.sub(
+        r"(?:const|let) LAST_UPDATE\s*=\s*'[^']+'",
+        f"let LAST_UPDATE = '{new_lu}'",
+        sala_html, count=1
+    )
+
+    if sala_html != original:
+        sala.write_text(sala_html, encoding='utf-8')
+        print(f'  ✔  sala.html sincronizado → today: {new_today}, re: {maio_re}, LAST_UPDATE: {new_lu}')
+        return True
+
+    return False
+
+
 if __name__ == '__main__':
     repo = pathlib.Path(__file__).parent
+
     targets = sorted(repo.glob('*-2026.html'))
     if not targets:
         print('Nenhum arquivo *-2026.html encontrado.', file=sys.stderr)
         sys.exit(1)
     changed = sum(patch_file(f) for f in targets)
-    print(f'\n{changed}/{len(targets)} arquivo(s) atualizado(s).')
+    print(f'\n{changed}/{len(targets)} arquivo(s) *-2026.html atualizado(s).')
+
+    print()
+    sync_sala(repo)
