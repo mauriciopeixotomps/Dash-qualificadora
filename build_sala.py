@@ -406,7 +406,9 @@ DS = {
 }
 
 # ── 3) Gera sala.html ────────────────────────────────────────────────────────
-last_update = datetime.now().strftime('%d/%m/%Y %H:%M')
+from datetime import timezone, timedelta as _td
+_BRT = timezone(_td(hours=-3))
+last_update = datetime.now(_BRT).strftime('%d/%m/%Y %H:%M')
 
 with open(SALA_TPL) as f:
     sala = f.read()
