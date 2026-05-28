@@ -175,7 +175,7 @@ def get(endpoint):
     url = f'{BASE}/{endpoint}'
     sep = '&' if '?' in endpoint else '?'
     url += f'{sep}api_token={TOKEN}'
-    return json.loads(urllib.request.urlopen(url).read())
+    return json.loads(urllib.request.urlopen(url, timeout=60).read())
 ALL_LABELS = {}
 for f in get('dealFields').get('data', []) or []:
     if f.get('key') == 'label':
