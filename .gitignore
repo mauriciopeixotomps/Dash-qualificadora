@@ -1,0 +1,20 @@
+# Tokens e credenciais — NUNCA commitar
+.pipedrive_token
+.github_token
+
+# Dados brutos (regenerados a cada fetch)
+data_pipedrive/
+
+# Lock e logs da automação local
+.auto_update.pid
+.auto_update.lock
+auto_update.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporários
+/tmp/
+*.tmp

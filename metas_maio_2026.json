@@ -1,0 +1,26 @@
+{
+  "mes": "Maio 2026",
+  "produtos_em_escopo": ["Studio Agro", "Studio Fiscal", "Franquia Partner", "GS PARTNER"],
+  "produtos_fora_escopo": ["PJ360"],
+  "metas_por_produto": {
+    "Studio Agro": {"agendadas": 311, "realizadas": 225, "contratos": null},
+    "Studio Fiscal": {"agendadas": 288, "realizadas": 225, "contratos": null},
+    "Franquia Partner": {"agendadas": 200, "realizadas": 150, "contratos": null},
+    "GS PARTNER": {"agendadas": 195, "realizadas": 150, "contratos": null}
+  },
+  "meta_time": {
+    "agendadas": 794,
+    "realizadas": 600,
+    "contratos": 0
+  },
+  "meta_individual": {
+    "sdr_realizadas_meta": 70,
+    "n_sdrs": 12,
+    "closer_realizadas_meta": 40
+  },
+  "destaques_dashboard": [
+    "Pace geral de realizadas (time total) — destaque principal",
+    "Pace por produto (Studio Agro / Studio Fiscal / GS PARTNER)"
+  ],
+  "obs": "PJ360 não será trabalhado em Maio — excluído do dashboard."
+}

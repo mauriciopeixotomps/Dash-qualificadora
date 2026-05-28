@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Qualificadora — Sala</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #070c18;
+  --card:   #121a2c;
+  --border: #1e293b;
+  --text:   #e2e8f0;
+  --muted:  #94a3b8;
+  --green:  #22c55e;
+  --blue:   #3b82f6;
+  --purple: #a855f7;
+  --orange: #f97316;
+  --red:    #ef4444;
+  --cyan:   #06b6d4;
+  --amber:  #f59e0b;
+  --indigo: #818cf8;
+}
+
+html, body {
+  width: 100%; height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+}
+
+body {
+  display: grid;
+  grid-template-rows: 40px 62px 1fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+#header .h-title  { font-size:14px; font-weight:700; color:#fff; letter-spacing:.04em; }
+#header .h-clock  { font-size:17px; font-weight:700; color:#f1f5f9; font-variant-numeric:tabular-nums; letter-spacing:.06em; }
+#header .h-update { font-size:11px; color:var(--green); display:flex; align-items:center; gap:5px; }
+.pulse-dot { display:inline-block; width:7px; height:7px; background:var(--green); border-radius:50%; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── KPI ROW ─────────────────────────────────────────── */
+#kpi-row {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr) 4px repeat(5, 1fr);
+  gap: 4px;
+  padding: 4px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  overflow: hidden;
+  min-height: 0;
+}
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 4px 3px;
+  gap: 2px;
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
+}
+.kpi-num   { font-size:22px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+.kpi-label { font-size:8px; font-weight:600; letter-spacing:.07em; color:var(--muted); text-transform:uppercase; text-align:center; white-space:nowrap; }
+.kpi-today { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; color:#f1f5f9;
+             background:rgba(255,255,255,.06); border-radius:3px; padding:1px 6px; letter-spacing:.03em; }
+.kpi-today-label { font-size:7px; color:#64748b; letter-spacing:.06em; text-transform:uppercase; }
+
+/* ── ROW 2 ───────────────────────────────────────────── */
+#row2 {
+  display: grid;
+  grid-template-columns: 26% 26% 48%;
+  gap: 4px;
+  padding: 4px 8px 2px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── ROW 3 ───────────────────────────────────────────── */
+#row3 {
+  display: grid;
+  grid-template-columns: 40% 24% 36%;
+  gap: 4px;
+  padding: 2px 8px 4px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── PANEL BASE ──────────────────────────────────────── */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 5px;
+  min-height: 0;
+}
+.panel-title {
+  font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--muted); padding-bottom:4px; border-bottom:1px solid var(--border);
+  flex-shrink:0; display:flex; align-items:center; gap:5px;
+}
+.panel-title::before {
+  content:''; display:inline-block; width:3px; height:12px;
+  border-radius:2px; background:var(--accent-color, var(--muted)); flex-shrink:0;
+}
+.panel-body {
+  flex:1; overflow:hidden; display:flex; flex-direction:column;
+  gap:1px; margin-top:4px; min-height:0;
+}
+
+/* ── RANKING ─────────────────────────────────────────── */
+.legend-row {
+  display:flex; gap:10px; font-size:9px; color:var(--muted);
+  flex-shrink:0; margin-bottom:2px; align-items:center;
+}
+.legend-dot  { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:2px; }
+.legend-line { display:inline-block; width:14px; height:2px; background:var(--red); margin-right:2px; vertical-align:middle; }
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 86px 1fr 52px 28px;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+/* Apenas em painéis de row2: crescer para preencher o espaço */
+#sdr-list .rank-row,
+#closer-franquia .rank-row,
+#closer-partner .rank-row { flex: 1; min-height: 0; }
+.rank-name {
+  font-size:10px; font-weight:500;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.bar-wrap {
+  position:relative; height:10px; background:#1e293b; border-radius:3px; overflow:visible;
+}
+.bar-real   { position:absolute; left:0; top:0; height:100%; border-radius:3px; }
+.bar-future { position:absolute; top:0; height:100%; opacity:.55; }
+.bar-pace-marker {
+  position:absolute; top:-2px; width:2px; height:14px;
+  background:var(--red); border-radius:1px; z-index:5;
+}
+.rank-nums {
+  text-align:right;
+  line-height: 1.15;
+}
+.rank-re   { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; display:block; }
+.rank-sub  { font-size:8px; color:var(--muted); white-space:nowrap; }
+.rank-fut  { font-size:9px; color:var(--orange); text-align:right; white-space:nowrap; }
+
+/* ── GRUPO HEADER (closers Franquia/Partner) ─────────── */
+.group-hdr {
+  font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  padding: 3px 0 2px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
+#col-c { display:flex; flex-direction:column; gap:4px; justify-content:flex-start; height:100%; min-height:0; }
+#col-c-products  { flex:0 0 auto; }
+#col-c-negocios  { flex:0 0 auto; }
+#col-c-ritmo     { flex:1; min-height:0; }
+.inv-split { display:grid; grid-template-columns:1fr 1fr; gap:0 8px; height:100%; }
+.inv-col-hdr { font-size:9px; font-weight:700; letter-spacing:.07em; margin-bottom:4px; }
+.inv-row { display:grid; grid-template-columns:80px 1fr 22px; align-items:center; gap:4px; margin-bottom:3px; }
+.inv-bar-wrap { background:#1e293b; border-radius:2px; height:8px; overflow:hidden; }
+.inv-bar-fill { height:100%; border-radius:2px; }
+.ritmo-row { display:grid; grid-template-columns:38px 62px 1fr 44px; align-items:center; gap:4px; margin-bottom:1px; }
+.ritmo-bar-wrap { position:relative; height:11px; background:#1e293b; border-radius:3px; overflow:hidden; }
+.ritmo-bar      { position:absolute; left:0; top:0; height:100%; border-radius:3px; transition:width .3s; }
+.ritmo-bar-proj { position:absolute; left:0; top:0; height:100%; border-radius:3px;
+                  background:repeating-linear-gradient(90deg,#166534 0,#166534 5px,transparent 5px,transparent 10px); }
+
+.prod-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 70px;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+.prod-name {
+  font-size:10px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.prod-bar-wrap   { background:#1e293b; border-radius:3px; height:10px; overflow:hidden; }
+.prod-bar-fill   { height:100%; border-radius:3px; transition:width .3s; }
+.prod-nums       { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.prod-sub        { font-size:8px; color:var(--muted); text-align:right; white-space:nowrap; }
+
+.prod-total-card {
+  background:#0f1d35; border:1px solid #2d4a6e; border-radius:5px;
+  padding:4px 6px; margin-bottom:3px;
+}
+
+/* negócios bar */
+.neg-row { display:grid; grid-template-columns:110px 1fr 42px; align-items:center; gap:6px; flex-shrink:0; }
+.neg-name { font-size:10px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.neg-bar-wrap { background:#1e293b; border-radius:3px; height:9px; overflow:hidden; }
+.neg-bar-fill { height:100%; border-radius:3px; }
+.neg-val { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+
+/* ── CHARTS ──────────────────────────────────────────── */
+.chart-wrap { flex:1; position:relative; min-height:0; }
+.chart-note { font-size:9px; color:var(--muted); text-align:center; flex-shrink:0; margin-top:2px; }
+
+/* ── HEATMAP ─────────────────────────────────────────── */
+.hm-grid {
+  display: grid;
+  grid-template-columns: 26px repeat(6, 1fr);
+  gap: 1px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 2px;
+  grid-template-rows: 12px repeat(12, minmax(0, 22px));
+}
+.hm-hdr {
+  font-size: 8px; font-weight: 700; letter-spacing:.05em;
+  color: var(--muted); text-align: center;
+  display: flex; align-items: center; justify-content: center;
+}
+.hm-lbl {
+  font-size: 8px; color: var(--muted);
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 3px;
+}
+.hm-cell {
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,.75);
+  transition: opacity .2s;
+}
+.hm-legend {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 8px; color: var(--muted);
+  flex-shrink: 0; margin-top: 3px; justify-content: flex-end;
+}
+.hm-legend-bar {
+  display: flex; gap: 1px;
+}
+.hm-legend-bar span {
+  display: inline-block; width: 12px; height: 8px; border-radius: 2px;
+}
+
+/* ── COL D — SDR DO DIA ──────────────────────────────── */
+#col-d { display:flex; flex-direction:column; gap:4px; height:100%; min-height:0; }
+#col-d-today     { flex:3; min-height:0; overflow:hidden; }
+#col-d-invalidas { flex:2; min-height:0; overflow:hidden; }
+
+/* compact table */
+.tbl { width:100%; border-collapse:collapse; font-size:9px; }
+.tbl th {
+  font-size:8px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); padding:2px 3px; border-bottom:1px solid var(--border); text-align:right;
+}
+.tbl th:first-child { text-align:left; }
+.tbl td {
+  padding:1px 3px; font-variant-numeric:tabular-nums; text-align:right; color:var(--text);
+}
+.tbl td:first-child { text-align:left; font-size:9px; }
+.tbl tr:nth-child(even) td { background:#0d1526; }
+.tbl tr.tbl-total td { font-weight:700; border-top:1px solid var(--border); color:#fff; }
+
+/* perdidos */
+.perd-row { display:grid; grid-template-columns:105px 1fr 34px; align-items:center; gap:4px; flex-shrink:0; margin-bottom:1px; }
+.perd-name { font-size:9px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.perd-bar-wrap { background:#1e293b; border-radius:2px; height:7px; overflow:hidden; }
+.perd-bar-fill { height:100%; border-radius:2px; background:var(--red); opacity:.7; }
+.perd-val { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; color:var(--red); }
+
+/* ── COL F — PACE + MOTIVOS + TAXA ───────────────────── */
+#col-f { display:flex; flex-direction:column; gap:4px; height:100%; overflow:hidden; min-height:0; }
+#col-f-meta     { flex:1; min-height:0; overflow:hidden; }
+#col-f-motivos  { flex:0 0 auto; overflow:hidden; }
+#col-f-perdidos { flex:0 0 auto; overflow:hidden; }
+
+/* perda pós cc1 */
+.ppc1-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.ppc1-funil { display:flex; flex-direction:column; gap:3px; min-height:0; overflow:hidden; }
+.ppc1-hdr {
+  display:flex; align-items:baseline; gap:6px; padding-bottom:4px;
+  border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.ppc1-taxa { font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; }
+.ppc1-sub  { font-size:9px; color:var(--muted); line-height:1.4; }
+.ppc1-row  { display:grid; grid-template-columns:1fr 28px 32px; align-items:center; gap:4px; flex-shrink:0; }
+.ppc1-motivo { font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ppc1-bar-wrap { background:#1e293b; border-radius:2px; height:7px; overflow:hidden; }
+.ppc1-bar-fill { height:100%; border-radius:2px; }
+.ppc1-pct { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; }
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE — sobrescreve o layout TV com versão vertical
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  html, body {
+    height: auto !important;
+    overflow: auto !important;
+    overflow-x: hidden;
+    font-size: 13px;
+  }
+  body {
+    display: block !important;
+  }
+
+  /* HEADER */
+  #header {
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 12px;
+    height: 48px;
+  }
+  #header .h-title  { font-size: 13px; }
+  #header .h-clock  { font-size: 15px; }
+  #header .h-update { font-size: 10px; }
+
+  /* KPI ROW — grid 3×3 on mobile, separator hidden */
+  .kpi-sep { display: none !important; }
+  #kpi-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+    height: auto !important;
+    padding: 8px 8px;
+    gap: 5px;
+    overflow: visible !important;
+  }
+  .kpi-card {
+    padding: 8px 4px;
+    height: auto;
+    min-height: 64px;
+  }
+  .kpi-num   { font-size: 20px !important; }
+  .kpi-today { font-size: 11px !important; padding: 1px 5px; }
+  .kpi-label { font-size: 8px !important; }
+
+  /* ROWS 2 e 3 — viram blocos verticais */
+  #row2, #row3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    padding: 8px;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Panels: altura automática + overflow scroll se necessário */
+  .panel {
+    min-height: 0;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Painéis de ranking — altura fixa razoável */
+  #sdr-list,
+  #closer-franquia,
+  #closer-partner { height: auto !important; overflow: visible !important; }
+
+  .panel-body {
+    height: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Col C — produtos, negócios, ritmo */
+  #col-c {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    height: auto !important;
+  }
+  #col-c-products, #col-c-negocios, #col-c-ritmo {
+    flex: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Col D — SDR hoje + inválidas */
+  #col-d {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    height: auto !important;
+  }
+  #col-d-today, #col-d-invalidas {
+    flex: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .tbl { font-size: 11px; }
+  .tbl td, .tbl th { padding: 3px 4px; }
+
+  /* Col F — pace + motivos + taxa */
+  #col-f {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  #col-f-meta, #col-f-motivos, #col-f-perdidos {
+    flex: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  /* Gráfico de pace: altura fixa legível */
+  #col-f-meta .chart-wrap { height: 220px !important; flex: none !important; }
+
+  /* Heatmap: scroll horizontal se necessário */
+  .hm-grid {
+    flex: none !important;
+    min-height: 200px;
+    grid-template-rows: 12px repeat(12, minmax(0, 18px)) !important;
+  }
+
+  /* Bars de ranking: tamanho nome maior */
+  .rank-row { grid-template-columns: 100px 1fr 52px 28px !important; }
+  .rank-name { font-size: 11px !important; }
+  .rank-re   { font-size: 13px !important; }
+
+  /* Prod rows */
+  .prod-row { grid-template-columns: 120px 1fr 70px !important; }
+  .ritmo-row { grid-template-columns: 44px 68px 1fr 44px !important; }
+
+  /* Perdidos */
+  .perd-row { grid-template-columns: 120px 1fr 36px !important; }
+  .perd-name { font-size: 11px !important; }
+
+  /* PPC1 grid — lado a lado ainda funciona */
+  .ppc1-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .ppc1-taxa { font-size: 18px !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ROW 0 — HEADER -->
+<header id="header">
+  <div class="h-title">🎯 QUALIFICADORA — MAIO 2026</div>
+  <div class="h-clock" id="clock">--:--:--</div>
+  <div class="h-update">
+    <span class="pulse-dot"></span>
+    Última atualização: <strong id="last-update-txt"></strong>
+  </div>
+</header>
+
+<!-- ROW 1 — KPIs -->
+<div id="kpi-row">
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#60a5fa" id="k-leads">—</span>
+    <span class="kpi-today" style="color:#60a5fa"><span class="kpi-today-label">hoje </span><span id="k-leads-hoje">—</span></span>
+    <span class="kpi-label">Leads Gerados</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#818cf8" id="k-qual">—</span>
+    <span class="kpi-today" style="color:#818cf8"><span class="kpi-today-label">hoje </span><span id="k-qual-hoje">—</span></span>
+    <span class="kpi-label">Qualificadas</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#a855f7" id="k-ag">—</span>
+    <span class="kpi-today" style="color:#a855f7"><span class="kpi-today-label">hoje </span><span id="k-ag-hoje">—</span></span>
+    <span class="kpi-label">AG CC1</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#f59e0b" id="k-reag">—</span>
+    <span class="kpi-today" style="color:#f59e0b"><span class="kpi-today-label">hoje </span><span id="k-reag-hoje">—</span></span>
+    <span class="kpi-label">Reagend.</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#22c55e" id="k-re">—</span>
+    <span class="kpi-today" style="color:#22c55e"><span class="kpi-today-label">hoje </span><span id="k-re-hoje">—</span></span>
+    <span class="kpi-label">CC1 Realiz.</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#ef4444" id="k-ns">—</span>
+    <span class="kpi-today" style="color:#ef4444"><span class="kpi-today-label">hoje </span><span id="k-ns-hoje">—</span></span>
+    <span class="kpi-label">No Show</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#f97316" id="k-future">—</span>
+    <span class="kpi-today" style="color:#f97316"><span class="kpi-today-label">hoje </span><span id="k-future-hoje">—</span></span>
+    <span class="kpi-label">Para Acont.</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#06b6d4" id="k-lost">—</span>
+    <span class="kpi-today" style="color:#06b6d4"><span class="kpi-today-label">hoje </span><span id="k-lost-hoje">—</span></span>
+    <span class="kpi-label">Perdidos</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#f43f5e" id="k-inv">—</span>
+    <span class="kpi-today" style="color:#f43f5e"><span class="kpi-today-label">hoje </span><span id="k-inv-hoje">—</span></span>
+    <span class="kpi-label">CC1 Inválida</span>
+  </div>
+
+  <!-- Separador Partner -->
+  <div class="kpi-sep" style="background:rgba(245,158,11,.35);border-radius:1px;margin:6px 0;align-self:stretch"></div>
+
+  <!-- Partner KPI cards -->
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#60a5fa" id="k-p-leads">—</span>
+    <span class="kpi-today" style="color:#60a5fa"><span class="kpi-today-label">mês </span><span id="k-p-leads-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. Leads</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#f87171" id="k-p-lost">—</span>
+    <span class="kpi-today" style="color:#f87171"><span class="kpi-today-label">mês </span><span id="k-p-lost-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. Perdidos</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#22c55e" id="k-p-re">—</span>
+    <span class="kpi-today" style="color:#22c55e"><span class="kpi-today-label">mês </span><span id="k-p-re-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. RE hoje</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#ef4444" id="k-p-ns">—</span>
+    <span class="kpi-today" style="color:#ef4444"><span class="kpi-today-label">mês </span><span id="k-p-ns-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. NS hoje</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#f59e0b" id="k-p-ag">—</span>
+    <span class="kpi-today" style="color:#f59e0b"><span class="kpi-today-label">total </span><span id="k-p-ag-total">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. AGs/dia</span>
+  </div>
+</div>
+
+<!-- ROW 2 -->
+<div id="row2">
+
+  <!-- Col A — SDR CC1 Realizadas -->
+  <div class="panel" style="--accent-color:#22c55e">
+    <div class="panel-title">CC1 Realizadas — SDR</div>
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:#22c55e"></span>Realizado</span>
+      <span><span class="legend-dot" style="background:#f97316"></span>Para acontecer</span>
+      <span><span class="legend-line"></span>Pace hoje</span>
+      <span style="color:#f43f5e;font-size:9px;font-weight:700">■ INV</span>
+      <span style="color:#64748b">dev: deveria estar hoje</span>
+    </div>
+    <div class="panel-body" id="sdr-list"></div>
+  </div>
+
+  <!-- Col B — Closer CC1 por Franquia / Partner -->
+  <div class="panel" style="--accent-color:#3b82f6">
+    <div class="panel-title">CC1 Realizadas — Closer</div>
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:#22c55e"></span>Franquia</span>
+      <span><span class="legend-dot" style="background:#a855f7"></span>Partner</span>
+      <span><span class="legend-line"></span>Pace hoje</span>
+      <span style="color:#f43f5e;font-size:9px;font-weight:700">■ INV</span>
+      <span style="color:#64748b">dev: deveria estar hoje</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;flex:1;min-height:0;overflow:hidden;margin-top:3px">
+      <div class="panel-body" id="closer-franquia"></div>
+      <div class="panel-body" id="closer-partner"></div>
+    </div>
+  </div>
+
+  <!-- Col C — Produtos + Negócios -->
+  <div id="col-c">
+
+    <div class="panel" id="col-c-negocios" style="--accent-color:#3b82f6">
+      <div class="panel-title">Negócios Iniciados</div>
+      <div class="panel-body" id="neg-list"></div>
+    </div>
+
+    <div class="panel" id="col-c-products" style="--accent-color:#a855f7">
+      <div class="panel-title">CC1 Realizadas — Por Produto</div>
+      <div class="panel-body" id="prod-list"></div>
+    </div>
+
+    <div class="panel" id="col-c-ritmo" style="--accent-color:#22c55e">
+      <div class="panel-title">Ritmo Semanal — RE</div>
+      <div id="ritmo-wrap" style="padding:4px 0 2px;overflow-y:auto;flex:1;min-height:0"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ROW 3 -->
+<div id="row3">
+
+  <!-- Col E — Mapa de Calor CC1 Realizadas (ESQUERDA) -->
+  <div class="panel" style="--accent-color:#22c55e">
+    <div class="panel-title">CC1 Realizadas — Horário × Dia</div>
+    <div id="heatmap-grid" class="hm-grid"></div>
+  </div>
+
+  <!-- Col D — SDR do Dia + CC1 Inválidas (MEIO) -->
+  <div id="col-d">
+    <div class="panel" id="col-d-today" style="--accent-color:#f97316">
+      <div class="panel-title">SDR — Hoje</div>
+      <div class="panel-body" style="overflow:auto">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>SDR</th>
+              <th style="color:#a855f7">AG</th>
+              <th style="color:#22c55e">RE</th>
+              <th style="color:#f97316">Fut</th>
+              <th style="color:#ef4444">NS</th>
+            </tr>
+          </thead>
+          <tbody id="sdr-today-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel" id="col-d-invalidas" style="--accent-color:#f43f5e">
+      <div class="panel-title">CC1 Inválidas — Ranking</div>
+      <div class="inv-split" style="margin-top:4px">
+        <div>
+          <div class="inv-col-hdr" style="color:#f43f5e">SDR</div>
+          <div id="inv-sdr-list"></div>
+        </div>
+        <div>
+          <div class="inv-col-hdr" style="color:#f43f5e">CLOSER</div>
+          <div id="inv-closer-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Col F — Pace vs Meta + Motivos de Perda + Taxa Perda Pós CC1 -->
+  <div id="col-f">
+    <div class="panel" id="col-f-meta" style="--accent-color:#22c55e">
+      <div class="panel-title">Pace vs Meta — Realizadas</div>
+      <div class="chart-wrap">
+        <canvas id="chart-meta"></canvas>
+      </div>
+      <div class="chart-note">Linhas tracejadas = meta proporcional aos dias úteis</div>
+    </div>
+
+    <div class="panel" id="col-f-motivos" style="--accent-color:#ef4444">
+      <div class="panel-title">Motivos de Perda</div>
+      <div class="panel-body" id="perd-list"></div>
+    </div>
+
+    <div class="panel" id="col-f-perdidos" style="--accent-color:#ef4444">
+      <div class="panel-title">Taxa de Perda Pós CC1 — por Motivo</div>
+      <div class="ppc1-grid">
+        <div class="ppc1-funil" id="ppc1-franquia"></div>
+        <div class="ppc1-funil" id="ppc1-partner"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DADOS ─────────────────────────────────────────────────
+const D  = __DATA_JSON__;
+const DS = __SALA_JSON__;
+const today      = '__TODAY__';
+const LAST_UPDATE = '__LAST_UPDATE__';
+
+// ── HELPERS ───────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt  = n => (n == null ? '—' : (n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n)));
+const pct  = (a,b) => b > 0 ? Math.min(100, Math.round(a/b*100)) : 0;
+const clamp = (v,mn,mx) => Math.max(mn, Math.min(mx, v));
+
+// ── RELÓGIO ───────────────────────────────────────────────
+function updateClock(){
+  const n=new Date();
+  $('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()]
+    .map(x=>String(x).padStart(2,'0')).join(':');
+}
+updateClock();
+setInterval(updateClock,1000);
+$('last-update-txt').textContent = LAST_UPDATE;
+
+// ── KPIs — mês ────────────────────────────────────────────
+const T = D.totals || {};
+$('k-leads').textContent  = fmt(T.leads);
+$('k-qual').textContent   = fmt(T.qual);
+$('k-ag').textContent     = fmt(T.ag);
+$('k-reag').textContent   = fmt(DS.reag);
+$('k-re').textContent     = fmt(T.re);
+$('k-ns').textContent     = fmt(T.ns);
+$('k-future').textContent = fmt(T.future_re);
+$('k-lost').textContent   = fmt(T.lost);
+$('k-inv').textContent    = fmt(T.inv || DS.inv || 0);
+
+// ── KPIs — hoje ───────────────────────────────────────────
+const todayEntry = (D.daily_series || []).find(d => d.date === today) || {};
+const todayFut = Object.values(DS.sdr_today?.fut || {}).reduce((a,b)=>a+b, 0);
+$('k-leads-hoje').textContent  = fmt(todayEntry.leads    || 0);
+$('k-qual-hoje').textContent   = fmt(todayEntry.qual     || 0);
+$('k-ag-hoje').textContent     = fmt(todayEntry.ag       || 0);
+$('k-reag-hoje').textContent   = fmt(DS.reag_hoje        || 0);
+$('k-re-hoje').textContent     = fmt(todayEntry.re       || 0);
+$('k-ns-hoje').textContent     = fmt(todayEntry.ns       || 0);
+$('k-future-hoje').textContent = fmt(todayFut);
+$('k-lost-hoje').textContent   = fmt(todayEntry.lost     || 0);
+$('k-inv-hoje').textContent    = fmt(DS.inv_hoje         || 0);
+
+// ── CALC RE POR PRODUTO ────────────────────────────────────
+function calcReByProduct(){
+  const result = {};
+  if (D.daily_product && D.daily_product.re){
+    Object.values(D.daily_product.re).forEach(dayObj => {
+      Object.entries(dayObj).forEach(([prod,cnt]) => {
+        result[prod] = (result[prod]||0) + (cnt||0);
+      });
+    });
+  }
+  return result;
+}
+
+// ── RANKING helper ────────────────────────────────────────
+function buildRankRow(name, re, fut, paceTarget, meta, color){
+  const pReal = pct(re,  meta);
+  const pFut  = clamp(pct(fut, meta), 0, 100 - pReal);
+  const pPace = clamp(pct(paceTarget, meta), 0, 100);
+  const shortName = name.split(' ').slice(0,2).join(' ').slice(0,13);
+  const gap = re - paceTarget;
+  const gapColor = gap >= 0 ? '#22c55e' : '#ef4444';
+  const gapLabel = gap >= 0 ? `+${gap}` : String(gap);
+
+  const div = document.createElement('div');
+  div.className = 'rank-row';
+  div.innerHTML = `
+    <span class="rank-name" title="${name}">${shortName}</span>
+    <div class="bar-wrap">
+      <div class="bar-real"   style="background:${color};width:${pReal}%"></div>
+      <div class="bar-future" style="background:#f97316;left:${pReal}%;width:${pFut}%"></div>
+      <div class="bar-pace-marker" style="left:${pPace}%"></div>
+    </div>
+    <div class="rank-nums">
+      <span class="rank-re" style="color:${color}">${re}</span>
+      <span class="rank-sub"><span style="color:#64748b">dev:</span>${paceTarget} <span style="color:${gapColor};font-weight:700">${gapLabel}</span></span>
+    </div>
+    <span class="rank-fut">${fut ? '▶'+fut : ''}</span>
+  `;
+  return div;
+}
+
+// ── SDR RANKING ───────────────────────────────────────────
+(function renderSDR(){
+  const reObj  = (D.sdr && D.sdr.re)     ? D.sdr.re     : {};
+  const futObj = (D.sdr && D.sdr.future) ? D.sdr.future : {};
+  const meta   = D.meta || {};
+  const GOAL   = meta.sdr_goal || 70;
+  const elapsed = meta.working_days_elapsed || 1;
+  const total_d = meta.working_days_total   || 20;
+  const paceTarget = Math.round(GOAL * elapsed / total_d);
+
+  const entries = Object.entries(reObj).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){ $('sdr-list').innerHTML='<div style="color:var(--muted);padding:6px">Sem dados</div>'; return; }
+
+  const container = $('sdr-list');
+  entries.forEach(([name, re])=>{
+    const fut = futObj[name] || 0;
+    container.appendChild(buildRankRow(name, re, fut, paceTarget, GOAL, '#22c55e'));
+  });
+})();
+
+// ── CLOSER RANKING — FRANQUIA | PARTNER lado a lado ───────
+(function renderCloser(){
+  const cbf      = DS.closer_by_funil || {};
+  const franqObj = cbf.FRANQUIA || {};
+  const partObj  = cbf.PARTNER  || {};
+  const futObj   = (D.closer && D.closer.future) ? D.closer.future : {};
+  const meta     = D.meta || {};
+  const GOAL     = meta.closer_goal || 40;
+  const elapsed  = meta.working_days_elapsed || 1;
+  const total_d  = meta.working_days_total   || 20;
+  const paceTarget = Math.round(GOAL * elapsed / total_d);
+
+  function renderGroup(obj, containerId, label, color){
+    const container = $(containerId);
+    if (!container || !Object.keys(obj).length) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'group-hdr';
+    hdr.style.color = color;
+    hdr.textContent = label;
+    container.appendChild(hdr);
+    Object.entries(obj)
+      .sort((a,b) => b[1]-a[1])
+      .forEach(([name, re]) => {
+        const fut = futObj[name] || 0;
+        container.appendChild(buildRankRow(name, re, fut, paceTarget, GOAL, color));
+      });
+  }
+
+  renderGroup(franqObj, 'closer-franquia', 'FRANQUIA', '#22c55e');
+  renderGroup(partObj,  'closer-partner',  'PARTNER',  '#a855f7');
+})();
+
+// ── PRODUTOS ──────────────────────────────────────────────
+(function renderProdutos(){
+  const rp = calcReByProduct();
+  const container = $('prod-list');
+  const meta   = D.meta || {};
+  const elapsed = meta.working_days_elapsed || 1;
+  const total_d = meta.working_days_total   || 20;
+
+  const PRODS = [
+    { key:'Studio Agro',      label:'Studio Agro',      meta:150, color:'#22c55e' },
+    { key:'Studio Fiscal',    label:'Studio Fiscal',    meta:150, color:'#818cf8' },
+    { key:'Franquia Partner', label:'Franquia Partner', meta:150, color:'#a855f7' },
+  ];
+
+  PRODS.forEach(p => {
+    const re    = rp[p.key] || 0;
+    const pc    = pct(re, p.meta);
+    const hoje  = Math.round(p.meta * elapsed / total_d);
+    const falta = re - hoje;
+    const faltaColor = falta >= 0 ? '#22c55e' : '#ef4444';
+    const faltaStr   = falta >= 0 ? `+${falta}` : String(falta);
+    const row = document.createElement('div');
+    row.className = 'prod-row';
+    row.innerHTML = `
+      <span class="prod-name" style="color:${p.color}">${p.label}</span>
+      <div class="prod-bar-wrap">
+        <div class="prod-bar-fill" style="background:${p.color};width:${pc}%"></div>
+      </div>
+      <div>
+        <div class="prod-nums" style="color:${p.color}">${re}<span style="color:var(--muted);font-size:9px"> /${p.meta}</span></div>
+        <div class="prod-sub">→${hoje} <span style="color:${faltaColor};font-weight:700">${faltaStr}</span></div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  // TOTAL FRANQUIA
+  const franqKeys  = ['Studio Agro','Studio Fiscal','Franquia Partner'];
+  const totalFranq = franqKeys.reduce((s,k)=>s+(rp[k]||0), 0);
+  const metaFranq  = 450;
+  const pcFranq    = pct(totalFranq, metaFranq);
+  const hojeFranq  = Math.round(metaFranq * elapsed / total_d);
+  const faltaFranq = totalFranq - hojeFranq;
+  const fcColor    = faltaFranq >= 0 ? '#22c55e' : '#ef4444';
+  const fcStr      = faltaFranq >= 0 ? `+${faltaFranq}` : String(faltaFranq);
+
+  const cardFranq = document.createElement('div');
+  cardFranq.className = 'prod-total-card';
+  cardFranq.innerHTML = `
+    <div class="prod-row" style="margin-bottom:0">
+      <span class="prod-name" style="color:#22c55e;font-size:10px">▶ TOTAL FRANQUIA</span>
+      <div class="prod-bar-wrap" style="height:11px">
+        <div class="prod-bar-fill" style="background:#22c55e;width:${pcFranq}%"></div>
+      </div>
+      <div>
+        <div class="prod-nums" style="color:#22c55e">${totalFranq}<span style="color:var(--muted);font-size:9px"> /450</span></div>
+        <div class="prod-sub">→${hojeFranq} <span style="color:${fcColor};font-weight:700">${fcStr}</span></div>
+      </div>
+    </div>
+  `;
+  container.appendChild(cardFranq);
+
+  // GS PARTNER
+  const gsRe   = rp['GS PARTNER'] || 0;
+  const metaGs = 150;
+  const pcGs   = pct(gsRe, metaGs);
+  const hojeGs = Math.round(metaGs * elapsed / total_d);
+  const faltaGs = gsRe - hojeGs;
+  const gcColor = faltaGs >= 0 ? '#22c55e' : '#ef4444';
+  const gcStr   = faltaGs >= 0 ? `+${faltaGs}` : String(faltaGs);
+  const rowGs   = document.createElement('div');
+  rowGs.className = 'prod-row';
+  rowGs.innerHTML = `
+    <span class="prod-name" style="color:#a855f7">GS PARTNER</span>
+    <div class="prod-bar-wrap">
+      <div class="prod-bar-fill" style="background:#a855f7;width:${pcGs}%"></div>
+    </div>
+    <div>
+      <div class="prod-nums" style="color:#a855f7">${gsRe}<span style="color:var(--muted);font-size:9px"> /150</span></div>
+      <div class="prod-sub">→${hojeGs} <span style="color:${gcColor};font-weight:700">${gcStr}</span></div>
+    </div>
+  `;
+  container.appendChild(rowGs);
+})();
+
+// ── NEGÓCIOS POR MODELO ────────────────────────────────────
+(function renderNegocios(){
+  const etiq = DS.leads_by_etiqueta || {};
+  const etiqColors = {
+    'Lead Partner':       '#3b82f6',
+    'Lead Studio Agro':   '#22c55e',
+    'Lead Studio Fiscal': '#f59e0b',
+  };
+  const entries = Object.entries(etiq)
+    .filter(([k])=>k!=='Lead PJ360º')
+    .sort((a,b)=>b[1]-a[1]);
+  const maxVal  = entries.length ? entries[0][1] : 1;
+  const container = $('neg-list');
+  entries.forEach(([name,val])=>{
+    const color = etiqColors[name] || '#94a3b8';
+    const pc = pct(val, maxVal);
+    const row = document.createElement('div');
+    row.className = 'neg-row';
+    row.innerHTML = `
+      <span class="neg-name" title="${name}">${name}</span>
+      <div class="neg-bar-wrap"><div class="neg-bar-fill" style="background:${color};width:${pc}%"></div></div>
+      <span class="neg-val" style="color:${color}">${fmt(val)}</span>
+    `;
+    container.appendChild(row);
+  });
+})();
+
+// ── SDR DO DIA ────────────────────────────────────────────
+(function renderSdrToday(){
+  const st  = DS.sdr_today || {};
+  const ag_t  = st.ag  || {};
+  const re_t  = st.re  || {};
+  const ns_t  = st.ns  || {};
+  const fut_t = st.fut || {};
+  const sdrs = Object.keys((D.sdr && D.sdr.re) ? D.sdr.re : {})
+    .sort((a,b)=>{
+      const ra = D.sdr.re[a]||0, rb = D.sdr.re[b]||0;
+      return rb - ra;
+    });
+
+  const tbody = $('sdr-today-tbody');
+  let totAg=0, totRe=0, totNs=0, totFut=0;
+
+  sdrs.forEach(name => {
+    const shortName = name.split(' ').slice(0,2).join(' ').slice(0,12);
+    const ag  = ag_t[name]  || 0;
+    const re  = re_t[name]  || 0;
+    const ns  = ns_t[name]  || 0;
+    const fut = fut_t[name] || 0;
+    totAg+=ag; totRe+=re; totNs+=ns; totFut+=fut;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${shortName}</td>
+      <td style="color:#a855f7">${ag||'—'}</td>
+      <td style="color:#22c55e">${re||'—'}</td>
+      <td style="color:#f97316">${fut||'—'}</td>
+      <td style="color:#ef4444">${ns||'—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const tr = document.createElement('tr');
+  tr.className = 'tbl-total';
+  tr.innerHTML = `
+    <td>TOTAL</td>
+    <td style="color:#a855f7">${totAg||'—'}</td>
+    <td style="color:#22c55e">${totRe||'—'}</td>
+    <td style="color:#f97316">${totFut||'—'}</td>
+    <td style="color:#ef4444">${totNs||'—'}</td>
+  `;
+  tbody.appendChild(tr);
+})();
+
+// ── PERDIDOS POR MOTIVO ────────────────────────────────────
+(function renderPerdidos(){
+  const pm = DS.perdidos_por_motivo || {};
+  const container = $('perd-list');
+  const totals = Object.entries(pm).map(([motivo,produtos])=>{
+    return [motivo, Object.values(produtos).reduce((s,v)=>s+(v||0),0)];
+  }).sort((a,b)=>b[1]-a[1]);
+  const maxV = totals.length ? totals[0][1] : 1;
+  totals.forEach(([motivo,total])=>{
+    const pc = pct(total, maxV);
+    const row = document.createElement('div');
+    row.className = 'perd-row';
+    row.innerHTML = `
+      <span class="perd-name" title="${motivo}">${motivo}</span>
+      <div class="perd-bar-wrap"><div class="perd-bar-fill" style="width:${pc}%"></div></div>
+      <span class="perd-val">${fmt(total)}</span>
+    `;
+    container.appendChild(row);
+  });
+})();
+
+// ── TAXA DE PERDA PÓS CC1 ─────────────────────────────────
+(function renderPerdidosPosCC1(){
+  const ppc1 = DS.perdidos_pos_cc1 || {};
+  const configs = [
+    { id: 'ppc1-franquia', key: 'FRANQUIA', color: '#22c55e', label: 'FRANQUIA' },
+    { id: 'ppc1-partner',  key: 'PARTNER',  color: '#a855f7', label: 'PARTNER'  },
+  ];
+  configs.forEach(({ id, key, color, label }) => {
+    const el = $(id);
+    const d  = ppc1[key] || {};
+    const totalCC1  = d.total_cc1      || 0;
+    const totalPerd = d.total_perdidos || 0;
+    const taxa      = totalCC1 > 0 ? (totalPerd / totalCC1 * 100).toFixed(1) : '—';
+    const motivos   = Object.entries(d.motivos || {}).sort((a,b) => b[1]-a[1]);
+    const maxV      = motivos.length ? motivos[0][1] : 1;
+
+    // header
+    const hdr = document.createElement('div');
+    hdr.className = 'ppc1-hdr';
+    hdr.innerHTML = `
+      <span class="ppc1-taxa" style="color:${color}">${taxa}%</span>
+      <div class="ppc1-sub">
+        <b style="color:#fff">${label}</b><br>
+        ${totalPerd} perd. / ${totalCC1} CC1
+      </div>`;
+    el.appendChild(hdr);
+
+    // motivos — top 5
+    motivos.slice(0, 5).forEach(([motivo, count]) => {
+      const pctBar = (count / maxV * 100).toFixed(1);
+      const pctTotal = totalCC1 > 0 ? (count / totalCC1 * 100).toFixed(1) : '—';
+      const row = document.createElement('div');
+      row.className = 'ppc1-row';
+      row.innerHTML = `
+        <span class="ppc1-motivo" title="${motivo}">${motivo}</span>
+        <div class="ppc1-bar-wrap"><div class="ppc1-bar-fill" style="width:${pctBar}%;background:${color};opacity:.75"></div></div>
+        <span class="ppc1-pct" style="color:${color}">${pctTotal}%</span>`;
+      el.appendChild(row);
+    });
+    // rodapé: indica quantos motivos foram ocultados
+    const hidden = motivos.length - 5;
+    if (hidden > 0) {
+      const more = document.createElement('div');
+      more.style.cssText = 'font-size:8px;color:#475569;margin-top:2px;text-align:right';
+      more.textContent = `+${hidden} outros motivos`;
+      el.appendChild(more);
+    }
+  });
+})();
+
+// ── PLUGIN: valores visíveis nas pontas das linhas ─────────
+const endLabelPlugin = {
+  id: 'endLabels',
+  afterDatasetsDraw(chart) {
+    const {ctx} = chart;
+    chart.data.datasets.forEach((ds, i) => {
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) return;
+      // último ponto com valor > 0
+      let lastIdx = -1;
+      for (let j = ds.data.length - 1; j >= 0; j--) {
+        if (ds.data[j] != null && ds.data[j] > 0) { lastIdx = j; break; }
+      }
+      if (lastIdx < 0) return;
+      const pt  = meta.data[lastIdx];
+      if (!pt) return;
+      const val = ds.data[lastIdx];
+      const label = val >= 1000 ? (val/1000).toFixed(1)+'k' : String(val);
+      ctx.save();
+      ctx.font = 'bold 9px -apple-system,sans-serif';
+      // fundo para legibilidade
+      const w = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(7,12,24,0.75)';
+      ctx.fillRect(pt.x + 2, pt.y - 8, w + 6, 14);
+      ctx.fillStyle = ds.borderColor;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, pt.x + 5, pt.y);
+      ctx.restore();
+    });
+  }
+};
+
+// ── MAPA DE CALOR CC1 REALIZADAS ─────────────────────────
+(function renderHeatmap(){
+  const hm    = DS.re_heatmap || {};
+  const days  = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const hours = [9,10,11,12,13,14,15,16,17,18,19,20];
+
+  let maxVal = 1;
+  days.forEach(d => hours.forEach(h => {
+    const v = (hm[d] || {})[String(h)] || 0;
+    if (v > maxVal) maxVal = v;
+  }));
+
+  const grid = $('heatmap-grid');
+  if (!grid) return;
+
+  // cabeçalho
+  const blank = document.createElement('div');
+  grid.appendChild(blank);
+  days.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'hm-hdr';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  // linhas de dados
+  hours.forEach(h => {
+    const lbl = document.createElement('div');
+    lbl.className = 'hm-lbl';
+    lbl.textContent = `${h}h`;
+    grid.appendChild(lbl);
+
+    days.forEach(d => {
+      const v = (hm[d] || {})[String(h)] || 0;
+      const intensity = v > 0 ? 0.10 + (v / maxVal) * 0.90 : 0.04;
+      const cell = document.createElement('div');
+      cell.className = 'hm-cell';
+      cell.style.background = `rgba(34,197,94,${intensity.toFixed(2)})`;
+      if (v > 0) {
+        cell.textContent = v;
+        cell.style.color = intensity > 0.55 ? 'rgba(0,0,0,.82)' : 'rgba(255,255,255,.85)';
+      }
+      cell.title = `${d} ${h}h — ${v} CC1`;
+      grid.appendChild(cell);
+    });
+  });
+})();
+
+// ── RITMO SEMANAL RE + PROJEÇÃO ──────────────────────────
+(function renderRitmo(){
+  const rs = DS.re_semanas;
+  if (!rs || !rs.semanas) return;
+  const wrap = $('ritmo-wrap');
+  if (!wrap) return;
+
+  const maxVal = Math.max(...rs.semanas.map(s => s.proj || s.total || 0), 1);
+
+  // legenda FR / PT + projeção + explicação dos números
+  const leg = document.createElement('div');
+  leg.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:3px;align-items:center';
+  leg.innerHTML = `
+    <span style="font-size:9px;color:#22c55e">&#9632; FRANQUIA</span>
+    <span style="font-size:9px;color:#a855f7">&#9632; PARTNER</span>
+    <span style="font-size:9px;color:#1e7a4a">&#9632; Projeção (ritmo atual)</span>
+    <span style="font-size:8px;color:#475569;margin-left:4px">nº = total ·  <span style="color:#22c55e">FR</span>/<span style="color:#a855f7">PT</span> ·  <span style="color:#86efac">→ proj. semana</span></span>`;
+  wrap.appendChild(leg);
+
+  rs.semanas.forEach(s => {
+    const displayVal = s.completa ? s.total : (s.proj || s.total || 0);
+    const isFut      = !s.completa && !s.em_andamento;
+    const total      = s.total || 0;
+    const fr         = s.franquia || 0;
+    const pt         = s.partner  || 0;
+
+    // Para barras empilhadas FR+PT (proporcional ao displayVal para semanas projetadas)
+    const frPct = total > 0 ? Math.round((fr / maxVal) * 100) : Math.round((displayVal * 0.55 / maxVal) * 100);
+    const ptPct = total > 0 ? Math.round((pt / maxVal) * 100) : Math.round((displayVal * 0.45 / maxVal) * 100);
+    const projPct = Math.round((displayVal / maxVal) * 100);
+
+    const row = document.createElement('div');
+    row.className = 'ritmo-row';
+
+    const lbl = document.createElement('span');
+    lbl.style.cssText = 'font-size:10px;color:#94a3b8;font-weight:600';
+    lbl.textContent = s.label;
+
+    const dt = document.createElement('span');
+    dt.style.cssText = 'font-size:9px;color:#64748b';
+    dt.textContent = s.dates;
+
+    const barWrap = document.createElement('div');
+    barWrap.className = 'ritmo-bar-wrap';
+
+    if (isFut) {
+      // semana futura: listrado
+      const b = document.createElement('div');
+      b.className = 'ritmo-bar-proj';
+      b.style.width = projPct + '%';
+      barWrap.appendChild(b);
+    } else {
+      // semana real ou em andamento: barra empilhada FR (verde) + PT (roxo)
+      const bfr = document.createElement('div');
+      bfr.className = 'ritmo-bar';
+      bfr.style.cssText = `left:0;width:${frPct}%;background:#22c55e;opacity:${s.completa?1:0.7}`;
+      barWrap.appendChild(bfr);
+      const bpt = document.createElement('div');
+      bpt.className = 'ritmo-bar';
+      bpt.style.cssText = `left:${frPct}%;width:${ptPct}%;background:#a855f7;opacity:${s.completa?1:0.7}`;
+      barWrap.appendChild(bpt);
+      // se em andamento, mostrar fundo cinza para a parte projetada
+      if (s.em_andamento && s.proj && s.proj > total) {
+        const projTot = Math.round((s.proj / maxVal) * 100);
+        const bBack = document.createElement('div');
+        bBack.className = 'ritmo-bar';
+        bBack.style.cssText = `left:${frPct+ptPct}%;width:${projTot-frPct-ptPct}%;background:#1e3a2f;`;
+        barWrap.insertBefore(bBack, bfr);
+      }
+    }
+
+    const num = document.createElement('span');
+    num.style.cssText = `font-size:11px;font-weight:700;text-align:right;line-height:1.2`;
+    if (s.em_andamento) {
+      // Semana em andamento: mostra real + projeção da semana separados
+      num.innerHTML =
+        `<span style="color:#86efac">${total}</span><span style="font-size:8px;color:#64748b"> hoje</span><br>` +
+        `<span style="font-size:9px;color:#22c55e">&#8594;~${s.proj||''}</span><span style="font-size:8px;color:#64748b"> sem</span>`;
+    } else if (isFut) {
+      num.innerHTML = `<span style="color:#475569">~${displayVal}</span>`;
+    } else {
+      // semana completa: total + FR/PT
+      num.innerHTML = `<span style="color:#22c55e">${total}</span><br><span style="font-size:8px;color:#22c55e">${fr}</span><span style="font-size:8px;color:#64748b">/</span><span style="font-size:8px;color:#a855f7">${pt}</span>`;
+    }
+
+    row.appendChild(lbl);
+    row.appendChild(dt);
+    row.appendChild(barWrap);
+    row.appendChild(num);
+    wrap.appendChild(row);
+  });
+
+  // Total projeção
+  const divider = document.createElement('div');
+  divider.style.cssText = 'border-top:1px solid #1e293b;margin:2px 0 2px';
+  wrap.appendChild(divider);
+
+  const total = document.createElement('div');
+  total.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:0 2px';
+  total.innerHTML = `<span style="font-size:10px;color:#94a3b8">Projeção do mês</span><span style="font-size:15px;font-weight:800;color:#22c55e">~${rs.proj_mes}</span>`;
+  wrap.appendChild(total);
+})();
+
+// ── CHART: PACE VS META ───────────────────────────────────
+(function buildChartMeta(){
+  const series  = D.daily_series || [];
+  const meta    = D.meta || {};
+  const GOAL_S  = meta.sdr_goal    || 70;
+  const GOAL_C  = meta.closer_goal || 40;
+  const nSDRs   = Object.keys((D.sdr && D.sdr.re) || {}).length || 10;
+  const nClosers= Object.keys((D.closer && D.closer.re) || {}).length || 3;
+  const TOTAL_D = meta.working_days_total || 20;
+  const WD      = D.working_days || [];
+  const labels  = series.map(d=>d.date ? d.date.slice(5) : '');
+  const tickLabels = labels.map((l,i)=> i%5===0 ? l : '');
+
+  let sRe=0;
+  const cumRe = series.map(d=>{ sRe+=(d.re||0); return sRe; });
+  const cumMetaSDR = series.map(d=>{
+    const de = WD.filter(wd=>wd<=d.date).length;
+    return Math.round(GOAL_S * nSDRs * de / TOTAL_D);
+  });
+  const cumMetaClo = series.map(d=>{
+    const de = WD.filter(wd=>wd<=d.date).length;
+    return Math.round(GOAL_C * nClosers * de / TOTAL_D);
+  });
+
+  new Chart(document.getElementById('chart-meta'), {
+    type:'line',
+    plugins:[endLabelPlugin],
+    data:{
+      labels,
+      datasets:[
+        { label:'CC1 Realiz.',                        data:cumRe,      borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.12)', tension:.3, pointRadius:0, borderWidth:3, fill:true },
+        { label:`Meta SDR (${nSDRs}×${GOAL_S})`,     data:cumMetaSDR, borderColor:'#4ade80', borderDash:[6,4], tension:.1, pointRadius:0, borderWidth:2, backgroundColor:'transparent' },
+        { label:`Meta Closer (${nClosers}×${GOAL_C})`,data:cumMetaClo, borderColor:'#c084fc', borderDash:[6,4], tension:.1, pointRadius:0, borderWidth:2, backgroundColor:'transparent' },
+      ]
+    },
+    options:{
+      maintainAspectRatio:false, animation:false,
+      layout:{ padding:{ right:30 } },
+      plugins:{
+        legend:{ display:true, position:'top', labels:{ color:'#cbd5e1', font:{size:10}, boxWidth:14, padding:10 } },
+        tooltip:{ enabled:true }
+      },
+      scales:{
+        x:{ ticks:{ color:'#64748b', font:{size:8}, maxRotation:0, callback:(v,i)=>tickLabels[i]||'' }, grid:{ color:'#1e293b' } },
+        y:{ ticks:{ color:'#64748b', font:{size:8} }, grid:{ color:'#1e293b' } }
+      }
+    }
+  });
+})();
+
+// ── CC1 INVÁLIDAS — RANKING ───────────────────────────────
+(function renderInvalidas(){
+  function buildList(containerId, data, color) {
+    const el = $(containerId);
+    if (!el) return;
+    const entries = Object.entries(data || {}).sort((a,b) => b[1]-a[1]);
+    if (!entries.length) {
+      el.innerHTML = `<div style="font-size:9px;color:#475569;padding:4px 0">Sem registros</div>`;
+      return;
+    }
+    const maxV = entries[0][1];
+    entries.forEach(([name, count]) => {
+      const shortName = name.split(' ').slice(0,2).join(' ').slice(0,14);
+      const pct = Math.round(count / maxV * 100);
+      const row = document.createElement('div');
+      row.className = 'inv-row';
+      row.innerHTML = `
+        <span style="font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${name}">${shortName}</span>
+        <div class="inv-bar-wrap"><div class="inv-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span style="font-size:10px;font-weight:700;color:${color};text-align:right">${count}</span>`;
+      el.appendChild(row);
+    });
+  }
+
+  // SDR: usa DS.sdr_inv
+  buildList('inv-sdr-list', DS.sdr_inv || {}, '#f43f5e');
+
+  // Closer: combina FRANQUIA + PARTNER de DS.closer_inv
+  const closerInv = DS.closer_inv || {};
+  const combined = { ...( closerInv.FRANQUIA || {} ), ...( closerInv.PARTNER || {} ) };
+  buildList('inv-closer-list', combined, '#f43f5e');
+})();
+
+// ── PARTNER KPIs — barra superior ────────────────────────
+(function renderPartnerKpis(){
+  const PP = DS.partner_panel;
+  if (!PP) return;
+
+  const deals    = PP.deals     || {};
+  const closerRe = PP.closer_re || {};
+  const closerNs = PP.closer_ns || {};
+
+  const reHoje = Object.values(closerRe).reduce((s,v)=>s+(v.hoje||0), 0);
+  const reMes  = Object.values(closerRe).reduce((s,v)=>s+(v.mes||0),  0);
+  const nsHoje = Object.values(closerNs).reduce((s,v)=>s+(v.hoje||0), 0);
+  const nsMes  = Object.values(closerNs).reduce((s,v)=>s+(v.mes||0),  0);
+
+  $('k-p-leads').textContent     = fmt(deals.iniciados_inicio ?? 0);
+  $('k-p-leads-mes').textContent = fmt(deals.iniciados_mes    ?? 0);
+  $('k-p-lost').textContent      = fmt(deals.perdidos_inicio  ?? 0);
+  $('k-p-lost-mes').textContent  = fmt(deals.perdidos_mes     ?? 0);
+  $('k-p-re').textContent        = fmt(reHoje);
+  $('k-p-re-mes').textContent    = fmt(reMes);
+  $('k-p-ns').textContent        = fmt(nsHoje);
+  $('k-p-ns-mes').textContent    = fmt(nsMes);
+  $('k-p-ag').textContent        = fmt(PP.media_ag_dia ?? 0);
+  $('k-p-ag-total').textContent  = fmt(PP.ag_inicio    ?? 0);
+})();
+
+// ── AUTO-REFRESH: verifica versão nova no servidor a cada 2 min ──
+const _currentUpdate = LAST_UPDATE;
+function checkAndReload(){
+  const url = location.href.split('?')[0] + '?t=' + Date.now();
+  fetch(url, { cache: 'no-store' })
+    .then(r => r.text())
+    .then(html => {
+      const m = html.match(/const LAST_UPDATE = '([^']+)'/);
+      if (m && m[1] !== _currentUpdate) {
+        location.replace(url);
+      }
+    })
+    .catch(() => {})
+    .finally(() => setTimeout(checkAndReload, 120000));
+}
+setTimeout(checkAndReload, 120000);
+</script>
+</body>
+</html>

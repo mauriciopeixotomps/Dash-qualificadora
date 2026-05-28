@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Qualificadora — Sala</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #070c18;
+  --card:   #121a2c;
+  --border: #1e293b;
+  --text:   #e2e8f0;
+  --muted:  #94a3b8;
+  --green:  #22c55e;
+  --blue:   #3b82f6;
+  --purple: #a855f7;
+  --orange: #f97316;
+  --red:    #ef4444;
+  --cyan:   #06b6d4;
+  --amber:  #f59e0b;
+  --indigo: #818cf8;
+}
+
+html, body {
+  width: 100%; height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+}
+
+body {
+  display: grid;
+  grid-template-rows: 40px 62px 1fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+#header .h-title  { font-size:14px; font-weight:700; color:#fff; letter-spacing:.04em; }
+#header .h-clock  { font-size:17px; font-weight:700; color:#f1f5f9; font-variant-numeric:tabular-nums; letter-spacing:.06em; }
+#header .h-update { font-size:11px; color:var(--green); display:flex; align-items:center; gap:5px; }
+.pulse-dot { display:inline-block; width:7px; height:7px; background:var(--green); border-radius:50%; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── KPI ROW ─────────────────────────────────────────── */
+#kpi-row {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr) 4px repeat(5, 1fr);
+  gap: 4px;
+  padding: 4px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  overflow: hidden;
+  min-height: 0;
+}
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 4px 3px;
+  gap: 2px;
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
+}
+.kpi-num   { font-size:22px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+.kpi-label { font-size:8px; font-weight:600; letter-spacing:.07em; color:var(--muted); text-transform:uppercase; text-align:center; white-space:nowrap; }
+.kpi-today { font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; color:#f1f5f9;
+             background:rgba(255,255,255,.06); border-radius:3px; padding:1px 6px; letter-spacing:.03em; }
+.kpi-today-label { font-size:7px; color:#64748b; letter-spacing:.06em; text-transform:uppercase; }
+
+/* ── ROW 2 ───────────────────────────────────────────── */
+#row2 {
+  display: grid;
+  grid-template-columns: 26% 26% 48%;
+  gap: 4px;
+  padding: 4px 8px 2px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── ROW 3 ───────────────────────────────────────────── */
+#row3 {
+  display: grid;
+  grid-template-columns: 40% 24% 36%;
+  gap: 4px;
+  padding: 2px 8px 4px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── PANEL BASE ──────────────────────────────────────── */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 5px;
+  min-height: 0;
+}
+.panel-title {
+  font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--muted); padding-bottom:4px; border-bottom:1px solid var(--border);
+  flex-shrink:0; display:flex; align-items:center; gap:5px;
+}
+.panel-title::before {
+  content:''; display:inline-block; width:3px; height:12px;
+  border-radius:2px; background:var(--accent-color, var(--muted)); flex-shrink:0;
+}
+.panel-body {
+  flex:1; overflow:hidden; display:flex; flex-direction:column;
+  gap:1px; margin-top:4px; min-height:0;
+}
+
+/* ── RANKING ─────────────────────────────────────────── */
+.legend-row {
+  display:flex; gap:10px; font-size:9px; color:var(--muted);
+  flex-shrink:0; margin-bottom:2px; align-items:center;
+}
+.legend-dot  { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:2px; }
+.legend-line { display:inline-block; width:14px; height:2px; background:var(--red); margin-right:2px; vertical-align:middle; }
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 86px 1fr 52px 28px;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+/* Apenas em painéis de row2: crescer para preencher o espaço */
+#sdr-list .rank-row,
+#closer-franquia .rank-row,
+#closer-partner .rank-row { flex: 1; min-height: 0; }
+.rank-name {
+  font-size:10px; font-weight:500;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.bar-wrap {
+  position:relative; height:10px; background:#1e293b; border-radius:3px; overflow:visible;
+}
+.bar-real   { position:absolute; left:0; top:0; height:100%; border-radius:3px; }
+.bar-future { position:absolute; top:0; height:100%; opacity:.55; }
+.bar-pace-marker {
+  position:absolute; top:-2px; width:2px; height:14px;
+  background:var(--red); border-radius:1px; z-index:5;
+}
+.rank-nums {
+  text-align:right;
+  line-height: 1.15;
+}
+.rank-re   { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; display:block; }
+.rank-sub  { font-size:8px; color:var(--muted); white-space:nowrap; }
+.rank-fut  { font-size:9px; color:var(--orange); text-align:right; white-space:nowrap; }
+
+/* ── GRUPO HEADER (closers Franquia/Partner) ─────────── */
+.group-hdr {
+  font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  padding: 3px 0 2px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
+#col-c { display:flex; flex-direction:column; gap:4px; justify-content:flex-start; height:100%; min-height:0; }
+#col-c-products  { flex:0 0 auto; }
+#col-c-negocios  { flex:0 0 auto; }
+#col-c-ritmo     { flex:1; min-height:0; }
+.inv-split { display:grid; grid-template-columns:1fr 1fr; gap:0 8px; height:100%; }
+.inv-col-hdr { font-size:9px; font-weight:700; letter-spacing:.07em; margin-bottom:4px; }
+.inv-row { display:grid; grid-template-columns:80px 1fr 22px; align-items:center; gap:4px; margin-bottom:3px; }
+.inv-bar-wrap { background:#1e293b; border-radius:2px; height:8px; overflow:hidden; }
+.inv-bar-fill { height:100%; border-radius:2px; }
+.ritmo-row { display:grid; grid-template-columns:38px 62px 1fr 44px; align-items:center; gap:4px; margin-bottom:1px; }
+.ritmo-bar-wrap { position:relative; height:11px; background:#1e293b; border-radius:3px; overflow:hidden; }
+.ritmo-bar      { position:absolute; left:0; top:0; height:100%; border-radius:3px; transition:width .3s; }
+.ritmo-bar-proj { position:absolute; left:0; top:0; height:100%; border-radius:3px;
+                  background:repeating-linear-gradient(90deg,#166534 0,#166534 5px,transparent 5px,transparent 10px); }
+
+.prod-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 70px;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+.prod-name {
+  font-size:10px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.prod-bar-wrap   { background:#1e293b; border-radius:3px; height:10px; overflow:hidden; }
+.prod-bar-fill   { height:100%; border-radius:3px; transition:width .3s; }
+.prod-nums       { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.prod-sub        { font-size:8px; color:var(--muted); text-align:right; white-space:nowrap; }
+
+.prod-total-card {
+  background:#0f1d35; border:1px solid #2d4a6e; border-radius:5px;
+  padding:4px 6px; margin-bottom:3px;
+}
+
+/* negócios bar */
+.neg-row { display:grid; grid-template-columns:110px 1fr 42px; align-items:center; gap:6px; flex-shrink:0; }
+.neg-name { font-size:10px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.neg-bar-wrap { background:#1e293b; border-radius:3px; height:9px; overflow:hidden; }
+.neg-bar-fill { height:100%; border-radius:3px; }
+.neg-val { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+
+/* ── CHARTS ──────────────────────────────────────────── */
+.chart-wrap { flex:1; position:relative; min-height:0; }
+.chart-note { font-size:9px; color:var(--muted); text-align:center; flex-shrink:0; margin-top:2px; }
+
+/* ── HEATMAP ─────────────────────────────────────────── */
+.hm-grid {
+  display: grid;
+  grid-template-columns: 26px repeat(6, 1fr);
+  gap: 1px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 2px;
+  grid-template-rows: 12px repeat(12, minmax(0, 22px));
+}
+.hm-hdr {
+  font-size: 8px; font-weight: 700; letter-spacing:.05em;
+  color: var(--muted); text-align: center;
+  display: flex; align-items: center; justify-content: center;
+}
+.hm-lbl {
+  font-size: 8px; color: var(--muted);
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 3px;
+}
+.hm-cell {
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,.75);
+  transition: opacity .2s;
+}
+.hm-legend {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 8px; color: var(--muted);
+  flex-shrink: 0; margin-top: 3px; justify-content: flex-end;
+}
+.hm-legend-bar {
+  display: flex; gap: 1px;
+}
+.hm-legend-bar span {
+  display: inline-block; width: 12px; height: 8px; border-radius: 2px;
+}
+
+/* ── COL D — SDR DO DIA ──────────────────────────────── */
+#col-d { display:flex; flex-direction:column; gap:4px; height:100%; min-height:0; }
+#col-d-today     { flex:3; min-height:0; overflow:hidden; }
+#col-d-invalidas { flex:2; min-height:0; overflow:hidden; }
+
+/* compact table */
+.tbl { width:100%; border-collapse:collapse; font-size:9px; }
+.tbl th {
+  font-size:8px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); padding:2px 3px; border-bottom:1px solid var(--border); text-align:right;
+}
+.tbl th:first-child { text-align:left; }
+.tbl td {
+  padding:1px 3px; font-variant-numeric:tabular-nums; text-align:right; color:var(--text);
+}
+.tbl td:first-child { text-align:left; font-size:9px; }
+.tbl tr:nth-child(even) td { background:#0d1526; }
+.tbl tr.tbl-total td { font-weight:700; border-top:1px solid var(--border); color:#fff; }
+
+/* perdidos */
+.perd-row { display:grid; grid-template-columns:105px 1fr 34px; align-items:center; gap:4px; flex-shrink:0; margin-bottom:1px; }
+.perd-name { font-size:9px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.perd-bar-wrap { background:#1e293b; border-radius:2px; height:7px; overflow:hidden; }
+.perd-bar-fill { height:100%; border-radius:2px; background:var(--red); opacity:.7; }
+.perd-val { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; color:var(--red); }
+
+/* ── COL F — PACE + MOTIVOS + TAXA ───────────────────── */
+#col-f { display:flex; flex-direction:column; gap:4px; height:100%; overflow:hidden; min-height:0; }
+#col-f-meta     { flex:1; min-height:0; overflow:hidden; }
+#col-f-motivos  { flex:0 0 auto; overflow:hidden; }
+#col-f-perdidos { flex:0 0 auto; overflow:hidden; }
+
+/* perda pós cc1 */
+.ppc1-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.ppc1-funil { display:flex; flex-direction:column; gap:3px; min-height:0; overflow:hidden; }
+.ppc1-hdr {
+  display:flex; align-items:baseline; gap:6px; padding-bottom:4px;
+  border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.ppc1-taxa { font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; }
+.ppc1-sub  { font-size:9px; color:var(--muted); line-height:1.4; }
+.ppc1-row  { display:grid; grid-template-columns:1fr 28px 32px; align-items:center; gap:4px; flex-shrink:0; }
+.ppc1-motivo { font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ppc1-bar-wrap { background:#1e293b; border-radius:2px; height:7px; overflow:hidden; }
+.ppc1-bar-fill { height:100%; border-radius:2px; }
+.ppc1-pct { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; }
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE — sobrescreve o layout TV com versão vertical
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  html, body {
+    height: auto !important;
+    overflow: auto !important;
+    overflow-x: hidden;
+    font-size: 13px;
+  }
+  body {
+    display: block !important;
+  }
+
+  /* HEADER */
+  #header {
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 12px;
+    height: 48px;
+  }
+  #header .h-title  { font-size: 13px; }
+  #header .h-clock  { font-size: 15px; }
+  #header .h-update { font-size: 10px; }
+
+  /* KPI ROW — grid 3×3 on mobile, separator hidden */
+  .kpi-sep { display: none !important; }
+  #kpi-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+    height: auto !important;
+    padding: 8px 8px;
+    gap: 5px;
+    overflow: visible !important;
+  }
+  .kpi-card {
+    padding: 8px 4px;
+    height: auto;
+    min-height: 64px;
+  }
+  .kpi-num   { font-size: 20px !important; }
+  .kpi-today { font-size: 11px !important; padding: 1px 5px; }
+  .kpi-label { font-size: 8px !important; }
+
+  /* ROWS 2 e 3 — viram blocos verticais */
+  #row2, #row3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    padding: 8px;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Panels: altura automática + overflow scroll se necessário */
+  .panel {
+    min-height: 0;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Painéis de ranking — altura fixa razoável */
+  #sdr-list,
+  #closer-franquia,
+  #closer-partner { height: auto !important; overflow: visible !important; }
+
+  .panel-body {
+    height: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  /* Col C — produtos, negócios, ritmo */
+  #col-c {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    height: auto !important;
+  }
+  #col-c-products, #col-c-negocios, #col-c-ritmo {
+    flex: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Col D — SDR hoje + inválidas */
+  #col-d {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    height: auto !important;
+  }
+  #col-d-today, #col-d-invalidas {
+    flex: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .tbl { font-size: 11px; }
+  .tbl td, .tbl th { padding: 3px 4px; }
+
+  /* Col F — pace + motivos + taxa */
+  #col-f {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  #col-f-meta, #col-f-motivos, #col-f-perdidos {
+    flex: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  /* Gráfico de pace: altura fixa legível */
+  #col-f-meta .chart-wrap { height: 220px !important; flex: none !important; }
+
+  /* Heatmap: scroll horizontal se necessário */
+  .hm-grid {
+    flex: none !important;
+    min-height: 200px;
+    grid-template-rows: 12px repeat(12, minmax(0, 18px)) !important;
+  }
+
+  /* Bars de ranking: tamanho nome maior */
+  .rank-row { grid-template-columns: 100px 1fr 52px 28px !important; }
+  .rank-name { font-size: 11px !important; }
+  .rank-re   { font-size: 13px !important; }
+
+  /* Prod rows */
+  .prod-row { grid-template-columns: 120px 1fr 70px !important; }
+  .ritmo-row { grid-template-columns: 44px 68px 1fr 44px !important; }
+
+  /* Perdidos */
+  .perd-row { grid-template-columns: 120px 1fr 36px !important; }
+  .perd-name { font-size: 11px !important; }
+
+  /* PPC1 grid — lado a lado ainda funciona */
+  .ppc1-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .ppc1-taxa { font-size: 18px !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ROW 0 — HEADER -->
+<header id="header">
+  <div class="h-title">🎯 QUALIFICADORA — MAIO 2026</div>
+  <div class="h-clock" id="clock">--:--:--</div>
+  <div class="h-update">
+    <span class="pulse-dot"></span>
+    Última atualização: <strong id="last-update-txt"></strong>
+  </div>
+</header>
+
+<!-- ROW 1 — KPIs -->
+<div id="kpi-row">
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#60a5fa" id="k-leads">—</span>
+    <span class="kpi-today" style="color:#60a5fa"><span class="kpi-today-label">hoje </span><span id="k-leads-hoje">—</span></span>
+    <span class="kpi-label">Leads Gerados</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#818cf8" id="k-qual">—</span>
+    <span class="kpi-today" style="color:#818cf8"><span class="kpi-today-label">hoje </span><span id="k-qual-hoje">—</span></span>
+    <span class="kpi-label">Qualificadas</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#a855f7" id="k-ag">—</span>
+    <span class="kpi-today" style="color:#a855f7"><span class="kpi-today-label">hoje </span><span id="k-ag-hoje">—</span></span>
+    <span class="kpi-label">AG CC1</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#f59e0b" id="k-reag">—</span>
+    <span class="kpi-today" style="color:#f59e0b"><span class="kpi-today-label">hoje </span><span id="k-reag-hoje">—</span></span>
+    <span class="kpi-label">Reagend.</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#22c55e" id="k-re">—</span>
+    <span class="kpi-today" style="color:#22c55e"><span class="kpi-today-label">hoje </span><span id="k-re-hoje">—</span></span>
+    <span class="kpi-label">CC1 Realiz.</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#ef4444" id="k-ns">—</span>
+    <span class="kpi-today" style="color:#ef4444"><span class="kpi-today-label">hoje </span><span id="k-ns-hoje">—</span></span>
+    <span class="kpi-label">No Show</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#f97316" id="k-future">—</span>
+    <span class="kpi-today" style="color:#f97316"><span class="kpi-today-label">hoje </span><span id="k-future-hoje">—</span></span>
+    <span class="kpi-label">Para Acont.</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#06b6d4" id="k-lost">—</span>
+    <span class="kpi-today" style="color:#06b6d4"><span class="kpi-today-label">hoje </span><span id="k-lost-hoje">—</span></span>
+    <span class="kpi-label">Perdidos</span>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-num" style="color:#f43f5e" id="k-inv">—</span>
+    <span class="kpi-today" style="color:#f43f5e"><span class="kpi-today-label">hoje </span><span id="k-inv-hoje">—</span></span>
+    <span class="kpi-label">CC1 Inválida</span>
+  </div>
+
+  <!-- Separador Partner -->
+  <div class="kpi-sep" style="background:rgba(245,158,11,.35);border-radius:1px;margin:6px 0;align-self:stretch"></div>
+
+  <!-- Partner KPI cards -->
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#60a5fa" id="k-p-leads">—</span>
+    <span class="kpi-today" style="color:#60a5fa"><span class="kpi-today-label">mês </span><span id="k-p-leads-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. Leads</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#f87171" id="k-p-lost">—</span>
+    <span class="kpi-today" style="color:#f87171"><span class="kpi-today-label">mês </span><span id="k-p-lost-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. Perdidos</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#22c55e" id="k-p-re">—</span>
+    <span class="kpi-today" style="color:#22c55e"><span class="kpi-today-label">mês </span><span id="k-p-re-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. RE hoje</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#ef4444" id="k-p-ns">—</span>
+    <span class="kpi-today" style="color:#ef4444"><span class="kpi-today-label">mês </span><span id="k-p-ns-mes">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. NS hoje</span>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
+    <span class="kpi-num" style="color:#f59e0b" id="k-p-ag">—</span>
+    <span class="kpi-today" style="color:#f59e0b"><span class="kpi-today-label">total </span><span id="k-p-ag-total">—</span></span>
+    <span class="kpi-label" style="color:#f59e0b">P. AGs/dia</span>
+  </div>
+</div>
+
+<!-- ROW 2 -->
+<div id="row2">
+
+  <!-- Col A — SDR CC1 Realizadas -->
+  <div class="panel" style="--accent-color:#22c55e">
+    <div class="panel-title">CC1 Realizadas — SDR</div>
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:#22c55e"></span>Realizado</span>
+      <span><span class="legend-dot" style="background:#f97316"></span>Para acontecer</span>
+      <span><span class="legend-line"></span>Pace hoje</span>
+      <span style="color:#f43f5e;font-size:9px;font-weight:700">■ INV</span>
+      <span style="color:#64748b">dev: deveria estar hoje</span>
+    </div>
+    <div class="panel-body" id="sdr-list"></div>
+  </div>
+
+  <!-- Col B — Closer CC1 por Franquia / Partner -->
+  <div class="panel" style="--accent-color:#3b82f6">
+    <div class="panel-title">CC1 Realizadas — Closer</div>
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:#22c55e"></span>Franquia</span>
+      <span><span class="legend-dot" style="background:#a855f7"></span>Partner</span>
+      <span><span class="legend-line"></span>Pace hoje</span>
+      <span style="color:#f43f5e;font-size:9px;font-weight:700">■ INV</span>
+      <span style="color:#64748b">dev: deveria estar hoje</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 8px;flex:1;min-height:0;overflow:hidden;margin-top:3px">
+      <div class="panel-body" id="closer-franquia"></div>
+      <div class="panel-body" id="closer-partner"></div>
+    </div>
+  </div>
+
+  <!-- Col C — Produtos + Negócios -->
+  <div id="col-c">
+
+    <div class="panel" id="col-c-negocios" style="--accent-color:#3b82f6">
+      <div class="panel-title">Negócios Iniciados</div>
+      <div class="panel-body" id="neg-list"></div>
+    </div>
+
+    <div class="panel" id="col-c-products" style="--accent-color:#a855f7">
+      <div class="panel-title">CC1 Realizadas — Por Produto</div>
+      <div class="panel-body" id="prod-list"></div>
+    </div>
+
+    <div class="panel" id="col-c-ritmo" style="--accent-color:#22c55e">
+      <div class="panel-title">Ritmo Semanal — RE</div>
+      <div id="ritmo-wrap" style="padding:4px 0 2px;overflow-y:auto;flex:1;min-height:0"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ROW 3 -->
+<div id="row3">
+
+  <!-- Col E — Mapa de Calor CC1 Realizadas (ESQUERDA) -->
+  <div class="panel" style="--accent-color:#22c55e">
+    <div class="panel-title">CC1 Realizadas — Horário × Dia</div>
+    <div id="heatmap-grid" class="hm-grid"></div>
+  </div>
+
+  <!-- Col D — SDR do Dia + CC1 Inválidas (MEIO) -->
+  <div id="col-d">
+    <div class="panel" id="col-d-today" style="--accent-color:#f97316">
+      <div class="panel-title">SDR — Hoje</div>
+      <div class="panel-body" style="overflow:auto">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>SDR</th>
+              <th style="color:#a855f7">AG</th>
+              <th style="color:#22c55e">RE</th>
+              <th style="color:#f97316">Fut</th>
+              <th style="color:#ef4444">NS</th>
+            </tr>
+          </thead>
+          <tbody id="sdr-today-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel" id="col-d-invalidas" style="--accent-color:#f43f5e">
+      <div class="panel-title">CC1 Inválidas — Ranking</div>
+      <div class="inv-split" style="margin-top:4px">
+        <div>
+          <div class="inv-col-hdr" style="color:#f43f5e">SDR</div>
+          <div id="inv-sdr-list"></div>
+        </div>
+        <div>
+          <div class="inv-col-hdr" style="color:#f43f5e">CLOSER</div>
+          <div id="inv-closer-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Col F — Pace vs Meta + Motivos de Perda + Taxa Perda Pós CC1 -->
+  <div id="col-f">
+    <div class="panel" id="col-f-meta" style="--accent-color:#22c55e">
+      <div class="panel-title">Pace vs Meta — Realizadas</div>
+      <div class="chart-wrap">
+        <canvas id="chart-meta"></canvas>
+      </div>
+      <div class="chart-note">Linhas tracejadas = meta proporcional aos dias úteis</div>
+    </div>
+
+    <div class="panel" id="col-f-motivos" style="--accent-color:#ef4444">
+      <div class="panel-title">Motivos de Perda</div>
+      <div class="panel-body" id="perd-list"></div>
+    </div>
+
+    <div class="panel" id="col-f-perdidos" style="--accent-color:#ef4444">
+      <div class="panel-title">Taxa de Perda Pós CC1 — por Motivo</div>
+      <div class="ppc1-grid">
+        <div class="ppc1-funil" id="ppc1-franquia"></div>
+        <div class="ppc1-funil" id="ppc1-partner"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DADOS ─────────────────────────────────────────────────
+const D  = {"totals": {"leads": 5755, "lost": 3893, "qual": 1185, "ag": 1039, "re": 688, "ns": 435, "future_re": 67, "inv": 4}, "daily_series": [{"date": "2026-05-01", "leads": 177, "lost": 6, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-02", "leads": 198, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-03", "leads": 205, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-04", "leads": 188, "lost": 360, "qual": 48, "ag": 31, "re": 22, "ns": 14}, {"date": "2026-05-05", "leads": 190, "lost": 89, "qual": 41, "ag": 35, "re": 24, "ns": 6}, {"date": "2026-05-06", "leads": 238, "lost": 147, "qual": 69, "ag": 55, "re": 23, "ns": 17}, {"date": "2026-05-07", "leads": 207, "lost": 175, "qual": 49, "ag": 44, "re": 31, "ns": 25}, {"date": "2026-05-08", "leads": 180, "lost": 142, "qual": 39, "ag": 32, "re": 28, "ns": 22}, {"date": "2026-05-09", "leads": 204, "lost": 0, "qual": 5, "ag": 5, "re": 3, "ns": 4}, {"date": "2026-05-10", "leads": 229, "lost": 0, "qual": 7, "ag": 7, "re": 0, "ns": 0}, {"date": "2026-05-11", "leads": 211, "lost": 315, "qual": 91, "ag": 78, "re": 29, "ns": 27}, {"date": "2026-05-12", "leads": 232, "lost": 186, "qual": 65, "ag": 58, "re": 54, "ns": 30}, {"date": "2026-05-13", "leads": 202, "lost": 176, "qual": 79, "ag": 73, "re": 42, "ns": 29}, {"date": "2026-05-14", "leads": 247, "lost": 182, "qual": 69, "ag": 62, "re": 44, "ns": 26}, {"date": "2026-05-15", "leads": 138, "lost": 161, "qual": 48, "ag": 41, "re": 36, "ns": 22}, {"date": "2026-05-16", "leads": 102, "lost": 6, "qual": 0, "ag": 0, "re": 1, "ns": 3}, {"date": "2026-05-17", "leads": 199, "lost": 1, "qual": 3, "ag": 3, "re": 0, "ns": 0}, {"date": "2026-05-18", "leads": 269, "lost": 288, "qual": 78, "ag": 62, "re": 31, "ns": 35}, {"date": "2026-05-19", "leads": 267, "lost": 229, "qual": 69, "ag": 69, "re": 47, "ns": 15}, {"date": "2026-05-20", "leads": 184, "lost": 208, "qual": 81, "ag": 68, "re": 52, "ns": 22}, {"date": "2026-05-21", "leads": 197, "lost": 177, "qual": 75, "ag": 67, "re": 43, "ns": 26}, {"date": "2026-05-22", "leads": 217, "lost": 226, "qual": 59, "ag": 46, "re": 40, "ns": 23}, {"date": "2026-05-23", "leads": 214, "lost": 2, "qual": 8, "ag": 12, "re": 5, "ns": 2}, {"date": "2026-05-24", "leads": 242, "lost": 0, "qual": 4, "ag": 4, "re": 0, "ns": 0}, {"date": "2026-05-25", "leads": 214, "lost": 449, "qual": 77, "ag": 69, "re": 46, "ns": 28}, {"date": "2026-05-26", "leads": 249, "lost": 240, "qual": 62, "ag": 58, "re": 42, "ns": 28}, {"date": "2026-05-27", "leads": 237, "lost": 115, "qual": 50, "ag": 51, "re": 43, "ns": 30}, {"date": "2026-05-28", "leads": 118, "lost": 13, "qual": 9, "ag": 9, "re": 2, "ns": 1}, {"date": "2026-05-29", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-30", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}, {"date": "2026-05-31", "leads": 0, "lost": 0, "qual": 0, "ag": 0, "re": 0, "ns": 0}], "daily_product": {"ag": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 11, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 15}, "2026-05-05": {"Studio Agro": 6, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 23}, "2026-05-06": {"Studio Agro": 21, "Studio Fiscal": 8, "Franquia Partner": 0, "PJ360": 1, "GS PARTNER": 25}, "2026-05-07": {"Studio Agro": 7, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 1, "GS PARTNER": 31}, "2026-05-08": {"Studio Agro": 10, "Studio Fiscal": 4, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 18}, "2026-05-09": {"Studio Agro": 3, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-10": {"Studio Agro": 3, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 3}, "2026-05-11": {"Studio Agro": 21, "Studio Fiscal": 8, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 49}, "2026-05-12": {"Studio Agro": 13, "Studio Fiscal": 6, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 38}, "2026-05-13": {"Studio Agro": 19, "Studio Fiscal": 6, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 48}, "2026-05-14": {"Studio Agro": 9, "Studio Fiscal": 10, "Franquia Partner": 0, "PJ360": 1, "GS PARTNER": 41}, "2026-05-15": {"Studio Agro": 12, "Studio Fiscal": 4, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 23}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-17": {"Studio Agro": 2, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-18": {"Studio Agro": 13, "Studio Fiscal": 7, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 42}, "2026-05-19": {"Studio Agro": 19, "Studio Fiscal": 7, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 41}, "2026-05-20": {"Studio Agro": 15, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 45}, "2026-05-21": {"Studio Agro": 18, "Studio Fiscal": 6, "Franquia Partner": 0, "PJ360": 1, "GS PARTNER": 39}, "2026-05-22": {"Studio Agro": 10, "Studio Fiscal": 5, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 31}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 10}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 3}, "2026-05-25": {"Studio Agro": 14, "Studio Fiscal": 6, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 46}, "2026-05-26": {"Studio Agro": 9, "Studio Fiscal": 4, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 44}, "2026-05-27": {"Studio Agro": 11, "Studio Fiscal": 3, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 36}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 7}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}, "re": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 9, "Studio Fiscal": 3, "Franquia Partner": 2, "PJ360": 0, "GS PARTNER": 8}, "2026-05-05": {"Studio Agro": 2, "Studio Fiscal": 5, "Franquia Partner": 3, "PJ360": 1, "GS PARTNER": 13}, "2026-05-06": {"Studio Agro": 5, "Studio Fiscal": 3, "Franquia Partner": 2, "PJ360": 0, "GS PARTNER": 13}, "2026-05-07": {"Studio Agro": 11, "Studio Fiscal": 2, "Franquia Partner": 3, "PJ360": 1, "GS PARTNER": 14}, "2026-05-08": {"Studio Agro": 8, "Studio Fiscal": 3, "Franquia Partner": 3, "PJ360": 0, "GS PARTNER": 14}, "2026-05-09": {"Studio Agro": 2, "Studio Fiscal": 1, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 8, "Studio Fiscal": 3, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 13}, "2026-05-12": {"Studio Agro": 12, "Studio Fiscal": 3, "Franquia Partner": 11, "PJ360": 0, "GS PARTNER": 28}, "2026-05-13": {"Studio Agro": 10, "Studio Fiscal": 4, "Franquia Partner": 7, "PJ360": 0, "GS PARTNER": 20}, "2026-05-14": {"Studio Agro": 9, "Studio Fiscal": 8, "Franquia Partner": 13, "PJ360": 0, "GS PARTNER": 14}, "2026-05-15": {"Studio Agro": 8, "Studio Fiscal": 7, "Franquia Partner": 7, "PJ360": 1, "GS PARTNER": 13}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 9, "Studio Fiscal": 1, "Franquia Partner": 9, "PJ360": 0, "GS PARTNER": 12}, "2026-05-19": {"Studio Agro": 9, "Studio Fiscal": 1, "Franquia Partner": 12, "PJ360": 0, "GS PARTNER": 25}, "2026-05-20": {"Studio Agro": 12, "Studio Fiscal": 4, "Franquia Partner": 13, "PJ360": 0, "GS PARTNER": 20}, "2026-05-21": {"Studio Agro": 8, "Studio Fiscal": 4, "Franquia Partner": 15, "PJ360": 0, "GS PARTNER": 14}, "2026-05-22": {"Studio Agro": 7, "Studio Fiscal": 8, "Franquia Partner": 18, "PJ360": 0, "GS PARTNER": 7}, "2026-05-23": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 3, "PJ360": 0, "GS PARTNER": 1}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 10, "Studio Fiscal": 2, "Franquia Partner": 14, "PJ360": 1, "GS PARTNER": 17}, "2026-05-26": {"Studio Agro": 9, "Studio Fiscal": 3, "Franquia Partner": 10, "PJ360": 0, "GS PARTNER": 20}, "2026-05-27": {"Studio Agro": 10, "Studio Fiscal": 1, "Franquia Partner": 9, "PJ360": 0, "GS PARTNER": 22}, "2026-05-28": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}, "re_fut": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-05": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-06": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-07": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-08": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-09": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-12": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-13": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-14": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-15": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-16": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-19": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-20": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-21": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-22": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-26": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-27": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 2}, "2026-05-28": {"Studio Agro": 2, "Studio Fiscal": 5, "Franquia Partner": 8, "PJ360": 0, "GS PARTNER": 24}, "2026-05-29": {"Studio Agro": 2, "Studio Fiscal": 0, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 6}, "2026-05-30": {"Studio Agro": 2, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}, "ns": {"2026-05-01": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-02": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-03": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-04": {"Studio Agro": 7, "Studio Fiscal": 2, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 4}, "2026-05-05": {"Studio Agro": 0, "Studio Fiscal": 2, "Franquia Partner": 2, "PJ360": 0, "GS PARTNER": 2}, "2026-05-06": {"Studio Agro": 7, "Studio Fiscal": 0, "Franquia Partner": 4, "PJ360": 1, "GS PARTNER": 5}, "2026-05-07": {"Studio Agro": 5, "Studio Fiscal": 4, "Franquia Partner": 7, "PJ360": 2, "GS PARTNER": 7}, "2026-05-08": {"Studio Agro": 7, "Studio Fiscal": 3, "Franquia Partner": 3, "PJ360": 2, "GS PARTNER": 7}, "2026-05-09": {"Studio Agro": 0, "Studio Fiscal": 3, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 1}, "2026-05-10": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-11": {"Studio Agro": 10, "Studio Fiscal": 5, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 7}, "2026-05-12": {"Studio Agro": 6, "Studio Fiscal": 5, "Franquia Partner": 6, "PJ360": 0, "GS PARTNER": 13}, "2026-05-13": {"Studio Agro": 12, "Studio Fiscal": 0, "Franquia Partner": 7, "PJ360": 0, "GS PARTNER": 10}, "2026-05-14": {"Studio Agro": 4, "Studio Fiscal": 4, "Franquia Partner": 7, "PJ360": 0, "GS PARTNER": 10}, "2026-05-15": {"Studio Agro": 7, "Studio Fiscal": 4, "Franquia Partner": 4, "PJ360": 0, "GS PARTNER": 7}, "2026-05-16": {"Studio Agro": 1, "Studio Fiscal": 0, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 1}, "2026-05-17": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-18": {"Studio Agro": 11, "Studio Fiscal": 4, "Franquia Partner": 11, "PJ360": 0, "GS PARTNER": 9}, "2026-05-19": {"Studio Agro": 5, "Studio Fiscal": 1, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 4}, "2026-05-20": {"Studio Agro": 4, "Studio Fiscal": 6, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 7}, "2026-05-21": {"Studio Agro": 7, "Studio Fiscal": 3, "Franquia Partner": 10, "PJ360": 0, "GS PARTNER": 6}, "2026-05-22": {"Studio Agro": 3, "Studio Fiscal": 6, "Franquia Partner": 7, "PJ360": 0, "GS PARTNER": 6}, "2026-05-23": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 2}, "2026-05-24": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-25": {"Studio Agro": 7, "Studio Fiscal": 2, "Franquia Partner": 9, "PJ360": 0, "GS PARTNER": 9}, "2026-05-26": {"Studio Agro": 8, "Studio Fiscal": 1, "Franquia Partner": 8, "PJ360": 0, "GS PARTNER": 10}, "2026-05-27": {"Studio Agro": 8, "Studio Fiscal": 5, "Franquia Partner": 5, "PJ360": 0, "GS PARTNER": 10}, "2026-05-28": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 1, "PJ360": 0, "GS PARTNER": 0}, "2026-05-29": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-30": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}, "2026-05-31": {"Studio Agro": 0, "Studio Fiscal": 0, "Franquia Partner": 0, "PJ360": 0, "GS PARTNER": 0}}}, "working_days": ["2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29"], "sdr": {"ag": {"João Gabriel Dutra": 109, "Leonardo Soares": 117, "Glauber Bagetti": 59, "Jonatans Junior": 97, "Lorenzo Meneghetti": 59, "Mélodi Nirvana": 103, "Izadora Zacker": 86, "Rafael dallarosa longo": 123, "Amanda Oliveira": 74, "Andriely Oliveira": 52, "Henri Meneghetti": 100, "Camily Nadal": 59}, "re": {"João Gabriel Dutra": 76, "Jonatans Junior": 73, "Lorenzo Meneghetti": 36, "Henri Meneghetti": 75, "Andriely Oliveira": 38, "Izadora Zacker": 61, "Leonardo Soares": 70, "Mélodi Nirvana": 75, "Glauber Bagetti": 28, "Amanda Oliveira": 42, "Rafael dallarosa longo": 76, "Camily Nadal": 38}, "ns": {"Glauber Bagetti": 33, "Mélodi Nirvana": 33, "Izadora Zacker": 30, "Lorenzo Meneghetti": 36, "João Gabriel Dutra": 42, "Leonardo Soares": 66, "Henri Meneghetti": 43, "Andriely Oliveira": 11, "Jonatans Junior": 40, "Camily Nadal": 29, "Rafael dallarosa longo": 46, "Amanda Oliveira": 26}, "future": {"Camily Nadal": 5, "Andriely Oliveira": 9, "Izadora Zacker": 13, "Henri Meneghetti": 2, "Lorenzo Meneghetti": 11, "Glauber Bagetti": 4, "Leonardo Soares": 5, "Jonatans Junior": 6, "Rafael dallarosa longo": 5, "Amanda Oliveira": 4, "Mélodi Nirvana": 1, "João Gabriel Dutra": 2}, "inv": {"Amanda Oliveira": 1, "Leonardo Soares": 1, "Rafael dallarosa longo": 2}}, "sdr_daily": {"re": {"2026-05-04": {"João Gabriel Dutra": 5, "Jonatans Junior": 4, "Lorenzo Meneghetti": 4, "Henri Meneghetti": 4, "Andriely Oliveira": 1, "Izadora Zacker": 2, "Leonardo Soares": 2}, "2026-05-05": {"Lorenzo Meneghetti": 1, "Jonatans Junior": 3, "João Gabriel Dutra": 4, "Izadora Zacker": 3, "Henri Meneghetti": 7, "Mélodi Nirvana": 2, "Leonardo Soares": 3, "Glauber Bagetti": 2}, "2026-05-06": {"Henri Meneghetti": 3, "Izadora Zacker": 4, "Mélodi Nirvana": 3, "João Gabriel Dutra": 6, "Amanda Oliveira": 1, "Andriely Oliveira": 2, "Jonatans Junior": 3, "Leonardo Soares": 1, "Rafael dallarosa longo": 1}, "2026-05-07": {"João Gabriel Dutra": 4, "Rafael dallarosa longo": 3, "Leonardo Soares": 3, "Mélodi Nirvana": 4, "Jonatans Junior": 3, "Izadora Zacker": 7, "Lorenzo Meneghetti": 2, "Henri Meneghetti": 1, "Amanda Oliveira": 2, "Camily Nadal": 1, "Andriely Oliveira": 1}, "2026-05-08": {"Henri Meneghetti": 6, "Rafael dallarosa longo": 5, "João Gabriel Dutra": 5, "Andriely Oliveira": 1, "Lorenzo Meneghetti": 1, "Izadora Zacker": 3, "Mélodi Nirvana": 1, "Leonardo Soares": 3, "Camily Nadal": 3}, "2026-05-09": {"Jonatans Junior": 1, "João Gabriel Dutra": 1, "Andriely Oliveira": 1}, "2026-05-11": {"Leonardo Soares": 4, "João Gabriel Dutra": 4, "Rafael dallarosa longo": 5, "Amanda Oliveira": 3, "Izadora Zacker": 3, "Henri Meneghetti": 4, "Jonatans Junior": 4, "Andriely Oliveira": 1, "Camily Nadal": 3, "Lorenzo Meneghetti": 1}, "2026-05-12": {"Henri Meneghetti": 5, "Leonardo Soares": 8, "Rafael dallarosa longo": 7, "Lorenzo Meneghetti": 5, "Glauber Bagetti": 3, "Mélodi Nirvana": 7, "Andriely Oliveira": 3, "João Gabriel Dutra": 8, "Camily Nadal": 1, "Jonatans Junior": 4, "Izadora Zacker": 1, "Amanda Oliveira": 1}, "2026-05-13": {"Jonatans Junior": 7, "Rafael dallarosa longo": 5, "Camily Nadal": 4, "Andriely Oliveira": 1, "João Gabriel Dutra": 4, "Lorenzo Meneghetti": 3, "Henri Meneghetti": 2, "Mélodi Nirvana": 8, "Leonardo Soares": 3, "Izadora Zacker": 3, "Amanda Oliveira": 1}, "2026-05-14": {"Izadora Zacker": 7, "Camily Nadal": 3, "Henri Meneghetti": 1, "Amanda Oliveira": 3, "Rafael dallarosa longo": 6, "Mélodi Nirvana": 9, "Leonardo Soares": 4, "Jonatans Junior": 2, "João Gabriel Dutra": 5, "Andriely Oliveira": 3, "Glauber Bagetti": 2, "Lorenzo Meneghetti": 1}, "2026-05-15": {"João Gabriel Dutra": 5, "Leonardo Soares": 1, "Andriely Oliveira": 4, "Henri Meneghetti": 7, "Mélodi Nirvana": 1, "Rafael dallarosa longo": 4, "Jonatans Junior": 6, "Amanda Oliveira": 2, "Izadora Zacker": 1, "Glauber Bagetti": 2, "Lorenzo Meneghetti": 1}, "2026-05-16": {"Henri Meneghetti": 1}, "2026-05-18": {"Leonardo Soares": 4, "Rafael dallarosa longo": 2, "Andriely Oliveira": 3, "Jonatans Junior": 2, "Lorenzo Meneghetti": 2, "Amanda Oliveira": 5, "Izadora Zacker": 2, "Mélodi Nirvana": 4, "João Gabriel Dutra": 3, "Henri Meneghetti": 1, "Camily Nadal": 4}, "2026-05-19": {"Izadora Zacker": 4, "Mélodi Nirvana": 8, "João Gabriel Dutra": 4, "Jonatans Junior": 6, "Andriely Oliveira": 1, "Henri Meneghetti": 7, "Rafael dallarosa longo": 6, "Leonardo Soares": 6, "Glauber Bagetti": 1, "Camily Nadal": 1, "Lorenzo Meneghetti": 1, "Amanda Oliveira": 2}, "2026-05-20": {"Henri Meneghetti": 6, "Amanda Oliveira": 4, "João Gabriel Dutra": 2, "Glauber Bagetti": 4, "Izadora Zacker": 5, "Rafael dallarosa longo": 7, "Jonatans Junior": 5, "Andriely Oliveira": 2, "Mélodi Nirvana": 8, "Lorenzo Meneghetti": 3, "Leonardo Soares": 4, "Camily Nadal": 1}, "2026-05-21": {"Rafael dallarosa longo": 6, "João Gabriel Dutra": 3, "Mélodi Nirvana": 7, "Glauber Bagetti": 4, "Andriely Oliveira": 2, "Leonardo Soares": 5, "Izadora Zacker": 1, "Henri Meneghetti": 6, "Camily Nadal": 4, "Amanda Oliveira": 3, "Lorenzo Meneghetti": 1}, "2026-05-22": {"Mélodi Nirvana": 8, "Rafael dallarosa longo": 7, "Leonardo Soares": 2, "João Gabriel Dutra": 4, "Jonatans Junior": 5, "Izadora Zacker": 3, "Henri Meneghetti": 3, "Amanda Oliveira": 2, "Glauber Bagetti": 2, "Andriely Oliveira": 2, "Camily Nadal": 1}, "2026-05-23": {"Amanda Oliveira": 1, "Jonatans Junior": 2, "Leonardo Soares": 1, "Mélodi Nirvana": 1, "Rafael dallarosa longo": 1}, "2026-05-25": {"Izadora Zacker": 9, "João Gabriel Dutra": 3, "Glauber Bagetti": 3, "Camily Nadal": 4, "Lorenzo Meneghetti": 4, "Mélodi Nirvana": 1, "Rafael dallarosa longo": 3, "Jonatans Junior": 4, "Henri Meneghetti": 5, "Andriely Oliveira": 1, "Leonardo Soares": 6, "Amanda Oliveira": 2}, "2026-05-26": {"Amanda Oliveira": 8, "Rafael dallarosa longo": 2, "João Gabriel Dutra": 4, "Leonardo Soares": 7, "Henri Meneghetti": 1, "Jonatans Junior": 6, "Mélodi Nirvana": 2, "Lorenzo Meneghetti": 2, "Izadora Zacker": 3, "Camily Nadal": 2, "Andriely Oliveira": 3, "Glauber Bagetti": 1}, "2026-05-27": {"Rafael dallarosa longo": 6, "Henri Meneghetti": 5, "Jonatans Junior": 6, "Andriely Oliveira": 6, "João Gabriel Dutra": 2, "Leonardo Soares": 3, "Camily Nadal": 5, "Glauber Bagetti": 4, "Lorenzo Meneghetti": 4, "Mélodi Nirvana": 1, "Amanda Oliveira": 2}, "2026-05-29": {"Camily Nadal": 1}}, "ag": {"2026-05-04": {"João Gabriel Dutra": 7, "Leonardo Soares": 4, "Glauber Bagetti": 4, "Jonatans Junior": 5, "Lorenzo Meneghetti": 6, "Henri Meneghetti": 3, "Andriely Oliveira": 1, "Izadora Zacker": 1}, "2026-05-05": {"João Gabriel Dutra": 9, "Jonatans Junior": 4, "Mélodi Nirvana": 3, "Izadora Zacker": 4, "Glauber Bagetti": 3, "Leonardo Soares": 3, "Rafael dallarosa longo": 1, "Amanda Oliveira": 1, "Henri Meneghetti": 6, "Andriely Oliveira": 1}, "2026-05-06": {"Mélodi Nirvana": 12, "João Gabriel Dutra": 4, "Leonardo Soares": 5, "Jonatans Junior": 5, "Rafael dallarosa longo": 5, "Izadora Zacker": 6, "Andriely Oliveira": 3, "Glauber Bagetti": 3, "Amanda Oliveira": 5, "Camily Nadal": 4, "Henri Meneghetti": 4}, "2026-05-07": {"João Gabriel Dutra": 8, "Amanda Oliveira": 3, "Leonardo Soares": 2, "Jonatans Junior": 5, "Lorenzo Meneghetti": 4, "Izadora Zacker": 7, "Henri Meneghetti": 5, "Rafael dallarosa longo": 3, "Mélodi Nirvana": 1, "Camily Nadal": 1, "Andriely Oliveira": 2}, "2026-05-08": {"João Gabriel Dutra": 5, "Rafael dallarosa longo": 8, "Leonardo Soares": 5, "Glauber Bagetti": 1, "Lorenzo Meneghetti": 2, "Izadora Zacker": 3, "Camily Nadal": 3, "Henri Meneghetti": 5}, "2026-05-09": {"João Gabriel Dutra": 2, "Rafael dallarosa longo": 2, "Camily Nadal": 1}, "2026-05-11": {"Camily Nadal": 6, "João Gabriel Dutra": 7, "Izadora Zacker": 4, "Henri Meneghetti": 7, "Amanda Oliveira": 4, "Jonatans Junior": 7, "Lorenzo Meneghetti": 6, "Leonardo Soares": 6, "Rafael dallarosa longo": 13, "Glauber Bagetti": 7, "Andriely Oliveira": 6}, "2026-05-12": {"Camily Nadal": 2, "Rafael dallarosa longo": 7, "Lorenzo Meneghetti": 3, "João Gabriel Dutra": 8, "Mélodi Nirvana": 12, "Amanda Oliveira": 6, "Glauber Bagetti": 3, "Izadora Zacker": 3, "Jonatans Junior": 8, "Leonardo Soares": 3, "Andriely Oliveira": 1, "Henri Meneghetti": 3}, "2026-05-13": {"João Gabriel Dutra": 9, "Amanda Oliveira": 5, "Izadora Zacker": 5, "Leonardo Soares": 11, "Lorenzo Meneghetti": 4, "Jonatans Junior": 6, "Glauber Bagetti": 4, "Mélodi Nirvana": 14, "Henri Meneghetti": 3, "Rafael dallarosa longo": 8, "Camily Nadal": 2}, "2026-05-14": {"Amanda Oliveira": 3, "João Gabriel Dutra": 5, "Mélodi Nirvana": 8, "Jonatans Junior": 7, "Lorenzo Meneghetti": 2, "Izadora Zacker": 6, "Leonardo Soares": 3, "Glauber Bagetti": 2, "Rafael dallarosa longo": 8, "Henri Meneghetti": 10, "Camily Nadal": 2, "Andriely Oliveira": 4}, "2026-05-15": {"Camily Nadal": 3, "Mélodi Nirvana": 3, "Amanda Oliveira": 4, "João Gabriel Dutra": 4, "Rafael dallarosa longo": 7, "Glauber Bagetti": 3, "Jonatans Junior": 2, "Lorenzo Meneghetti": 3, "Henri Meneghetti": 5, "Izadora Zacker": 4, "Leonardo Soares": 1, "Andriely Oliveira": 1}, "2026-05-17": {"Rafael dallarosa longo": 2, "Glauber Bagetti": 1}, "2026-05-18": {"Camily Nadal": 5, "Lorenzo Meneghetti": 5, "João Gabriel Dutra": 7, "Amanda Oliveira": 6, "Rafael dallarosa longo": 8, "Glauber Bagetti": 3, "Henri Meneghetti": 6, "Mélodi Nirvana": 6, "Jonatans Junior": 4, "Izadora Zacker": 6, "Leonardo Soares": 6, "Andriely Oliveira": 4}, "2026-05-19": {"João Gabriel Dutra": 7, "Glauber Bagetti": 3, "Jonatans Junior": 6, "Mélodi Nirvana": 12, "Amanda Oliveira": 7, "Lorenzo Meneghetti": 4, "Leonardo Soares": 5, "Rafael dallarosa longo": 6, "Izadora Zacker": 5, "Camily Nadal": 3, "Henri Meneghetti": 6, "Andriely Oliveira": 1}, "2026-05-20": {"Rafael dallarosa longo": 11, "Leonardo Soares": 7, "Glauber Bagetti": 5, "Amanda Oliveira": 2, "Mélodi Nirvana": 11, "João Gabriel Dutra": 3, "Lorenzo Meneghetti": 2, "Jonatans Junior": 4, "Camily Nadal": 2, "Henri Meneghetti": 10, "Izadora Zacker": 5, "Andriely Oliveira": 5}, "2026-05-21": {"Camily Nadal": 6, "João Gabriel Dutra": 10, "Mélodi Nirvana": 8, "Amanda Oliveira": 4, "Glauber Bagetti": 3, "Leonardo Soares": 7, "Rafael dallarosa longo": 9, "Henri Meneghetti": 8, "Lorenzo Meneghetti": 2, "Jonatans Junior": 8, "Andriely Oliveira": 3, "Izadora Zacker": 3}, "2026-05-22": {"Camily Nadal": 5, "João Gabriel Dutra": 4, "Mélodi Nirvana": 5, "Amanda Oliveira": 4, "Jonatans Junior": 4, "Izadora Zacker": 3, "Leonardo Soares": 12, "Henri Meneghetti": 4, "Rafael dallarosa longo": 3, "Lorenzo Meneghetti": 1, "Glauber Bagetti": 1, "Andriely Oliveira": 3}, "2026-05-23": {"Jonatans Junior": 1, "João Gabriel Dutra": 3, "Lorenzo Meneghetti": 2, "Rafael dallarosa longo": 1}, "2026-05-24": {"João Gabriel Dutra": 1, "Camily Nadal": 1, "Izadora Zacker": 3, "Leonardo Soares": 2}, "2026-05-25": {"João Gabriel Dutra": 5, "Lorenzo Meneghetti": 8, "Leonardo Soares": 11, "Amanda Oliveira": 8, "Jonatans Junior": 8, "Glauber Bagetti": 4, "Izadora Zacker": 6, "Mélodi Nirvana": 4, "Camily Nadal": 3, "Rafael dallarosa longo": 4, "Henri Meneghetti": 8, "Andriely Oliveira": 2}, "2026-05-26": {"Glauber Bagetti": 5, "Jonatans Junior": 8, "Amanda Oliveira": 5, "Camily Nadal": 3, "Lorenzo Meneghetti": 3, "Leonardo Soares": 5, "Mélodi Nirvana": 4, "Andriely Oliveira": 8, "Rafael dallarosa longo": 5, "João Gabriel Dutra": 1, "Izadora Zacker": 4, "Henri Meneghetti": 3}, "2026-05-27": {"Lorenzo Meneghetti": 2, "Jonatans Junior": 4, "Leonardo Soares": 5, "Rafael dallarosa longo": 10, "Glauber Bagetti": 4, "Amanda Oliveira": 5, "Izadora Zacker": 8, "Camily Nadal": 5, "Henri Meneghetti": 4, "Andriely Oliveira": 7}, "2026-05-28": {"Amanda Oliveira": 2, "Camily Nadal": 1, "Jonatans Junior": 1, "Rafael dallarosa longo": 1}, "2026-05-10": {"Leonardo Soares": 14, "Rafael dallarosa longo": 1}, "2026-05-16": {"Camily Nadal": 1}}, "ns": {"2026-05-04": {"Glauber Bagetti": 4, "Mélodi Nirvana": 1, "Izadora Zacker": 1, "Lorenzo Meneghetti": 3, "João Gabriel Dutra": 2, "Leonardo Soares": 4, "Henri Meneghetti": 1}, "2026-05-05": {"Henri Meneghetti": 2, "Mélodi Nirvana": 1, "Andriely Oliveira": 1, "Jonatans Junior": 2}, "2026-05-06": {"Andriely Oliveira": 1, "Izadora Zacker": 1, "Leonardo Soares": 2, "Camily Nadal": 2, "João Gabriel Dutra": 3, "Jonatans Junior": 3, "Mélodi Nirvana": 1, "Henri Meneghetti": 1}, "2026-05-07": {"Glauber Bagetti": 3, "Izadora Zacker": 1, "Rafael dallarosa longo": 1, "Leonardo Soares": 2, "Camily Nadal": 2, "Henri Meneghetti": 3, "Lorenzo Meneghetti": 2, "João Gabriel Dutra": 1, "Jonatans Junior": 1, "Andriely Oliveira": 2, "Mélodi Nirvana": 3, "Amanda Oliveira": 3}, "2026-05-08": {"João Gabriel Dutra": 4, "Rafael dallarosa longo": 2, "Izadora Zacker": 3, "Jonatans Junior": 4, "Leonardo Soares": 4, "Amanda Oliveira": 1, "Henri Meneghetti": 3, "Mélodi Nirvana": 2, "Lorenzo Meneghetti": 1}, "2026-05-09": {"João Gabriel Dutra": 1, "Camily Nadal": 1, "Lorenzo Meneghetti": 1, "Rafael dallarosa longo": 3, "Henri Meneghetti": 1}, "2026-05-11": {"Lorenzo Meneghetti": 2, "Leonardo Soares": 9, "Jonatans Junior": 3, "Mélodi Nirvana": 2, "Rafael dallarosa longo": 2, "Camily Nadal": 3, "Amanda Oliveira": 3, "Glauber Bagetti": 1, "Henri Meneghetti": 1, "João Gabriel Dutra": 2, "Izadora Zacker": 1}, "2026-05-12": {"Izadora Zacker": 3, "Jonatans Junior": 2, "Glauber Bagetti": 4, "Camily Nadal": 1, "Amanda Oliveira": 1, "Rafael dallarosa longo": 2, "Leonardo Soares": 6, "Henri Meneghetti": 1, "Mélodi Nirvana": 3, "João Gabriel Dutra": 3, "Lorenzo Meneghetti": 1}, "2026-05-13": {"Leonardo Soares": 3, "Lorenzo Meneghetti": 3, "Rafael dallarosa longo": 4, "Glauber Bagetti": 2, "Mélodi Nirvana": 4, "Amanda Oliveira": 3, "Camily Nadal": 1, "João Gabriel Dutra": 3, "Izadora Zacker": 1, "Henri Meneghetti": 1, "Jonatans Junior": 3, "Andriely Oliveira": 1}, "2026-05-14": {"Leonardo Soares": 5, "Rafael dallarosa longo": 4, "Glauber Bagetti": 2, "Mélodi Nirvana": 3, "Jonatans Junior": 2, "Camily Nadal": 2, "Henri Meneghetti": 3, "João Gabriel Dutra": 1, "Amanda Oliveira": 1, "Lorenzo Meneghetti": 2, "Izadora Zacker": 2}, "2026-05-15": {"Camily Nadal": 2, "João Gabriel Dutra": 1, "Mélodi Nirvana": 4, "Leonardo Soares": 2, "Henri Meneghetti": 3, "Glauber Bagetti": 3, "Jonatans Junior": 1, "Amanda Oliveira": 1, "Rafael dallarosa longo": 3, "Izadora Zacker": 1}, "2026-05-16": {"Leonardo Soares": 3, "Lorenzo Meneghetti": 1, "Rafael dallarosa longo": 1, "Camily Nadal": 1, "Henri Meneghetti": 2, "Glauber Bagetti": 1, "Mélodi Nirvana": 1, "João Gabriel Dutra": 1}, "2026-05-18": {"Amanda Oliveira": 2, "Leonardo Soares": 5, "Glauber Bagetti": 3, "Rafael dallarosa longo": 4, "João Gabriel Dutra": 4, "Henri Meneghetti": 1, "Jonatans Junior": 1, "Camily Nadal": 2, "Andriely Oliveira": 1, "Izadora Zacker": 2, "Lorenzo Meneghetti": 3}, "2026-05-20": {"Amanda Oliveira": 2, "Glauber Bagetti": 2, "Izadora Zacker": 3, "Leonardo Soares": 3, "Andriely Oliveira": 2, "Rafael dallarosa longo": 4, "Jonatans Junior": 2, "João Gabriel Dutra": 1, "Camily Nadal": 1, "Lorenzo Meneghetti": 2}, "2026-05-19": {"Izadora Zacker": 1, "Lorenzo Meneghetti": 1, "Henri Meneghetti": 3, "Mélodi Nirvana": 2, "Amanda Oliveira": 2, "Rafael dallarosa longo": 2, "Leonardo Soares": 1, "Glauber Bagetti": 1, "João Gabriel Dutra": 1}, "2026-05-21": {"Leonardo Soares": 3, "Glauber Bagetti": 1, "Jonatans Junior": 2, "Mélodi Nirvana": 2, "João Gabriel Dutra": 3, "Henri Meneghetti": 6, "Rafael dallarosa longo": 5, "Izadora Zacker": 1}, "2026-05-22": {"João Gabriel Dutra": 4, "Rafael dallarosa longo": 3, "Leonardo Soares": 2, "Mélodi Nirvana": 1, "Camily Nadal": 1, "Glauber Bagetti": 2, "Henri Meneghetti": 3, "Lorenzo Meneghetti": 2, "Amanda Oliveira": 1, "Jonatans Junior": 5}, "2026-05-23": {"João Gabriel Dutra": 3, "Jonatans Junior": 2, "Henri Meneghetti": 1, "Lorenzo Meneghetti": 1}, "2026-05-25": {"Andriely Oliveira": 2, "Amanda Oliveira": 1, "Jonatans Junior": 2, "Camily Nadal": 2, "João Gabriel Dutra": 2, "Leonardo Soares": 5, "Henri Meneghetti": 2, "Rafael dallarosa longo": 3, "Lorenzo Meneghetti": 5, "Izadora Zacker": 1}, "2026-05-26": {"Izadora Zacker": 2, "Lorenzo Meneghetti": 2, "Mélodi Nirvana": 2, "Camily Nadal": 6, "Leonardo Soares": 4, "Andriely Oliveira": 1, "João Gabriel Dutra": 2, "Rafael dallarosa longo": 2, "Glauber Bagetti": 2, "Henri Meneghetti": 4, "Amanda Oliveira": 1, "Jonatans Junior": 1}, "2026-05-27": {"Izadora Zacker": 6, "Amanda Oliveira": 4, "Lorenzo Meneghetti": 4, "Leonardo Soares": 3, "Jonatans Junior": 4, "Glauber Bagetti": 2, "Camily Nadal": 2, "Henri Meneghetti": 1, "Mélodi Nirvana": 1}, "2026-05-28": {"Rafael dallarosa longo": 1}}, "future": {"2026-05-27": {"Camily Nadal": 1, "Andriely Oliveira": 1, "Izadora Zacker": 1}, "2026-05-28": {"Andriely Oliveira": 5, "Henri Meneghetti": 2, "Lorenzo Meneghetti": 9, "Glauber Bagetti": 3, "Leonardo Soares": 4, "Izadora Zacker": 12, "Jonatans Junior": 4, "Rafael dallarosa longo": 2, "Amanda Oliveira": 3, "Mélodi Nirvana": 1, "Camily Nadal": 4, "João Gabriel Dutra": 2}, "2026-05-29": {"Leonardo Soares": 1, "Lorenzo Meneghetti": 2, "Rafael dallarosa longo": 3, "Jonatans Junior": 1, "Amanda Oliveira": 1, "Glauber Bagetti": 1, "Andriely Oliveira": 1}, "2026-05-30": {"Andriely Oliveira": 2, "Jonatans Junior": 1}}}, "closer": {"re": {"Samuel Almeida": 58, "Maria Luísa": 56, "Haynnã": 64, "Suzanny Mauren Dihelem": 34, "Émerson Cavitchoni": 47, "Leonardo Ribeiro": 31, "Felippe Porcella": 24, "William Dias": 50, "Thuany Ghabril": 47, "Djulia Silva": 60, "Andresa Caldas": 8, "Laura Feijó Junqueira": 5, "Adalberto Neto": 56, "Samuel Brião": 25, "Lorenzo Coronel": 34, "Raissa Antunes": 23, "Manuella Oliveira": 45, "Fred": 13, "Gabriel Meneses": 1, "Tom Mansur": 5, "Raíssa Nobre": 2}, "future": {"Lorenzo Coronel": 2, "Maria Luísa": 7, "Adalberto Neto": 4, "Raissa Antunes": 8, "Djulia Silva": 5, "William Dias": 4, "Leonardo Ribeiro": 4, "Raíssa Nobre": 7, "Samuel Almeida": 6, "Émerson Cavitchoni": 3, "Felippe Porcella": 1, "Manuella Oliveira": 3, "Haynnã": 5, "Samuel Brião": 2, "Fred": 2, "Tom Mansur": 1, "Suzanny Mauren Dihelem": 2}, "ns": {"Laura Feijó Junqueira": 6, "Djulia Silva": 26, "Suzanny Mauren Dihelem": 33, "Samuel Brião": 15, "Lorenzo Coronel": 36, "Raissa Antunes": 12, "Leonardo Ribeiro": 22, "William Dias": 40, "Felippe Porcella": 28, "Thuany Ghabril": 31, "Andresa Caldas": 6, "Maria Luísa": 21, "Adalberto Neto": 24, "Samuel Almeida": 31, "Gabriela Cunha": 3, "Émerson Cavitchoni": 27, "Haynnã": 33, "Bruna Salazar": 1, "Fred": 12, "Manuella Oliveira": 24, "Raíssa Nobre": 1, "Maria Eduarda Figueiredo": 1, "Tom Mansur": 2}, "inv": {"Samuel Brião": 1, "Fred": 1, "Suzanny Mauren Dihelem": 1, "Maria Luísa": 1}}, "closer_team": {"franquia": ["Adalberto Neto", "Andresa Caldas", "Felippe Porcella", "Fred", "Gabriel Meneses", "Leonardo Ribeiro", "Lorenzo Coronel", "Samuel Brião", "Suzanny Mauren Dihelem", "Thuany Ghabril", "William Dias", "Émerson Cavitchoni"], "partner": ["Djulia Silva", "Haynnã", "Laura Feijó Junqueira", "Manuella Oliveira", "Maria Luísa", "Raissa Antunes", "Raíssa Nobre", "Samuel Almeida", "Tomaz Fabres"]}, "closer_daily": {"re": {"2026-05-04": {"Samuel Almeida": 4, "Maria Luísa": 2, "Haynnã": 1, "Suzanny Mauren Dihelem": 1, "Émerson Cavitchoni": 1, "Leonardo Ribeiro": 1, "Felippe Porcella": 2, "William Dias": 2, "Thuany Ghabril": 2, "Djulia Silva": 1, "Andresa Caldas": 1, "Laura Feijó Junqueira": 1, "Adalberto Neto": 1, "Samuel Brião": 1, "Lorenzo Coronel": 1}, "2026-05-05": {"Djulia Silva": 3, "Haynnã": 3, "Raissa Antunes": 3, "Andresa Caldas": 2, "Samuel Almeida": 2, "Maria Luísa": 3, "Thuany Ghabril": 2, "Adalberto Neto": 2, "Émerson Cavitchoni": 1, "Lorenzo Coronel": 2, "William Dias": 2}, "2026-05-06": {"Andresa Caldas": 1, "Thuany Ghabril": 3, "Haynnã": 3, "Djulia Silva": 3, "Raissa Antunes": 4, "Suzanny Mauren Dihelem": 1, "Adalberto Neto": 2, "Émerson Cavitchoni": 1, "Maria Luísa": 4, "William Dias": 1, "Samuel Almeida": 1}, "2026-05-07": {"William Dias": 4, "Andresa Caldas": 3, "Djulia Silva": 4, "Haynnã": 3, "Felippe Porcella": 1, "Suzanny Mauren Dihelem": 3, "Maria Luísa": 5, "Adalberto Neto": 2, "Samuel Brião": 1, "Leonardo Ribeiro": 1, "Samuel Almeida": 2, "Raissa Antunes": 1, "Émerson Cavitchoni": 1}, "2026-05-08": {"Émerson Cavitchoni": 1, "Thuany Ghabril": 3, "Andresa Caldas": 1, "Raissa Antunes": 4, "William Dias": 3, "Haynnã": 3, "Samuel Almeida": 4, "Djulia Silva": 1, "Maria Luísa": 3, "Felippe Porcella": 1, "Adalberto Neto": 1, "Samuel Brião": 1, "Lorenzo Coronel": 1, "Suzanny Mauren Dihelem": 1}, "2026-05-09": {"Thuany Ghabril": 2, "Adalberto Neto": 1}, "2026-05-11": {"Adalberto Neto": 1, "Leonardo Ribeiro": 2, "Djulia Silva": 5, "Felippe Porcella": 2, "Lorenzo Coronel": 2, "Suzanny Mauren Dihelem": 2, "William Dias": 2, "Samuel Almeida": 3, "Thuany Ghabril": 3, "Émerson Cavitchoni": 2, "Haynnã": 2, "Manuella Oliveira": 2, "Fred": 1, "Maria Luísa": 1, "Samuel Brião": 1, "Raissa Antunes": 1}, "2026-05-12": {"Émerson Cavitchoni": 6, "Raissa Antunes": 1, "William Dias": 4, "Samuel Almeida": 5, "Djulia Silva": 6, "Felippe Porcella": 1, "Haynnã": 5, "Lorenzo Coronel": 2, "Laura Feijó Junqueira": 2, "Thuany Ghabril": 3, "Leonardo Ribeiro": 2, "Adalberto Neto": 5, "Manuella Oliveira": 6, "Maria Luísa": 4, "Samuel Brião": 1}, "2026-05-13": {"Samuel Almeida": 4, "Djulia Silva": 3, "Raissa Antunes": 1, "Émerson Cavitchoni": 3, "William Dias": 4, "Samuel Brião": 1, "Maria Luísa": 4, "Thuany Ghabril": 2, "Haynnã": 5, "Felippe Porcella": 4, "Adalberto Neto": 3, "Manuella Oliveira": 4, "Laura Feijó Junqueira": 1, "Leonardo Ribeiro": 1, "Lorenzo Coronel": 1}, "2026-05-14": {"Émerson Cavitchoni": 4, "Leonardo Ribeiro": 2, "William Dias": 3, "Haynnã": 2, "Gabriel Meneses": 1, "Adalberto Neto": 5, "Manuella Oliveira": 5, "Raissa Antunes": 1, "Samuel Almeida": 3, "Maria Luísa": 4, "Suzanny Mauren Dihelem": 1, "Lorenzo Coronel": 2, "Fred": 2, "Thuany Ghabril": 4, "Samuel Brião": 3, "Djulia Silva": 4}, "2026-05-15": {"William Dias": 1, "Adalberto Neto": 4, "Leonardo Ribeiro": 3, "Thuany Ghabril": 3, "Samuel Almeida": 4, "Felippe Porcella": 2, "Émerson Cavitchoni": 3, "Haynnã": 1, "Maria Luísa": 4, "Manuella Oliveira": 2, "Lorenzo Coronel": 3, "Raissa Antunes": 1, "Suzanny Mauren Dihelem": 2, "Djulia Silva": 1}, "2026-05-16": {"Samuel Almeida": 1}, "2026-05-18": {"William Dias": 3, "Felippe Porcella": 1, "Thuany Ghabril": 2, "Fred": 1, "Samuel Almeida": 4, "Lorenzo Coronel": 3, "Djulia Silva": 1, "Haynnã": 3, "Émerson Cavitchoni": 2, "Suzanny Mauren Dihelem": 2, "Adalberto Neto": 2, "Manuella Oliveira": 2, "Maria Luísa": 2, "Raissa Antunes": 1, "Leonardo Ribeiro": 3}, "2026-05-19": {"Samuel Almeida": 6, "Maria Luísa": 4, "Raissa Antunes": 1, "Lorenzo Coronel": 1, "Haynnã": 8, "Leonardo Ribeiro": 3, "Thuany Ghabril": 2, "Suzanny Mauren Dihelem": 4, "Adalberto Neto": 4, "Samuel Brião": 2, "Émerson Cavitchoni": 3, "Manuella Oliveira": 3, "Djulia Silva": 4, "Fred": 1, "William Dias": 1}, "2026-05-20": {"Émerson Cavitchoni": 5, "Felippe Porcella": 2, "William Dias": 2, "Manuella Oliveira": 5, "Lorenzo Coronel": 3, "Thuany Ghabril": 4, "Leonardo Ribeiro": 2, "Adalberto Neto": 3, "Suzanny Mauren Dihelem": 7, "Djulia Silva": 5, "Samuel Brião": 2, "Haynnã": 5, "Fred": 1, "Maria Luísa": 4, "Samuel Almeida": 1}, "2026-05-21": {"Leonardo Ribeiro": 1, "Adalberto Neto": 5, "Lorenzo Coronel": 2, "Manuella Oliveira": 4, "Felippe Porcella": 1, "Thuany Ghabril": 3, "Samuel Almeida": 2, "Samuel Brião": 4, "Fred": 2, "Émerson Cavitchoni": 3, "Raissa Antunes": 1, "Djulia Silva": 4, "Haynnã": 4, "William Dias": 4, "Laura Feijó Junqueira": 1, "Maria Luísa": 1}, "2026-05-22": {"Djulia Silva": 4, "Adalberto Neto": 5, "Fred": 1, "William Dias": 4, "Émerson Cavitchoni": 4, "Thuany Ghabril": 5, "Maria Luísa": 1, "Haynnã": 1, "Leonardo Ribeiro": 3, "Samuel Almeida": 1, "Samuel Brião": 2, "Suzanny Mauren Dihelem": 3, "Lorenzo Coronel": 3, "Felippe Porcella": 1, "Manuella Oliveira": 1}, "2026-05-23": {"Felippe Porcella": 1, "Haynnã": 1, "Suzanny Mauren Dihelem": 2, "William Dias": 1, "Adalberto Neto": 1}, "2026-05-25": {"Émerson Cavitchoni": 3, "Adalberto Neto": 3, "Felippe Porcella": 3, "Maria Luísa": 3, "Samuel Almeida": 6, "Lorenzo Coronel": 4, "Djulia Silva": 3, "Manuella Oliveira": 5, "Samuel Brião": 2, "Haynnã": 4, "Thuany Ghabril": 2, "Fred": 2, "Suzanny Mauren Dihelem": 2, "William Dias": 2, "Raissa Antunes": 1}, "2026-05-26": {"Samuel Almeida": 3, "Djulia Silva": 5, "Haynnã": 5, "William Dias": 3, "Leonardo Ribeiro": 4, "Thuany Ghabril": 2, "Maria Luísa": 2, "Fred": 2, "Felippe Porcella": 2, "Lorenzo Coronel": 2, "Tom Mansur": 3, "Manuella Oliveira": 1, "Adalberto Neto": 3, "Samuel Brião": 3, "Émerson Cavitchoni": 1}, "2026-05-27": {"Adalberto Neto": 3, "Maria Luísa": 5, "Suzanny Mauren Dihelem": 3, "Djulia Silva": 3, "Haynnã": 5, "Raissa Antunes": 2, "Leonardo Ribeiro": 3, "Manuella Oliveira": 5, "Tom Mansur": 2, "Émerson Cavitchoni": 3, "Samuel Almeida": 2, "Lorenzo Coronel": 1, "William Dias": 4, "Raíssa Nobre": 2, "Samuel Brião": 1}, "2026-05-29": {"Lorenzo Coronel": 1}}, "ns": {"2026-05-04": {"Laura Feijó Junqueira": 1, "Djulia Silva": 3, "Suzanny Mauren Dihelem": 2, "Samuel Brião": 1, "Lorenzo Coronel": 2, "Raissa Antunes": 2, "Leonardo Ribeiro": 1, "William Dias": 2, "Felippe Porcella": 1, "Thuany Ghabril": 1}, "2026-05-05": {"Andresa Caldas": 2, "Djulia Silva": 1, "Maria Luísa": 1, "Thuany Ghabril": 2}, "2026-05-06": {"Djulia Silva": 1, "Maria Luísa": 1, "Adalberto Neto": 2, "Raissa Antunes": 2, "Lorenzo Coronel": 1, "Samuel Almeida": 1, "Leonardo Ribeiro": 1, "William Dias": 2, "Samuel Brião": 1, "Thuany Ghabril": 2}, "2026-05-07": {"Suzanny Mauren Dihelem": 5, "Gabriela Cunha": 1, "Émerson Cavitchoni": 2, "Leonardo Ribeiro": 1, "Haynnã": 2, "Lorenzo Coronel": 3, "Raissa Antunes": 1, "Andresa Caldas": 2, "Samuel Brião": 2, "Adalberto Neto": 1, "Djulia Silva": 1, "Laura Feijó Junqueira": 1, "Samuel Almeida": 1, "Felippe Porcella": 1}, "2026-05-08": {"Leonardo Ribeiro": 3, "Samuel Almeida": 2, "Gabriela Cunha": 2, "Andresa Caldas": 2, "William Dias": 3, "Felippe Porcella": 1, "Maria Luísa": 1, "Raissa Antunes": 3, "Thuany Ghabril": 1, "Haynnã": 3, "Lorenzo Coronel": 1, "Samuel Brião": 1, "Émerson Cavitchoni": 1}, "2026-05-09": {"Adalberto Neto": 1, "Felippe Porcella": 1, "Lorenzo Coronel": 2, "Haynnã": 1, "Thuany Ghabril": 1, "Émerson Cavitchoni": 1}, "2026-05-11": {"Lorenzo Coronel": 2, "William Dias": 4, "Bruna Salazar": 1, "Leonardo Ribeiro": 4, "Djulia Silva": 4, "Émerson Cavitchoni": 2, "Felippe Porcella": 2, "Haynnã": 3, "Laura Feijó Junqueira": 1, "Adalberto Neto": 2, "Suzanny Mauren Dihelem": 2, "Thuany Ghabril": 1, "Samuel Brião": 1}, "2026-05-12": {"Maria Luísa": 2, "Samuel Almeida": 3, "Haynnã": 3, "Lorenzo Coronel": 2, "Djulia Silva": 2, "Laura Feijó Junqueira": 1, "Émerson Cavitchoni": 1, "Leonardo Ribeiro": 1, "Suzanny Mauren Dihelem": 2, "Raissa Antunes": 1, "William Dias": 4, "Fred": 1, "Thuany Ghabril": 1, "Manuella Oliveira": 2, "Felippe Porcella": 1}, "2026-05-13": {"Leonardo Ribeiro": 2, "Djulia Silva": 1, "Thuany Ghabril": 3, "Manuella Oliveira": 4, "Lorenzo Coronel": 2, "Haynnã": 1, "Adalberto Neto": 2, "Maria Luísa": 2, "Suzanny Mauren Dihelem": 3, "Samuel Brião": 2, "Samuel Almeida": 3, "Émerson Cavitchoni": 2, "Laura Feijó Junqueira": 1, "William Dias": 1}, "2026-05-14": {"Leonardo Ribeiro": 2, "Thuany Ghabril": 3, "Fred": 1, "Suzanny Mauren Dihelem": 2, "Felippe Porcella": 1, "Samuel Almeida": 4, "Samuel Brião": 1, "Lorenzo Coronel": 4, "Djulia Silva": 3, "Manuella Oliveira": 1, "Laura Feijó Junqueira": 1, "Maria Luísa": 1, "Raissa Antunes": 1, "William Dias": 1, "Haynnã": 1}, "2026-05-15": {"Felippe Porcella": 2, "Adalberto Neto": 1, "Manuella Oliveira": 5, "Fred": 1, "Maria Luísa": 2, "Leonardo Ribeiro": 2, "Djulia Silva": 1, "Lorenzo Coronel": 1, "William Dias": 2, "Suzanny Mauren Dihelem": 2, "Haynnã": 1, "Samuel Almeida": 1}, "2026-05-16": {"William Dias": 3, "Lorenzo Coronel": 2, "Samuel Almeida": 1, "Samuel Brião": 1, "Émerson Cavitchoni": 1, "Suzanny Mauren Dihelem": 2, "Haynnã": 1}, "2026-05-18": {"Samuel Brião": 1, "Leonardo Ribeiro": 1, "Fred": 2, "Lorenzo Coronel": 2, "Samuel Almeida": 3, "Adalberto Neto": 2, "Suzanny Mauren Dihelem": 2, "Haynnã": 2, "William Dias": 2, "Manuella Oliveira": 2, "Djulia Silva": 2, "Raissa Antunes": 1, "Felippe Porcella": 3, "Thuany Ghabril": 2, "Émerson Cavitchoni": 1}, "2026-05-20": {"Felippe Porcella": 3, "Djulia Silva": 1, "Maria Luísa": 1, "William Dias": 3, "Samuel Almeida": 2, "Adalberto Neto": 3, "Raissa Antunes": 1, "Haynnã": 3, "Thuany Ghabril": 2, "Lorenzo Coronel": 1, "Manuella Oliveira": 1, "Suzanny Mauren Dihelem": 1}, "2026-05-19": {"Thuany Ghabril": 3, "Manuella Oliveira": 2, "Suzanny Mauren Dihelem": 1, "Djulia Silva": 1, "Samuel Almeida": 1, "Fred": 1, "Émerson Cavitchoni": 2, "Lorenzo Coronel": 2, "Felippe Porcella": 1}, "2026-05-21": {"William Dias": 3, "Djulia Silva": 1, "Fred": 2, "Maria Luísa": 2, "Samuel Brião": 1, "Adalberto Neto": 3, "Felippe Porcella": 1, "Thuany Ghabril": 4, "Émerson Cavitchoni": 3, "Maria Eduarda Figueiredo": 1, "Lorenzo Coronel": 2}, "2026-05-22": {"William Dias": 4, "Felippe Porcella": 2, "Lorenzo Coronel": 3, "Suzanny Mauren Dihelem": 3, "Manuella Oliveira": 1, "Émerson Cavitchoni": 3, "Adalberto Neto": 1, "Fred": 1, "Maria Luísa": 3, "Haynnã": 2, "Samuel Almeida": 1}, "2026-05-23": {"Adalberto Neto": 2, "Haynnã": 3, "William Dias": 1, "Manuella Oliveira": 1}, "2026-05-25": {"Émerson Cavitchoni": 1, "Haynnã": 4, "Samuel Almeida": 1, "Manuella Oliveira": 1, "Thuany Ghabril": 2, "Adalberto Neto": 3, "Fred": 3, "Felippe Porcella": 3, "William Dias": 2, "Maria Luísa": 2, "Djulia Silva": 1, "Lorenzo Coronel": 2}, "2026-05-26": {"Émerson Cavitchoni": 5, "Manuella Oliveira": 2, "Djulia Silva": 1, "Samuel Almeida": 4, "Thuany Ghabril": 1, "Leonardo Ribeiro": 1, "Felippe Porcella": 2, "Suzanny Mauren Dihelem": 4, "Samuel Brião": 1, "Lorenzo Coronel": 1, "Adalberto Neto": 1, "Maria Luísa": 2, "Tom Mansur": 1, "William Dias": 1, "Haynnã": 2}, "2026-05-27": {"Thuany Ghabril": 2, "William Dias": 2, "Lorenzo Coronel": 1, "Raíssa Nobre": 1, "Maria Luísa": 1, "Haynnã": 1, "Samuel Almeida": 3, "Leonardo Ribeiro": 2, "Djulia Silva": 2, "Manuella Oliveira": 2, "Samuel Brião": 2, "Felippe Porcella": 3, "Suzanny Mauren Dihelem": 2, "Émerson Cavitchoni": 2, "Tom Mansur": 1}, "2026-05-28": {"Leonardo Ribeiro": 1}}, "future": {"2026-05-27": {"Lorenzo Coronel": 1, "Maria Luísa": 2}, "2026-05-28": {"Maria Luísa": 3, "Adalberto Neto": 4, "Raissa Antunes": 7, "Djulia Silva": 5, "William Dias": 2, "Leonardo Ribeiro": 4, "Raíssa Nobre": 6, "Samuel Almeida": 6, "Émerson Cavitchoni": 2, "Felippe Porcella": 1, "Manuella Oliveira": 2, "Haynnã": 3, "Samuel Brião": 2, "Lorenzo Coronel": 1, "Fred": 1, "Tom Mansur": 1, "Suzanny Mauren Dihelem": 1}, "2026-05-29": {"Fred": 1, "Raíssa Nobre": 1, "Maria Luísa": 2, "Haynnã": 1, "Émerson Cavitchoni": 1, "Manuella Oliveira": 1, "Raissa Antunes": 1, "Suzanny Mauren Dihelem": 1}, "2026-05-30": {"William Dias": 2, "Haynnã": 1}}}, "product": {"ag": {"Studio Agro": 246, "Studio Fiscal": 107, "GS PARTNER": 660, "PJ360": 4, "Franquia Partner": 1}, "re": {"GS PARTNER": 290, "Studio Agro": 160, "Studio Fiscal": 66, "Franquia Partner": 159, "PJ360": 4}, "ns": {"GS PARTNER": 137, "Studio Agro": 119, "Franquia Partner": 108, "Studio Fiscal": 60, "PJ360": 5}, "leads": {"GS PARTNER": 2609, "Studio Fiscal": 1253, "Studio Agro": 1033}, "lost": {"GS PARTNER": 1606, "Studio Fiscal": 1253, "Studio Agro": 1033, "None": 1}, "loss_rate": {"GS PARTNER": 61.6, "Studio Fiscal": 100.0, "Studio Agro": 100.0}, "mql_rate": {"GS PARTNER": 25.3, "Studio Fiscal": 8.5, "Studio Agro": 23.8}}, "loss": {"by_reason_product": {"Sem Contato": {"Studio Fiscal": 125, "Studio Agro": 151, "GS PARTNER": 218}, "Sem perfil": {"Studio Agro": 453, "Studio Fiscal": 774, "GS PARTNER": 731}, "Sem interesse": {"Studio Agro": 176, "Studio Fiscal": 125, "GS PARTNER": 271}, "Perfil Fake": {"GS PARTNER": 14, "Studio Agro": 16, "Studio Fiscal": 23}, "Sem Retorno": {"GS PARTNER": 371, "Studio Fiscal": 206, "Studio Agro": 235}, "Buscando Parceria": {"Studio Agro": 2, "GS PARTNER": 1}}, "by_reason_campaign": {"Sem Contato": {"120225035574020013": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 17, "[LEAD][ABO][FORM NATIVO] [ABO]": 28, "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 8, "[LEAD][ABO][FORM NATIVO LISTA]": 15, "[LEAD][ABO][FORM NATIVO] [4]": 5, "FF - GS PARTNER [Formulario Direto][ABO]": 126, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 27, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS] [02]": 3, "[LEAD][ABO][FORM NATIVO] [1]": 27, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 15, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 1, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 33, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 28, "[PAGEVIEW_VV50%-EBOOK]": 1, "search_cadastro_franquia_12_03": 5, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 26, "[LEAD][ABO][FORM NATIVO] [CONTADOR]": 7, "[LEAD][ABO][FORM NATIVO] [ABO] [2]": 4, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 5, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 2, "[LEAD][ABO][LAL QUENTES PIPE]": 5, "search_cadastro_franquia_12_03_v2": 2, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 13, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 2, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 8, "[LEAD] FORMS_NATIVO] [ESCALA]": 25, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 7, "[LEAD][ABO][LAL FRANQUEADOS]": 4, "pmax_franquia_studio_agro": 2, "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 9, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 5, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 3, "aquisicao_topofrio": 1, "[LEAD][ABO][FORM NATIVO] [2]": 1, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 2, "[LEAD][ABO][LAL CLIENTES FINAIS]": 2, "[LEAD][ABO][FORM NATIVO] [LISTA]": 8, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 1, "ebook_topo_-_envio_1_-_base_agro": 1, "[LEAD][ABO][FORM NATIVO] [3]": 2, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [03]": 1}, "Sem perfil": {"[LEAD][ABO][FORM NATIVO] [1]": 63, "[LEAD][ABO][FORM NATIVO] [LISTA CONTADORES]": 1, "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]": 16, "FF - GS PARTNER [Formulario Direto][ABO]": 493, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 66, "[LEAD][ABO][FORM NATIVO] [LISTA]": 30, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 73, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 59, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 101, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 74, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 43, "[LEAD][ABO][LAL QUENTES PIPE]": 17, "[LEAD][ABO][FORM NATIVO LISTA]": 72, "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 37, "[LEAD][ABO][FORM NATIVO] [ABO]": 91, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 10, "[LEAD][ABO][FORM NATIVO] [CONTADOR]": 17, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 41, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 56, "pmax_franquia_studio_agro": 16, "[LEAD][ABO][FORM NATIVO] [ABO] [2]": 5, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 25, "[LEAD][ABO][FORM NATIVO] [4]": 23, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 45, "120225035574020013": 2, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS] [02]": 1, "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]": 4, "search_cadastro_franquia_12_03": 11, "search_cadastro_franquia_12_03_v2": 3, "[CONTADOR][28-60][BR]": 1, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 2, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 3, "Conversao": 2, "[LEAD] FORMS_NATIVO] [ESCALA]": 199, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 155, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA] [2]": 1, "[LEAD][ABO][LAL FRANQUEADOS]": 4, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 6, "[LEAD][ABO][FORM NATIVO] [2]": 3, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 7, "[LEAD][ABO][FORM NATIVO] [3]": 23, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 32, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 7, "[LEAD][ABO][LAL CLIENTES FINAIS]": 7, "120245950706600013": 1, "search_studio_agro": 3, "120242298180730013": 1}, "Sem interesse": {"[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 30, "[FORM] -  Captação Always On 01": 1, "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 14, "[LEAD][ABO][FORM NATIVO] [1]": 14, "FF - GS PARTNER [Formulario Direto][ABO]": 162, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 30, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 23, "[LEAD][ABO][FORM NATIVO] [ABO]": 35, "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]": 7, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 42, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 1, "[LEAD][ABO][FORM NATIVO] [CONTADOR]": 5, "[LEAD][ABO][FORM NATIVO LISTA]": 8, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 32, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 13, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 9, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 18, "[VideoView_Pageview] [04]": 1, "[LEAD][ABO][FORM NATIVO] [4]": 3, "[LEAD][ABO][LAL FRANQUEADOS]": 3, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 7, "[LEAD][ABO][LAL QUENTES PIPE]": 6, "search_cadastro_franquia_12_03": 5, "[LEAD][ABO][FORM NATIVO] [LISTA]": 13, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 4, "[LEAD][ABO][FORM NATIVO] [ABO] [2]": 2, "pmax_franquia_studio_agro": 1, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 9, "Conversao": 2, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 9, "Studio Agro - FF - Branding": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 3, "[LEAD] FORMS_NATIVO] [ESCALA]": 24, "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 18, "search_cadastro_franquia_12_03_v2": 1, "120245950706600013": 1, "120237951210160013": 1, "[LEAD][ABO][REMARKETING]": 1, "[LEAD][ABO][FORM NATIVO] [3]": 4, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 3, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 1, "search_studio_agro": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]": 2}, "Perfil Fake": {"FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 4, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 4, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 2, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 3, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 2, "FF - GS PARTNER [Formulario Direto][ABO]": 7, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 4, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 2, "[LEAD][ABO][FORM NATIVO] [4]": 2, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 1, "[LEAD][ABO][FORM NATIVO] [LISTA]": 3, "[LEAD][ABO][LAL QUENTES PIPE]": 1, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 3, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 4, "[LEAD][ABO][FORM NATIVO LISTA]": 4, "[LEAD][ABO][FORM NATIVO] [1]": 1, "[LEAD][ABO][FORM NATIVO] [3]": 2, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 1, "[LEAD][ABO][FORM NATIVO] [ABO]": 1, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1}, "Sem Retorno": {"FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]": 18, "FF - GS PARTNER [Formulario Direto][ABO] [04]": 46, "[PAGEVIEW_VV50%-EBOOK] [02]": 1, "FF - GS PARTNER [Formulario Direto][ABO]": 215, "[LEAD][ABO][FORM NATIVO] [ABO]": 42, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 57, "[LEAD][ABO][FORM NATIVO LISTA]": 16, "[LEAD][ABO][FORM NATIVO] [1]": 36, "FF - GS PARTNER [Formulario Direto][ABO] [EST]": 35, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]": 35, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS] [02]": 1, "search_cadastro_franquia_12_03": 10, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]": 14, "[LEAD][ABO][LAL FRANQUEADOS]": 5, "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]": 8, "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]": 24, "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]": 4, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]": 29, "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]": 3, "[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 27, "[LEAD][ABO][FORM NATIVO] [LISTA]": 22, "[LEAD] FORMS_NATIVO] [ESCALA] [4]": 7, "[LEAD][ABO][FORM NATIVO] [CONTADOR]": 5, "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]": 3, "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]": 4, "Conversao": 3, "[LEAD] FORMS_NATIVO] [ESCALA]": 39, "[LEAD] FORMS_NATIVO] [ESCALA] [2]": 17, "[LEAD][ABO][LAL QUENTES PIPE]": 11, "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]": 22, "[LEAD][ABO][FORM NATIVO] [4]": 10, "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA] [2]": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]": 13, "search_cadastro_franquia_12_03_v2": 3, "[LEAD][ABO][FORM NATIVO] [ABO] [2]": 1, "[LEAD][ABO][FORM NATIVO] [2]": 2, "120247283937380013": 1, "[LEAD][ABO][FORM NATIVO] [3]": 8, "[LEAD][CBO][REMARKETING VIDEOVIEW]": 1, "[LEAD][ABO][LAL CLIENTES FINAIS]": 5, "[LEAD] FORMS_NATIVO] [ESCALA] [3]": 2, "search_studio_agro": 1, "[LEAD] FORMS_NATIVO] [ESCALA] [5]": 1, "120225035574020013": 1, "120242298180730013": 1}, "Buscando Parceria": {"[LEAD][ABO][FORM NATIVO] [CONSULTOR]": 1, "FF - GS PARTNER [Formulario Direto][ABO] [03]": 1, "[LEAD][ABO][FORM NATIVO] [1]": 1}}, "top_campaigns": ["FF - GS PARTNER [Formulario Direto][ABO]", "[LEAD] FORMS_NATIVO] [ESCALA]", "[LEAD] FORMS_NATIVO] [ESCALA] [2]", "[LEAD][ABO][FORM NATIVO] [ABO]", "FF - GS PARTNER [Formulario Direto][ABO] [03]", "FF - GS PARTNER [Formulario Direto][ABO] [EST]", "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]", "FF - GS PARTNER [Formulario Direto][ABO] [04]", "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]", "[LEAD][ABO][FORM NATIVO] [1]", "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]", "[LEAD][ABO][FORM NATIVO LISTA]", "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]", "[LEAD][ABO][FORM NATIVO] [CONSULTOR]", "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]"], "campaign_stats": [{"campaign": "FF - GS PARTNER [Formulario Direto][ABO]", "leads": 1505, "lost": 1003, "ag": 0, "open": 502, "loss_pct": 66.6, "ag_pct": 0.0, "saldo": -66.6, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [EST]", "leads": 302, "lost": 171, "ag": 0, "open": 131, "loss_pct": 56.6, "ag_pct": 0.0, "saldo": -56.6, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [02]", "leads": 183, "lost": 121, "ag": 0, "open": 62, "loss_pct": 66.1, "ag_pct": 0.0, "saldo": -66.1, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ENV IG + LISTA]", "leads": 210, "lost": 148, "ag": 0, "open": 62, "loss_pct": 70.5, "ag_pct": 0.0, "saldo": -70.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [LISTA GS]", "leads": 232, "lost": 164, "ag": 0, "open": 68, "loss_pct": 70.7, "ag_pct": 0.0, "saldo": -70.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [1]", "leads": 213, "lost": 142, "ag": 0, "open": 71, "loss_pct": 66.7, "ag_pct": 0.0, "saldo": -66.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO]", "leads": 277, "lost": 197, "ag": 0, "open": 80, "loss_pct": 71.1, "ag_pct": 0.0, "saldo": -71.1, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [3]", "leads": 40, "lost": 37, "ag": 0, "open": 3, "loss_pct": 92.5, "ag_pct": 0.0, "saldo": -92.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][CBO][REMARKETING VIDEOVIEW]", "leads": 12, "lost": 11, "ag": 0, "open": 1, "loss_pct": 91.7, "ag_pct": 0.0, "saldo": -91.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA]", "leads": 302, "lost": 287, "ag": 0, "open": 15, "loss_pct": 95.0, "ag_pct": 0.0, "saldo": -95.0, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [2]", "leads": 9, "lost": 6, "ag": 0, "open": 3, "loss_pct": 66.7, "ag_pct": 0.0, "saldo": -66.7, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [03]", "leads": 421, "lost": 196, "ag": 0, "open": 225, "loss_pct": 46.6, "ag_pct": 0.0, "saldo": -46.6, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [04]", "leads": 307, "lost": 154, "ag": 0, "open": 153, "loss_pct": 50.2, "ag_pct": 0.0, "saldo": -50.2, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [ADV]", "leads": 127, "lost": 107, "ag": 0, "open": 20, "loss_pct": 84.3, "ag_pct": 0.0, "saldo": -84.3, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][LAL CLIENTES FINAIS]  [02]", "leads": 34, "lost": 27, "ag": 0, "open": 7, "loss_pct": 79.4, "ag_pct": 0.0, "saldo": -79.4, "top_motivo": "Sem Retorno"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [CONSULTOR]", "leads": 159, "lost": 101, "ag": 0, "open": 58, "loss_pct": 63.5, "ag_pct": 0.0, "saldo": -63.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [LISTA]", "leads": 107, "lost": 76, "ag": 0, "open": 31, "loss_pct": 71.0, "ag_pct": 0.0, "saldo": -71.0, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [3]", "leads": 47, "lost": 39, "ag": 0, "open": 8, "loss_pct": 83.0, "ag_pct": 0.0, "saldo": -83.0, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [ADV] [24_04] [01]", "leads": 59, "lost": 45, "ag": 0, "open": 14, "loss_pct": 76.3, "ag_pct": 0.0, "saldo": -76.3, "top_motivo": "Sem Retorno"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [2]", "leads": 206, "lost": 200, "ag": 0, "open": 6, "loss_pct": 97.1, "ag_pct": 0.0, "saldo": -97.1, "top_motivo": "Sem perfil"}, {"campaign": "FF - GS PARTNER [Formulario Direto][ABO] [ESCALA]", "leads": 185, "lost": 81, "ag": 0, "open": 104, "loss_pct": 43.8, "ag_pct": 0.0, "saldo": -43.8, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ADVOGADOS] [02]", "leads": 31, "lost": 5, "ag": 0, "open": 26, "loss_pct": 16.1, "ag_pct": 0.0, "saldo": -16.1, "top_motivo": "Sem Contato"}, {"campaign": "[LEAD][ABO][FORM NATIVO LISTA]", "leads": 137, "lost": 115, "ag": 0, "open": 22, "loss_pct": 83.9, "ag_pct": 0.0, "saldo": -83.9, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ADVOGADOS]", "leads": 82, "lost": 49, "ag": 0, "open": 33, "loss_pct": 59.8, "ag_pct": 0.0, "saldo": -59.8, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][LAL QUENTES PIPE]", "leads": 56, "lost": 40, "ag": 0, "open": 16, "loss_pct": 71.4, "ag_pct": 0.0, "saldo": -71.4, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [CONTADOR]", "leads": 53, "lost": 34, "ag": 0, "open": 19, "loss_pct": 64.2, "ag_pct": 0.0, "saldo": -64.2, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [EMPRESARIOS]", "leads": 40, "lost": 26, "ag": 0, "open": 14, "loss_pct": 65.0, "ag_pct": 0.0, "saldo": -65.0, "top_motivo": "Sem perfil"}, {"campaign": "search_cadastro_franquia_12_03", "leads": 40, "lost": 31, "ag": 0, "open": 9, "loss_pct": 77.5, "ag_pct": 0.0, "saldo": -77.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [FINANCE_COMERCIAL]", "leads": 16, "lost": 10, "ag": 0, "open": 6, "loss_pct": 62.5, "ag_pct": 0.0, "saldo": -62.5, "top_motivo": "Sem perfil"}, {"campaign": "search_cadastro_franquia_12_03_v2", "leads": 12, "lost": 9, "ag": 0, "open": 3, "loss_pct": 75.0, "ag_pct": 0.0, "saldo": -75.0, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [5]", "leads": 21, "lost": 17, "ag": 0, "open": 4, "loss_pct": 81.0, "ag_pct": 0.0, "saldo": -81.0, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [ABO] [2]", "leads": 21, "lost": 12, "ag": 0, "open": 9, "loss_pct": 57.1, "ag_pct": 0.0, "saldo": -57.1, "top_motivo": "Sem perfil"}, {"campaign": "[CADASTRO] [STUDIO AGRO]  [FUNDO FUNIL]", "leads": 25, "lost": 19, "ag": 0, "open": 6, "loss_pct": 76.0, "ag_pct": 0.0, "saldo": -76.0, "top_motivo": "Sem interesse"}, {"campaign": "pmax_franquia_studio_agro", "leads": 24, "lost": 19, "ag": 0, "open": 5, "loss_pct": 79.2, "ag_pct": 0.0, "saldo": -79.2, "top_motivo": "Sem perfil"}, {"campaign": "search_studio_agro", "leads": 13, "lost": 5, "ag": 0, "open": 8, "loss_pct": 38.5, "ag_pct": 0.0, "saldo": -38.5, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD] FORMS_NATIVO] [ESCALA] [4]", "leads": 65, "lost": 58, "ag": 0, "open": 7, "loss_pct": 89.2, "ag_pct": 0.0, "saldo": -89.2, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [4]", "leads": 59, "lost": 43, "ag": 0, "open": 16, "loss_pct": 72.9, "ag_pct": 0.0, "saldo": -72.9, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][FORM NATIVO] [CONSULTOR] [02]", "leads": 17, "lost": 12, "ag": 0, "open": 5, "loss_pct": 70.6, "ag_pct": 0.0, "saldo": -70.6, "top_motivo": "Sem Retorno"}, {"campaign": "120225035574020013", "leads": 6, "lost": 4, "ag": 0, "open": 2, "loss_pct": 66.7, "ag_pct": 0.0, "saldo": -66.7, "top_motivo": "Sem perfil"}, {"campaign": "[LEAD][ABO][LAL FRANQUEADOS]", "leads": 17, "lost": 16, "ag": 0, "open": 1, "loss_pct": 94.1, "ag_pct": 0.0, "saldo": -94.1, "top_motivo": "Sem Retorno"}, {"campaign": "Conversao", "leads": 7, "lost": 7, "ag": 0, "open": 0, "loss_pct": 100.0, "ag_pct": 0.0, "saldo": -100.0, "top_motivo": "Sem Retorno"}, {"campaign": "[LEAD][ABO][LAL CLIENTES FINAIS]", "leads": 17, "lost": 16, "ag": 0, "open": 1, "loss_pct": 94.1, "ag_pct": 0.0, "saldo": -94.1, "top_motivo": "Sem perfil"}], "motivo_stats": [{"motivo": "Sem Contato", "count": 494, "pct_total_leads": 8.6, "pct_perdidos": 12.7}, {"motivo": "Sem perfil", "count": 1958, "pct_total_leads": 34.0, "pct_perdidos": 50.3}, {"motivo": "Sem interesse", "count": 572, "pct_total_leads": 9.9, "pct_perdidos": 14.7}, {"motivo": "Perfil Fake", "count": 53, "pct_total_leads": 0.9, "pct_perdidos": 1.4}, {"motivo": "Sem Retorno", "count": 813, "pct_total_leads": 14.1, "pct_perdidos": 20.9}, {"motivo": "Buscando Parceria", "count": 3, "pct_total_leads": 0.1, "pct_perdidos": 0.1}], "total_leads": 5755, "total_perdidos": 3893}, "cross_funnel": {"Partner": {"PARTNER": 257, "FRANQUIA": 159}, "Studio Agro": {"FRANQUIA": 139, "PARTNER": 18}, "Studio Fiscal": {"FRANQUIA": 53, "PARTNER": 8}, "PJ360": {"PARTNER": 2, "FRANQUIA": 2}}, "cross_summary": {"franquia_origin_total": 218, "franquia_to_franquia": 192, "franquia_to_partner": 26, "partner_origin_total": 416, "partner_to_partner": 257, "partner_to_franquia": 159}, "meta": {"sdr_goal": 70, "closer_goal": 40, "sdr_pace_target": 66.5, "closer_pace_target": 38.0, "working_days_elapsed": 19, "working_days_total": 20, "last_data_date": "Maio 2026 — em andamento, dia útil 19 de 20", "team_total_re_goal": 600, "team_total_ag_goal": 794, "team_pace_target_re": 570.0, "team_pace_target_ag": 754.3, "metas_por_produto": {"Studio Agro": {"agendadas": 311, "realizadas": 225, "contratos": null}, "Studio Fiscal": {"agendadas": 288, "realizadas": 225, "contratos": null}, "Franquia Partner": {"agendadas": 200, "realizadas": 150, "contratos": null}, "GS PARTNER": {"agendadas": 195, "realizadas": 150, "contratos": null}}, "produtos_em_escopo": ["Studio Agro", "Studio Fiscal", "Franquia Partner", "GS PARTNER"]}};
+const DS = {"reag": 156, "reag_hoje": 0, "inv": 4, "inv_hoje": 0, "closer_inv": {"FRANQUIA": {"Samuel Brião": 1, "Fred": 1, "Suzanny Mauren Dihelem": 1}, "PARTNER": {"Maria Luísa": 1}}, "sdr_inv": {"Rafael dallarosa longo": 2, "Amanda Oliveira": 1, "Leonardo Soares": 1}, "leads_by_etiqueta": {"Lead Partner": 2297, "Lead Studio Agro": 1314, "Lead Studio Fiscal": 1407, "Lead PJ360º": 4}, "perdidos_por_motivo": {"Sem perfil": {"Studio Agro": 453, "Studio Fiscal": 774, "GS PARTNER": 731}, "Sem Retorno": {"GS PARTNER": 371, "Studio Fiscal": 206, "Studio Agro": 235, "Franquia Partner": 1}, "Sem interesse": {"Studio Agro": 176, "Studio Fiscal": 125, "GS PARTNER": 271}, "Sem Contato": {"Studio Fiscal": 125, "Studio Agro": 151, "GS PARTNER": 218}, "Perfil Fake": {"GS PARTNER": 14, "Studio Agro": 16, "Studio Fiscal": 23}, "Buscando Parceria": {"Studio Agro": 2, "GS PARTNER": 1}}, "perdidos_pos_cc1": {"FRANQUIA": {"total_cc1": 298, "total_perdidos": 163, "motivos": {"Sem perfil": 56, "Sem interesse": 30, "Sem Retorno": 21, "Não esta pronto para comprar": 14, "Sem dinheiro": 14, "Mudança de Prioridades": 9, "Buscando Parceria": 4, "Sem tempo": 4, "Postergou decisão": 3, "Procurando emprego": 3, "Sem Contato": 2, "Concorrência escolhida": 1, "Perfil Fake": 1}}, "PARTNER": {"total_cc1": 383, "total_perdidos": 144, "motivos": {"Sem perfil": 61, "Sem Retorno": 40, "Sem interesse": 20, "Postergou decisão": 10, "Mudança de Prioridades": 8, "Concorrência escolhida": 2, "Não esta pronto para comprar": 2}}}, "closer_by_funil": {"FRANQUIA": {"Adalberto Neto": 56, "William Dias": 50, "Émerson Cavitchoni": 47, "Thuany Ghabril": 47, "Suzanny Mauren Dihelem": 34, "Lorenzo Coronel": 34, "Leonardo Ribeiro": 31, "Samuel Brião": 25, "Felippe Porcella": 24, "Fred": 13, "Andresa Caldas": 8, "Gabriel Meneses": 1}, "PARTNER": {"Haynnã": 64, "Djulia Silva": 60, "Samuel Almeida": 58, "Maria Luísa": 56, "Manuella Oliveira": 45, "Raissa Antunes": 23, "Laura Feijó Junqueira": 5, "Raíssa Nobre": 2}}, "sdr_today": {"ag": {"Rafael dallarosa longo": 4, "Amanda Oliveira": 2, "Camily Nadal": 2, "Jonatans Junior": 1}, "re": {"Rafael dallarosa longo": 1, "Henri Meneghetti": 1}, "ns": {"Rafael dallarosa longo": 1}, "fut": {"Andriely Oliveira": 5, "Henri Meneghetti": 2, "Lorenzo Meneghetti": 9, "Glauber Bagetti": 3, "Leonardo Soares": 4, "Izadora Zacker": 12, "Jonatans Junior": 4, "Rafael dallarosa longo": 2, "Amanda Oliveira": 3, "Mélodi Nirvana": 1, "Camily Nadal": 4, "João Gabriel Dutra": 2}, "inv": {}}, "re_heatmap": {"Seg": {"9": 14, "11": 12, "13": 12, "14": 22, "15": 6, "16": 16, "17": 20, "18": 11, "19": 2, "10": 11, "12": 2, "8": 2}, "Ter": {"9": 22, "10": 26, "11": 15, "14": 18, "15": 24, "16": 22, "17": 16, "18": 11, "8": 1, "13": 7, "19": 2, "12": 1}, "Qua": {"9": 15, "10": 16, "11": 22, "14": 25, "15": 24, "16": 17, "17": 20, "18": 6, "19": 4, "12": 1, "13": 7, "8": 2}, "Qui": {"10": 13, "11": 15, "12": 1, "13": 9, "14": 17, "15": 18, "16": 12, "17": 18, "18": 7, "20": 3, "9": 5, "8": 1}, "Sex": {"8": 2, "9": 12, "10": 11, "11": 8, "14": 13, "15": 18, "16": 14, "17": 17, "12": 2, "18": 3, "13": 1}, "Sáb": {"11": 5, "18": 1, "9": 2, "10": 1, "15": 1}}, "re_semanas": {"semanas": [{"label": "Sem 1", "dates": "04/05–09/05", "total": 133, "franquia": 65, "partner": 68, "completa": true, "em_andamento": false, "dias_passados": 0, "proj": null}, {"label": "Sem 2", "dates": "11/05–16/05", "total": 206, "franquia": 108, "partner": 98, "completa": true, "em_andamento": false, "dias_passados": 0, "proj": null}, {"label": "Sem 3", "dates": "18/05–23/05", "total": 214, "franquia": 130, "partner": 84, "completa": true, "em_andamento": false, "dias_passados": 0, "proj": null}, {"label": "Sem 4", "dates": "25/05–30/05", "total": 131, "franquia": 64, "partner": 62, "completa": false, "em_andamento": true, "dias_passados": 4, "proj": 196}], "proj_mes": 749, "avg_last2": 210}, "partner_panel": {"deals": {"iniciados_mes": 2541, "iniciados_inicio": 193, "perdidos_mes": 1601, "perdidos_inicio": 73}, "ag_sdr": {"João Gabriel Dutra": {"mes": 45, "hoje": 0, "inicio": 0}, "Jonatans Junior": {"mes": 70, "hoje": 1, "inicio": 3}, "Lorenzo Meneghetti": {"mes": 26, "hoje": 0, "inicio": 2}, "Glauber Bagetti": {"mes": 30, "hoje": 0, "inicio": 3}, "Mélodi Nirvana": {"mes": 68, "hoje": 0, "inicio": 1}, "Leonardo Soares": {"mes": 40, "hoje": 0, "inicio": 3}, "Izadora Zacker": {"mes": 57, "hoje": 0, "inicio": 6}, "Rafael dallarosa longo": {"mes": 52, "hoje": 1, "inicio": 5}, "Amanda Oliveira": {"mes": 28, "hoje": 2, "inicio": 5}, "Camily Nadal": {"mes": 28, "hoje": 2, "inicio": 5}, "Henri Meneghetti": {"mes": 55, "hoje": 0, "inicio": 2}, "Andriely Oliveira": {"mes": 23, "hoje": 0, "inicio": 5}}, "closer_re": {"Samuel Almeida": {"mes": 57, "hoje": 0, "inicio": 2}, "Maria Luísa": {"mes": 56, "hoje": 0, "inicio": 5}, "Haynnã": {"mes": 62, "hoje": 0, "inicio": 5}, "Djulia Silva": {"mes": 60, "hoje": 0, "inicio": 3}, "Laura Feijó Junqueira": {"mes": 5, "hoje": 0, "inicio": 0}, "Raissa Antunes": {"mes": 22, "hoje": 0, "inicio": 1}, "Manuella Oliveira": {"mes": 44, "hoje": 1, "inicio": 5}}, "closer_ns": {"Laura Feijó Junqueira": {"mes": 5, "hoje": 0, "inicio": 0}, "Djulia Silva": {"mes": 25, "hoje": 0, "inicio": 2}, "Raissa Antunes": {"mes": 12, "hoje": 0, "inicio": 0}, "Maria Luísa": {"mes": 20, "hoje": 0, "inicio": 1}, "Samuel Almeida": {"mes": 30, "hoje": 0, "inicio": 3}, "Haynnã": {"mes": 31, "hoje": 0, "inicio": 2}, "Manuella Oliveira": {"mes": 23, "hoje": 0, "inicio": 3}}, "ag_mes": 522, "ag_inicio": 40, "media_ag_dia": 20.0, "start_date": "27/05/2026"}};
+const today      = '2026-05-28';
+const LAST_UPDATE = '28/05/2026 09:10';
+
+// ── HELPERS ───────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt  = n => (n == null ? '—' : (n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n)));
+const pct  = (a,b) => b > 0 ? Math.min(100, Math.round(a/b*100)) : 0;
+const clamp = (v,mn,mx) => Math.max(mn, Math.min(mx, v));
+
+// ── RELÓGIO ───────────────────────────────────────────────
+function updateClock(){
+  const n=new Date();
+  $('clock').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()]
+    .map(x=>String(x).padStart(2,'0')).join(':');
+}
+updateClock();
+setInterval(updateClock,1000);
+$('last-update-txt').textContent = LAST_UPDATE;
+
+// ── KPIs — mês ────────────────────────────────────────────
+const T = D.totals || {};
+$('k-leads').textContent  = fmt(T.leads);
+$('k-qual').textContent   = fmt(T.qual);
+$('k-ag').textContent     = fmt(T.ag);
+$('k-reag').textContent   = fmt(DS.reag);
+$('k-re').textContent     = fmt(T.re);
+$('k-ns').textContent     = fmt(T.ns);
+$('k-future').textContent = fmt(T.future_re);
+$('k-lost').textContent   = fmt(T.lost);
+$('k-inv').textContent    = fmt(T.inv || DS.inv || 0);
+
+// ── KPIs — hoje ───────────────────────────────────────────
+const todayEntry = (D.daily_series || []).find(d => d.date === today) || {};
+const todayFut = Object.values(DS.sdr_today?.fut || {}).reduce((a,b)=>a+b, 0);
+$('k-leads-hoje').textContent  = fmt(todayEntry.leads    || 0);
+$('k-qual-hoje').textContent   = fmt(todayEntry.qual     || 0);
+$('k-ag-hoje').textContent     = fmt(todayEntry.ag       || 0);
+$('k-reag-hoje').textContent   = fmt(DS.reag_hoje        || 0);
+$('k-re-hoje').textContent     = fmt(todayEntry.re       || 0);
+$('k-ns-hoje').textContent     = fmt(todayEntry.ns       || 0);
+$('k-future-hoje').textContent = fmt(todayFut);
+$('k-lost-hoje').textContent   = fmt(todayEntry.lost     || 0);
+$('k-inv-hoje').textContent    = fmt(DS.inv_hoje         || 0);
+
+// ── CALC RE POR PRODUTO ────────────────────────────────────
+function calcReByProduct(){
+  const result = {};
+  if (D.daily_product && D.daily_product.re){
+    Object.values(D.daily_product.re).forEach(dayObj => {
+      Object.entries(dayObj).forEach(([prod,cnt]) => {
+        result[prod] = (result[prod]||0) + (cnt||0);
+      });
+    });
+  }
+  return result;
+}
+
+// ── RANKING helper ────────────────────────────────────────
+function buildRankRow(name, re, fut, paceTarget, meta, color){
+  const pReal = pct(re,  meta);
+  const pFut  = clamp(pct(fut, meta), 0, 100 - pReal);
+  const pPace = clamp(pct(paceTarget, meta), 0, 100);
+  const shortName = name.split(' ').slice(0,2).join(' ').slice(0,13);
+  const gap = re - paceTarget;
+  const gapColor = gap >= 0 ? '#22c55e' : '#ef4444';
+  const gapLabel = gap >= 0 ? `+${gap}` : String(gap);
+
+  const div = document.createElement('div');
+  div.className = 'rank-row';
+  div.innerHTML = `
+    <span class="rank-name" title="${name}">${shortName}</span>
+    <div class="bar-wrap">
+      <div class="bar-real"   style="background:${color};width:${pReal}%"></div>
+      <div class="bar-future" style="background:#f97316;left:${pReal}%;width:${pFut}%"></div>
+      <div class="bar-pace-marker" style="left:${pPace}%"></div>
+    </div>
+    <div class="rank-nums">
+      <span class="rank-re" style="color:${color}">${re}</span>
+      <span class="rank-sub"><span style="color:#64748b">dev:</span>${paceTarget} <span style="color:${gapColor};font-weight:700">${gapLabel}</span></span>
+    </div>
+    <span class="rank-fut">${fut ? '▶'+fut : ''}</span>
+  `;
+  return div;
+}
+
+// ── SDR RANKING ───────────────────────────────────────────
+(function renderSDR(){
+  const reObj  = (D.sdr && D.sdr.re)     ? D.sdr.re     : {};
+  const futObj = (D.sdr && D.sdr.future) ? D.sdr.future : {};
+  const meta   = D.meta || {};
+  const GOAL   = meta.sdr_goal || 70;
+  const elapsed = meta.working_days_elapsed || 1;
+  const total_d = meta.working_days_total   || 20;
+  const paceTarget = Math.round(GOAL * elapsed / total_d);
+
+  const entries = Object.entries(reObj).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){ $('sdr-list').innerHTML='<div style="color:var(--muted);padding:6px">Sem dados</div>'; return; }
+
+  const container = $('sdr-list');
+  entries.forEach(([name, re])=>{
+    const fut = futObj[name] || 0;
+    container.appendChild(buildRankRow(name, re, fut, paceTarget, GOAL, '#22c55e'));
+  });
+})();
+
+// ── CLOSER RANKING — FRANQUIA | PARTNER lado a lado ───────
+(function renderCloser(){
+  const cbf      = DS.closer_by_funil || {};
+  const franqObj = cbf.FRANQUIA || {};
+  const partObj  = cbf.PARTNER  || {};
+  const futObj   = (D.closer && D.closer.future) ? D.closer.future : {};
+  const meta     = D.meta || {};
+  const GOAL     = meta.closer_goal || 40;
+  const elapsed  = meta.working_days_elapsed || 1;
+  const total_d  = meta.working_days_total   || 20;
+  const paceTarget = Math.round(GOAL * elapsed / total_d);
+
+  function renderGroup(obj, containerId, label, color){
+    const container = $(containerId);
+    if (!container || !Object.keys(obj).length) return;
+    const hdr = document.createElement('div');
+    hdr.className = 'group-hdr';
+    hdr.style.color = color;
+    hdr.textContent = label;
+    container.appendChild(hdr);
+    Object.entries(obj)
+      .sort((a,b) => b[1]-a[1])
+      .forEach(([name, re]) => {
+        const fut = futObj[name] || 0;
+        container.appendChild(buildRankRow(name, re, fut, paceTarget, GOAL, color));
+      });
+  }
+
+  renderGroup(franqObj, 'closer-franquia', 'FRANQUIA', '#22c55e');
+  renderGroup(partObj,  'closer-partner',  'PARTNER',  '#a855f7');
+})();
+
+// ── PRODUTOS ──────────────────────────────────────────────
+(function renderProdutos(){
+  const rp = calcReByProduct();
+  const container = $('prod-list');
+  const meta   = D.meta || {};
+  const elapsed = meta.working_days_elapsed || 1;
+  const total_d = meta.working_days_total   || 20;
+
+  const PRODS = [
+    { key:'Studio Agro',      label:'Studio Agro',      meta:150, color:'#22c55e' },
+    { key:'Studio Fiscal',    label:'Studio Fiscal',    meta:150, color:'#818cf8' },
+    { key:'Franquia Partner', label:'Franquia Partner', meta:150, color:'#a855f7' },
+  ];
+
+  PRODS.forEach(p => {
+    const re    = rp[p.key] || 0;
+    const pc    = pct(re, p.meta);
+    const hoje  = Math.round(p.meta * elapsed / total_d);
+    const falta = re - hoje;
+    const faltaColor = falta >= 0 ? '#22c55e' : '#ef4444';
+    const faltaStr   = falta >= 0 ? `+${falta}` : String(falta);
+    const row = document.createElement('div');
+    row.className = 'prod-row';
+    row.innerHTML = `
+      <span class="prod-name" style="color:${p.color}">${p.label}</span>
+      <div class="prod-bar-wrap">
+        <div class="prod-bar-fill" style="background:${p.color};width:${pc}%"></div>
+      </div>
+      <div>
+        <div class="prod-nums" style="color:${p.color}">${re}<span style="color:var(--muted);font-size:9px"> /${p.meta}</span></div>
+        <div class="prod-sub">→${hoje} <span style="color:${faltaColor};font-weight:700">${faltaStr}</span></div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  // TOTAL FRANQUIA
+  const franqKeys  = ['Studio Agro','Studio Fiscal','Franquia Partner'];
+  const totalFranq = franqKeys.reduce((s,k)=>s+(rp[k]||0), 0);
+  const metaFranq  = 450;
+  const pcFranq    = pct(totalFranq, metaFranq);
+  const hojeFranq  = Math.round(metaFranq * elapsed / total_d);
+  const faltaFranq = totalFranq - hojeFranq;
+  const fcColor    = faltaFranq >= 0 ? '#22c55e' : '#ef4444';
+  const fcStr      = faltaFranq >= 0 ? `+${faltaFranq}` : String(faltaFranq);
+
+  const cardFranq = document.createElement('div');
+  cardFranq.className = 'prod-total-card';
+  cardFranq.innerHTML = `
+    <div class="prod-row" style="margin-bottom:0">
+      <span class="prod-name" style="color:#22c55e;font-size:10px">▶ TOTAL FRANQUIA</span>
+      <div class="prod-bar-wrap" style="height:11px">
+        <div class="prod-bar-fill" style="background:#22c55e;width:${pcFranq}%"></div>
+      </div>
+      <div>
+        <div class="prod-nums" style="color:#22c55e">${totalFranq}<span style="color:var(--muted);font-size:9px"> /450</span></div>
+        <div class="prod-sub">→${hojeFranq} <span style="color:${fcColor};font-weight:700">${fcStr}</span></div>
+      </div>
+    </div>
+  `;
+  container.appendChild(cardFranq);
+
+  // GS PARTNER
+  const gsRe   = rp['GS PARTNER'] || 0;
+  const metaGs = 150;
+  const pcGs   = pct(gsRe, metaGs);
+  const hojeGs = Math.round(metaGs * elapsed / total_d);
+  const faltaGs = gsRe - hojeGs;
+  const gcColor = faltaGs >= 0 ? '#22c55e' : '#ef4444';
+  const gcStr   = faltaGs >= 0 ? `+${faltaGs}` : String(faltaGs);
+  const rowGs   = document.createElement('div');
+  rowGs.className = 'prod-row';
+  rowGs.innerHTML = `
+    <span class="prod-name" style="color:#a855f7">GS PARTNER</span>
+    <div class="prod-bar-wrap">
+      <div class="prod-bar-fill" style="background:#a855f7;width:${pcGs}%"></div>
+    </div>
+    <div>
+      <div class="prod-nums" style="color:#a855f7">${gsRe}<span style="color:var(--muted);font-size:9px"> /150</span></div>
+      <div class="prod-sub">→${hojeGs} <span style="color:${gcColor};font-weight:700">${gcStr}</span></div>
+    </div>
+  `;
+  container.appendChild(rowGs);
+})();
+
+// ── NEGÓCIOS POR MODELO ────────────────────────────────────
+(function renderNegocios(){
+  const etiq = DS.leads_by_etiqueta || {};
+  const etiqColors = {
+    'Lead Partner':       '#3b82f6',
+    'Lead Studio Agro':   '#22c55e',
+    'Lead Studio Fiscal': '#f59e0b',
+  };
+  const entries = Object.entries(etiq)
+    .filter(([k])=>k!=='Lead PJ360º')
+    .sort((a,b)=>b[1]-a[1]);
+  const maxVal  = entries.length ? entries[0][1] : 1;
+  const container = $('neg-list');
+  entries.forEach(([name,val])=>{
+    const color = etiqColors[name] || '#94a3b8';
+    const pc = pct(val, maxVal);
+    const row = document.createElement('div');
+    row.className = 'neg-row';
+    row.innerHTML = `
+      <span class="neg-name" title="${name}">${name}</span>
+      <div class="neg-bar-wrap"><div class="neg-bar-fill" style="background:${color};width:${pc}%"></div></div>
+      <span class="neg-val" style="color:${color}">${fmt(val)}</span>
+    `;
+    container.appendChild(row);
+  });
+})();
+
+// ── SDR DO DIA ────────────────────────────────────────────
+(function renderSdrToday(){
+  const st  = DS.sdr_today || {};
+  const ag_t  = st.ag  || {};
+  const re_t  = st.re  || {};
+  const ns_t  = st.ns  || {};
+  const fut_t = st.fut || {};
+  const sdrs = Object.keys((D.sdr && D.sdr.re) ? D.sdr.re : {})
+    .sort((a,b)=>{
+      const ra = D.sdr.re[a]||0, rb = D.sdr.re[b]||0;
+      return rb - ra;
+    });
+
+  const tbody = $('sdr-today-tbody');
+  let totAg=0, totRe=0, totNs=0, totFut=0;
+
+  sdrs.forEach(name => {
+    const shortName = name.split(' ').slice(0,2).join(' ').slice(0,12);
+    const ag  = ag_t[name]  || 0;
+    const re  = re_t[name]  || 0;
+    const ns  = ns_t[name]  || 0;
+    const fut = fut_t[name] || 0;
+    totAg+=ag; totRe+=re; totNs+=ns; totFut+=fut;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${shortName}</td>
+      <td style="color:#a855f7">${ag||'—'}</td>
+      <td style="color:#22c55e">${re||'—'}</td>
+      <td style="color:#f97316">${fut||'—'}</td>
+      <td style="color:#ef4444">${ns||'—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const tr = document.createElement('tr');
+  tr.className = 'tbl-total';
+  tr.innerHTML = `
+    <td>TOTAL</td>
+    <td style="color:#a855f7">${totAg||'—'}</td>
+    <td style="color:#22c55e">${totRe||'—'}</td>
+    <td style="color:#f97316">${totFut||'—'}</td>
+    <td style="color:#ef4444">${totNs||'—'}</td>
+  `;
+  tbody.appendChild(tr);
+})();
+
+// ── PERDIDOS POR MOTIVO ────────────────────────────────────
+(function renderPerdidos(){
+  const pm = DS.perdidos_por_motivo || {};
+  const container = $('perd-list');
+  const totals = Object.entries(pm).map(([motivo,produtos])=>{
+    return [motivo, Object.values(produtos).reduce((s,v)=>s+(v||0),0)];
+  }).sort((a,b)=>b[1]-a[1]);
+  const maxV = totals.length ? totals[0][1] : 1;
+  totals.forEach(([motivo,total])=>{
+    const pc = pct(total, maxV);
+    const row = document.createElement('div');
+    row.className = 'perd-row';
+    row.innerHTML = `
+      <span class="perd-name" title="${motivo}">${motivo}</span>
+      <div class="perd-bar-wrap"><div class="perd-bar-fill" style="width:${pc}%"></div></div>
+      <span class="perd-val">${fmt(total)}</span>
+    `;
+    container.appendChild(row);
+  });
+})();
+
+// ── TAXA DE PERDA PÓS CC1 ─────────────────────────────────
+(function renderPerdidosPosCC1(){
+  const ppc1 = DS.perdidos_pos_cc1 || {};
+  const configs = [
+    { id: 'ppc1-franquia', key: 'FRANQUIA', color: '#22c55e', label: 'FRANQUIA' },
+    { id: 'ppc1-partner',  key: 'PARTNER',  color: '#a855f7', label: 'PARTNER'  },
+  ];
+  configs.forEach(({ id, key, color, label }) => {
+    const el = $(id);
+    const d  = ppc1[key] || {};
+    const totalCC1  = d.total_cc1      || 0;
+    const totalPerd = d.total_perdidos || 0;
+    const taxa      = totalCC1 > 0 ? (totalPerd / totalCC1 * 100).toFixed(1) : '—';
+    const motivos   = Object.entries(d.motivos || {}).sort((a,b) => b[1]-a[1]);
+    const maxV      = motivos.length ? motivos[0][1] : 1;
+
+    // header
+    const hdr = document.createElement('div');
+    hdr.className = 'ppc1-hdr';
+    hdr.innerHTML = `
+      <span class="ppc1-taxa" style="color:${color}">${taxa}%</span>
+      <div class="ppc1-sub">
+        <b style="color:#fff">${label}</b><br>
+        ${totalPerd} perd. / ${totalCC1} CC1
+      </div>`;
+    el.appendChild(hdr);
+
+    // motivos — top 5
+    motivos.slice(0, 5).forEach(([motivo, count]) => {
+      const pctBar = (count / maxV * 100).toFixed(1);
+      const pctTotal = totalCC1 > 0 ? (count / totalCC1 * 100).toFixed(1) : '—';
+      const row = document.createElement('div');
+      row.className = 'ppc1-row';
+      row.innerHTML = `
+        <span class="ppc1-motivo" title="${motivo}">${motivo}</span>
+        <div class="ppc1-bar-wrap"><div class="ppc1-bar-fill" style="width:${pctBar}%;background:${color};opacity:.75"></div></div>
+        <span class="ppc1-pct" style="color:${color}">${pctTotal}%</span>`;
+      el.appendChild(row);
+    });
+    // rodapé: indica quantos motivos foram ocultados
+    const hidden = motivos.length - 5;
+    if (hidden > 0) {
+      const more = document.createElement('div');
+      more.style.cssText = 'font-size:8px;color:#475569;margin-top:2px;text-align:right';
+      more.textContent = `+${hidden} outros motivos`;
+      el.appendChild(more);
+    }
+  });
+})();
+
+// ── PLUGIN: valores visíveis nas pontas das linhas ─────────
+const endLabelPlugin = {
+  id: 'endLabels',
+  afterDatasetsDraw(chart) {
+    const {ctx} = chart;
+    chart.data.datasets.forEach((ds, i) => {
+      const meta = chart.getDatasetMeta(i);
+      if (meta.hidden) return;
+      // último ponto com valor > 0
+      let lastIdx = -1;
+      for (let j = ds.data.length - 1; j >= 0; j--) {
+        if (ds.data[j] != null && ds.data[j] > 0) { lastIdx = j; break; }
+      }
+      if (lastIdx < 0) return;
+      const pt  = meta.data[lastIdx];
+      if (!pt) return;
+      const val = ds.data[lastIdx];
+      const label = val >= 1000 ? (val/1000).toFixed(1)+'k' : String(val);
+      ctx.save();
+      ctx.font = 'bold 9px -apple-system,sans-serif';
+      // fundo para legibilidade
+      const w = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(7,12,24,0.75)';
+      ctx.fillRect(pt.x + 2, pt.y - 8, w + 6, 14);
+      ctx.fillStyle = ds.borderColor;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, pt.x + 5, pt.y);
+      ctx.restore();
+    });
+  }
+};
+
+// ── MAPA DE CALOR CC1 REALIZADAS ─────────────────────────
+(function renderHeatmap(){
+  const hm    = DS.re_heatmap || {};
+  const days  = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const hours = [9,10,11,12,13,14,15,16,17,18,19,20];
+
+  let maxVal = 1;
+  days.forEach(d => hours.forEach(h => {
+    const v = (hm[d] || {})[String(h)] || 0;
+    if (v > maxVal) maxVal = v;
+  }));
+
+  const grid = $('heatmap-grid');
+  if (!grid) return;
+
+  // cabeçalho
+  const blank = document.createElement('div');
+  grid.appendChild(blank);
+  days.forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'hm-hdr';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  // linhas de dados
+  hours.forEach(h => {
+    const lbl = document.createElement('div');
+    lbl.className = 'hm-lbl';
+    lbl.textContent = `${h}h`;
+    grid.appendChild(lbl);
+
+    days.forEach(d => {
+      const v = (hm[d] || {})[String(h)] || 0;
+      const intensity = v > 0 ? 0.10 + (v / maxVal) * 0.90 : 0.04;
+      const cell = document.createElement('div');
+      cell.className = 'hm-cell';
+      cell.style.background = `rgba(34,197,94,${intensity.toFixed(2)})`;
+      if (v > 0) {
+        cell.textContent = v;
+        cell.style.color = intensity > 0.55 ? 'rgba(0,0,0,.82)' : 'rgba(255,255,255,.85)';
+      }
+      cell.title = `${d} ${h}h — ${v} CC1`;
+      grid.appendChild(cell);
+    });
+  });
+})();
+
+// ── RITMO SEMANAL RE + PROJEÇÃO ──────────────────────────
+(function renderRitmo(){
+  const rs = DS.re_semanas;
+  if (!rs || !rs.semanas) return;
+  const wrap = $('ritmo-wrap');
+  if (!wrap) return;
+
+  const maxVal = Math.max(...rs.semanas.map(s => s.proj || s.total || 0), 1);
+
+  // legenda FR / PT + projeção + explicação dos números
+  const leg = document.createElement('div');
+  leg.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:3px;align-items:center';
+  leg.innerHTML = `
+    <span style="font-size:9px;color:#22c55e">&#9632; FRANQUIA</span>
+    <span style="font-size:9px;color:#a855f7">&#9632; PARTNER</span>
+    <span style="font-size:9px;color:#1e7a4a">&#9632; Projeção (ritmo atual)</span>
+    <span style="font-size:8px;color:#475569;margin-left:4px">nº = total ·  <span style="color:#22c55e">FR</span>/<span style="color:#a855f7">PT</span> ·  <span style="color:#86efac">→ proj. semana</span></span>`;
+  wrap.appendChild(leg);
+
+  rs.semanas.forEach(s => {
+    const displayVal = s.completa ? s.total : (s.proj || s.total || 0);
+    const isFut      = !s.completa && !s.em_andamento;
+    const total      = s.total || 0;
+    const fr         = s.franquia || 0;
+    const pt         = s.partner  || 0;
+
+    // Para barras empilhadas FR+PT (proporcional ao displayVal para semanas projetadas)
+    const frPct = total > 0 ? Math.round((fr / maxVal) * 100) : Math.round((displayVal * 0.55 / maxVal) * 100);
+    const ptPct = total > 0 ? Math.round((pt / maxVal) * 100) : Math.round((displayVal * 0.45 / maxVal) * 100);
+    const projPct = Math.round((displayVal / maxVal) * 100);
+
+    const row = document.createElement('div');
+    row.className = 'ritmo-row';
+
+    const lbl = document.createElement('span');
+    lbl.style.cssText = 'font-size:10px;color:#94a3b8;font-weight:600';
+    lbl.textContent = s.label;
+
+    const dt = document.createElement('span');
+    dt.style.cssText = 'font-size:9px;color:#64748b';
+    dt.textContent = s.dates;
+
+    const barWrap = document.createElement('div');
+    barWrap.className = 'ritmo-bar-wrap';
+
+    if (isFut) {
+      // semana futura: listrado
+      const b = document.createElement('div');
+      b.className = 'ritmo-bar-proj';
+      b.style.width = projPct + '%';
+      barWrap.appendChild(b);
+    } else {
+      // semana real ou em andamento: barra empilhada FR (verde) + PT (roxo)
+      const bfr = document.createElement('div');
+      bfr.className = 'ritmo-bar';
+      bfr.style.cssText = `left:0;width:${frPct}%;background:#22c55e;opacity:${s.completa?1:0.7}`;
+      barWrap.appendChild(bfr);
+      const bpt = document.createElement('div');
+      bpt.className = 'ritmo-bar';
+      bpt.style.cssText = `left:${frPct}%;width:${ptPct}%;background:#a855f7;opacity:${s.completa?1:0.7}`;
+      barWrap.appendChild(bpt);
+      // se em andamento, mostrar fundo cinza para a parte projetada
+      if (s.em_andamento && s.proj && s.proj > total) {
+        const projTot = Math.round((s.proj / maxVal) * 100);
+        const bBack = document.createElement('div');
+        bBack.className = 'ritmo-bar';
+        bBack.style.cssText = `left:${frPct+ptPct}%;width:${projTot-frPct-ptPct}%;background:#1e3a2f;`;
+        barWrap.insertBefore(bBack, bfr);
+      }
+    }
+
+    const num = document.createElement('span');
+    num.style.cssText = `font-size:11px;font-weight:700;text-align:right;line-height:1.2`;
+    if (s.em_andamento) {
+      // Semana em andamento: mostra real + projeção da semana separados
+      num.innerHTML =
+        `<span style="color:#86efac">${total}</span><span style="font-size:8px;color:#64748b"> hoje</span><br>` +
+        `<span style="font-size:9px;color:#22c55e">&#8594;~${s.proj||''}</span><span style="font-size:8px;color:#64748b"> sem</span>`;
+    } else if (isFut) {
+      num.innerHTML = `<span style="color:#475569">~${displayVal}</span>`;
+    } else {
+      // semana completa: total + FR/PT
+      num.innerHTML = `<span style="color:#22c55e">${total}</span><br><span style="font-size:8px;color:#22c55e">${fr}</span><span style="font-size:8px;color:#64748b">/</span><span style="font-size:8px;color:#a855f7">${pt}</span>`;
+    }
+
+    row.appendChild(lbl);
+    row.appendChild(dt);
+    row.appendChild(barWrap);
+    row.appendChild(num);
+    wrap.appendChild(row);
+  });
+
+  // Total projeção
+  const divider = document.createElement('div');
+  divider.style.cssText = 'border-top:1px solid #1e293b;margin:2px 0 2px';
+  wrap.appendChild(divider);
+
+  const total = document.createElement('div');
+  total.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:0 2px';
+  total.innerHTML = `<span style="font-size:10px;color:#94a3b8">Projeção do mês</span><span style="font-size:15px;font-weight:800;color:#22c55e">~${rs.proj_mes}</span>`;
+  wrap.appendChild(total);
+})();
+
+// ── CHART: PACE VS META ───────────────────────────────────
+(function buildChartMeta(){
+  const series  = D.daily_series || [];
+  const meta    = D.meta || {};
+  const GOAL_S  = meta.sdr_goal    || 70;
+  const GOAL_C  = meta.closer_goal || 40;
+  const nSDRs   = Object.keys((D.sdr && D.sdr.re) || {}).length || 10;
+  const nClosers= Object.keys((D.closer && D.closer.re) || {}).length || 3;
+  const TOTAL_D = meta.working_days_total || 20;
+  const WD      = D.working_days || [];
+  const labels  = series.map(d=>d.date ? d.date.slice(5) : '');
+  const tickLabels = labels.map((l,i)=> i%5===0 ? l : '');
+
+  let sRe=0;
+  const cumRe = series.map(d=>{ sRe+=(d.re||0); return sRe; });
+  const cumMetaSDR = series.map(d=>{
+    const de = WD.filter(wd=>wd<=d.date).length;
+    return Math.round(GOAL_S * nSDRs * de / TOTAL_D);
+  });
+  const cumMetaClo = series.map(d=>{
+    const de = WD.filter(wd=>wd<=d.date).length;
+    return Math.round(GOAL_C * nClosers * de / TOTAL_D);
+  });
+
+  new Chart(document.getElementById('chart-meta'), {
+    type:'line',
+    plugins:[endLabelPlugin],
+    data:{
+      labels,
+      datasets:[
+        { label:'CC1 Realiz.',                        data:cumRe,      borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.12)', tension:.3, pointRadius:0, borderWidth:3, fill:true },
+        { label:`Meta SDR (${nSDRs}×${GOAL_S})`,     data:cumMetaSDR, borderColor:'#4ade80', borderDash:[6,4], tension:.1, pointRadius:0, borderWidth:2, backgroundColor:'transparent' },
+        { label:`Meta Closer (${nClosers}×${GOAL_C})`,data:cumMetaClo, borderColor:'#c084fc', borderDash:[6,4], tension:.1, pointRadius:0, borderWidth:2, backgroundColor:'transparent' },
+      ]
+    },
+    options:{
+      maintainAspectRatio:false, animation:false,
+      layout:{ padding:{ right:30 } },
+      plugins:{
+        legend:{ display:true, position:'top', labels:{ color:'#cbd5e1', font:{size:10}, boxWidth:14, padding:10 } },
+        tooltip:{ enabled:true }
+      },
+      scales:{
+        x:{ ticks:{ color:'#64748b', font:{size:8}, maxRotation:0, callback:(v,i)=>tickLabels[i]||'' }, grid:{ color:'#1e293b' } },
+        y:{ ticks:{ color:'#64748b', font:{size:8} }, grid:{ color:'#1e293b' } }
+      }
+    }
+  });
+})();
+
+// ── CC1 INVÁLIDAS — RANKING ───────────────────────────────
+(function renderInvalidas(){
+  function buildList(containerId, data, color) {
+    const el = $(containerId);
+    if (!el) return;
+    const entries = Object.entries(data || {}).sort((a,b) => b[1]-a[1]);
+    if (!entries.length) {
+      el.innerHTML = `<div style="font-size:9px;color:#475569;padding:4px 0">Sem registros</div>`;
+      return;
+    }
+    const maxV = entries[0][1];
+    entries.forEach(([name, count]) => {
+      const shortName = name.split(' ').slice(0,2).join(' ').slice(0,14);
+      const pct = Math.round(count / maxV * 100);
+      const row = document.createElement('div');
+      row.className = 'inv-row';
+      row.innerHTML = `
+        <span style="font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${name}">${shortName}</span>
+        <div class="inv-bar-wrap"><div class="inv-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span style="font-size:10px;font-weight:700;color:${color};text-align:right">${count}</span>`;
+      el.appendChild(row);
+    });
+  }
+
+  // SDR: usa DS.sdr_inv
+  buildList('inv-sdr-list', DS.sdr_inv || {}, '#f43f5e');
+
+  // Closer: combina FRANQUIA + PARTNER de DS.closer_inv
+  const closerInv = DS.closer_inv || {};
+  const combined = { ...( closerInv.FRANQUIA || {} ), ...( closerInv.PARTNER || {} ) };
+  buildList('inv-closer-list', combined, '#f43f5e');
+})();
+
+// ── PARTNER KPIs — barra superior ────────────────────────
+(function renderPartnerKpis(){
+  const PP = DS.partner_panel;
+  if (!PP) return;
+
+  const deals    = PP.deals     || {};
+  const closerRe = PP.closer_re || {};
+  const closerNs = PP.closer_ns || {};
+
+  const reHoje = Object.values(closerRe).reduce((s,v)=>s+(v.hoje||0), 0);
+  const reMes  = Object.values(closerRe).reduce((s,v)=>s+(v.mes||0),  0);
+  const nsHoje = Object.values(closerNs).reduce((s,v)=>s+(v.hoje||0), 0);
+  const nsMes  = Object.values(closerNs).reduce((s,v)=>s+(v.mes||0),  0);
+
+  $('k-p-leads').textContent     = fmt(deals.iniciados_inicio ?? 0);
+  $('k-p-leads-mes').textContent = fmt(deals.iniciados_mes    ?? 0);
+  $('k-p-lost').textContent      = fmt(deals.perdidos_inicio  ?? 0);
+  $('k-p-lost-mes').textContent  = fmt(deals.perdidos_mes     ?? 0);
+  $('k-p-re').textContent        = fmt(reHoje);
+  $('k-p-re-mes').textContent    = fmt(reMes);
+  $('k-p-ns').textContent        = fmt(nsHoje);
+  $('k-p-ns-mes').textContent    = fmt(nsMes);
+  $('k-p-ag').textContent        = fmt(PP.media_ag_dia ?? 0);
+  $('k-p-ag-total').textContent  = fmt(PP.ag_inicio    ?? 0);
+})();
+
+// ── AUTO-REFRESH: verifica versão nova no servidor a cada 2 min ──
+const _currentUpdate = LAST_UPDATE;
+function checkAndReload(){
+  const url = location.href.split('?')[0] + '?t=' + Date.now();
+  fetch(url, { cache: 'no-store' })
+    .then(r => r.text())
+    .then(html => {
+      const m = html.match(/const LAST_UPDATE = '([^']+)'/);
+      if (m && m[1] !== _currentUpdate) {
+        location.replace(url);
+      }
+    })
+    .catch(() => {})
+    .finally(() => setTimeout(checkAndReload, 120000));
+}
+setTimeout(checkAndReload, 120000);
+</script>
+</body>
+</html>
