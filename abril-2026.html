@@ -221,40 +221,6 @@
   .month-nav .badge.live {
     background: rgba(168, 85, 247, 0.25); color: #c4b5fd;
   }
-
-  /* PATCH:mobile-labels-v3 */
-  @media (max-width: 640px) {
-    body { font-size: 12px; }
-    .container { padding: 12px 10px; width: 100%; }
-    h1 { font-size: 17px; }
-    .subtitle { font-size: 12px; margin-bottom: 14px; }
-    .last-updated { font-size: 11px; padding: 5px 10px; }
-    .filter-bar { flex-wrap: wrap; gap: 5px; padding: 8px 10px; }
-    .filter-bar input[type="date"] { display: none; }
-    .filter-bar .sep, .filter-bar .label { display: none; }
-    .filter-bar #filter-info { width: 100%; font-size: 11px; }
-    .filter-bar button { padding: 5px 10px; font-size: 11px; }
-    .month-nav { gap: 6px; flex-wrap: wrap; }
-    .month-nav a { padding: 4px 10px; font-size: 12px; }
-    .grid.grid-5 { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
-    .kpi { padding: 12px 10px; }
-    .kpi-value { font-size: 22px; }
-    .kpi-label, .kpi-sub { font-size: 10px; }
-    .card { padding: 12px 10px; }
-    .card h3 { font-size: 12px; }
-    .section-title { font-size: 12px; margin: 20px 0 8px; }
-    .canvas-wrap       { height: 220px; }
-    .canvas-wrap.tall  { height: 280px; }
-    .canvas-wrap.short { height: 180px; }
-    table { font-size: 11px; }
-    th, td { padding: 6px; }
-    .grid-5, .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr !important; }
-    .person-row { grid-template-columns: 26px 1fr auto auto !important; gap: 6px !important; }
-    .person-bar-track { display: none !important; }
-    .person-stat { min-width: 0 !important; font-size: 11px; }
-    .person-gap { font-size: 11px; }
-  }
-
 </style>
 </head>
 <body>
@@ -863,7 +829,7 @@ for (let i = D.daily_series.length-1; i >= 0; i--) {
 
 // Show value on every day where progress was made (cumulative)
 const cumDl = (color) => ({
-  display: ctx => ctx.dataIndex === lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
+  display: ctx => ctx.dataIndex <= lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
   color: '#fff',
   backgroundColor: color,
   borderRadius: 3,
@@ -1004,7 +970,7 @@ for (const d of D.daily_series) {
 // Build cumulative closer (from D.daily_series; same as cumRe but it represents the team's total CC1)
 // Use cumRe as the proxy (SDR-attributed RE)
 const labelDl = (color) => ({
-  display: ctx => ctx.dataIndex === lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
+  display: ctx => ctx.dataIndex <= lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
   color: '#fff', backgroundColor: color, borderRadius: 3,
   padding: { top: 2, bottom: 2, left: 4, right: 4 },
   font: { size: 9, weight: 'bold' },
