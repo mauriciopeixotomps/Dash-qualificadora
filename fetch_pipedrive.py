@@ -525,21 +525,21 @@ print(f'→ Faltam {len(missing_deal_ids)} deals (busca individual, todos)...')
 
 def _fetch_deal(did):
     url = f'{BASE}/deals/{did}?api_token={TOKEN}'
-    for attempt in range(5):
+    for attempt in range(3):
         try:
-            with urllib.request.urlopen(url, timeout=120) as r:
+            with urllib.request.urlopen(url, timeout=20) as r:
                 body = json.loads(r.read())
             return did, body.get('data')
         except urllib.error.HTTPError as e:
             if e.code == 429:
-                time.sleep(3 * (attempt + 1))
+                time.sleep(2 * (attempt + 1))
                 continue
             return did, None
         except Exception:
             return did, None
     return did, None
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
     for did, d in executor.map(_fetch_deal, list(missing_deal_ids)):
         if d:
             deal_by_id[did] = d
