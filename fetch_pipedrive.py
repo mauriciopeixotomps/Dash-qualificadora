@@ -202,8 +202,17 @@ def fetch_timeline(field_key, start_dt, days=31):
         'field_key': field_key,
     }
     url = f'{BASE}/deals/timeline?' + urllib.parse.urlencode(params)
-    with urllib.request.urlopen(url, timeout=120) as r:
-        body = json.loads(r.read())
+    body = None
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(url, timeout=120) as r:
+                body = json.loads(r.read())
+            break
+        except Exception as exc:
+            if attempt == 5: raise
+            wait = 10 * (attempt + 1)
+            print(f'     ⚠️  timeline timeout/erro (tentativa {attempt+1}), esperando {wait}s... [{exc}]')
+            time.sleep(wait)
     out = []
     for period in body.get('data', []) or []:
         for d in period.get('deals') or []:
