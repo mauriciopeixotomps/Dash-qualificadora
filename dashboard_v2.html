@@ -524,7 +524,8 @@ const gridOpt = { color: '#1e293b' };
 
 // === Last updated badge ===
 document.getElementById('last-updated').textContent =
-  `ATUALIZADO EM ${D.meta.last_data_date}`;
+  `ATUALIZADO EM ${D.meta.last_data_date}` +
+  (D.meta.last_update ? ` · ${D.meta.last_update}` : '');
 
 // === Subtitle ===
 document.getElementById('subtitle').textContent =

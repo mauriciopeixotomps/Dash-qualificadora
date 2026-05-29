@@ -13,8 +13,11 @@ Inputs:
 - activities-insights-5808773-1964.xlsx — 14 CC1 Não Realizadas
 """
 import pandas as pd, json, os
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from collections import Counter, defaultdict
+
+_BRT = timezone(timedelta(hours=-3))
+last_update = datetime.now(_BRT).strftime('%d/%m/%Y %H:%M')
 
 WORKDIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS = os.path.join(os.path.dirname(WORKDIR), 'uploads')
@@ -605,6 +608,7 @@ dashboard = {
         'working_days_elapsed': elapsed,
         'working_days_total': total_workdays,
         'last_data_date': f'Maio 2026 — em andamento, dia útil {elapsed} de {total_workdays}',
+        'last_update': last_update,
         'team_total_re_goal': meta_time['realizadas'],
         'team_total_ag_goal': meta_time['agendadas'],
         'team_pace_target_re': pace_target_re_total,
