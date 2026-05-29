@@ -1123,7 +1123,7 @@ new Chart(document.getElementById('curve-cum'), {
 // === Pace Acumulado vs Meta (SDR + Closer) ===
 // Build linear meta line: only working days progress, weekends stay flat
 const sdrGoalTotal = SDR_GOAL * Object.keys(D.sdr.re || D.sdr.ag || {}).length;
-const closerGoalTotal = CLOSER_GOAL * Object.keys(D.closer.re).length;
+const closerGoalTotal = D.meta.team_total_re_goal || (CLOSER_GOAL * Object.keys(D.closer.re).length);
 const perWorkdayInc_sdr = sdrGoalTotal / TOTAL_DAYS;
 const perWorkdayInc_closer = closerGoalTotal / TOTAL_DAYS;
 
