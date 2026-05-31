@@ -244,6 +244,10 @@ qual['_due'] = pd.to_datetime(qual[_mcf] if _mcf in qual.columns else qual[_due]
 ag['_due']   = pd.to_datetime(ag[_mcf]   if _mcf in ag.columns   else ag[_due])
 re_['_due']  = pd.to_datetime(re_[_mcf]  if _mcf in re_.columns  else re_[_due])
 ns['_due']   = pd.to_datetime(ns[_mcf]   if _mcf in ns.columns   else ns[_due])
+if not inv.empty and _mcf in inv.columns:
+    inv['_due'] = pd.to_datetime(inv[_mcf], errors='coerce')
+elif not inv.empty and _due in inv.columns:
+    inv['_due'] = pd.to_datetime(inv[_due], errors='coerce')
 
 daily_leads = daily_count(deals, '_created')
 daily_lost  = daily_count(perdidos, '_lost')
