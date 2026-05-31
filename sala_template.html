@@ -57,6 +57,7 @@ body {
 #header .h-clock  { font-size:17px; font-weight:700; color:#f1f5f9; font-variant-numeric:tabular-nums; letter-spacing:.06em; }
 #header .h-update { font-size:11px; color:var(--green); display:flex; align-items:center; gap:5px; }
 .pulse-dot { display:inline-block; width:7px; height:7px; background:var(--green); border-radius:50%; animation:pulse 2s ease-in-out infinite; }
+.sala-tab-active { color:#f1f5f9 !important; background:rgba(255,255,255,0.18) !important; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
 
 /* ── KPI ROW ─────────────────────────────────────────── */
@@ -464,11 +465,17 @@ body {
 
 <!-- ROW 0 — HEADER -->
 <header id="header">
-  <div class="h-title">🎯 QUALIFICADORA — MAIO 2026</div>
+  <div class="h-title">🎯 QUALIFICADORA — __MES_LABEL__</div>
   <div class="h-clock" id="clock">--:--:--</div>
-  <div class="h-update">
-    <span class="pulse-dot"></span>
-    Última atualização: <strong id="last-update-txt"></strong>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <nav style="display:flex;gap:4px;">
+      <a href="sala.html" style="padding:3px 10px;font-size:11px;font-weight:600;border-radius:4px;text-decoration:none;color:#94a3b8;background:rgba(255,255,255,0.07);" class="__ACTIVE_SALA_MAIO__">Maio</a>
+      <a href="sala-junho.html" style="padding:3px 10px;font-size:11px;font-weight:600;border-radius:4px;text-decoration:none;color:#94a3b8;background:rgba(255,255,255,0.07);" class="__ACTIVE_SALA_JUNHO__">Junho</a>
+    </nav>
+    <div class="h-update">
+      <span class="pulse-dot"></span>
+      Última atualização: <strong id="last-update-txt"></strong>
+    </div>
   </div>
 </header>
 

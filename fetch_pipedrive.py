@@ -80,11 +80,11 @@ QUALIF_STAGES = {408, 434, 464, 409, 424, 432, 466, 425}
 # 424 Lead (PT), 432 Pré-Qualif (PT), 466 Em atendimento (PT), 425 MQL (PT)
 
 MONTH_START = date(2026, 5, 1)
-MONTH_END = date(2026, 5, 31)
-# Fetch com janela mais ampla para capturar atividades com due_date em Abril
-# mas marcadas como feitas em Maio
+MONTH_END = date(2026, 6, 30)   # Cobre Maio + Junho (cada build filtra seu mês)
+# Fetch com janela mais ampla para capturar atividades com due_date em meses anteriores
+# mas marcadas como feitas no mês atual
 FETCH_START = date(2026, 1, 1)  # Janela ampla: pega atividades reagendadas de meses anteriores
-FETCH_END   = date(2026, 5, 31)
+FETCH_END   = date(2026, 6, 30)
 
 # SDRs da equipe Qualificadora (espelha o que está no build_from_xlsx_maio.py)
 SDR_LIST = {'Mélodi Nirvana','Lorenzo Meneghetti','Leonardo Soares','Glauber Bagetti',
@@ -220,8 +220,8 @@ def fetch_timeline(field_key, start_dt, days=31):
     return out
 
 def _fetch_open_won():
-    result = fetch_timeline('add_time', MONTH_START, days=31)
-    print(f'   {len(result)} deals open+won criados em Maio (timeline)')
+    result = fetch_timeline('add_time', MONTH_START, days=61)  # Maio + Junho
+    print(f'   {len(result)} deals open+won criados em Maio+Junho (timeline)')
     return result
 
 def _fetch_lost():

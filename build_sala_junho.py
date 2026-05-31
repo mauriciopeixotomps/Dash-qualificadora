@@ -1,5 +1,5 @@
 """
-Gera publish/sala.html (TV mode) a partir dos dados já embutidos em publish/maio-2026.html
+Gera publish/sala-junho.html (TV mode) a partir dos dados já embutidos em publish/maio-2026.html
 + dados extras lidos diretamente dos xlsx (reagend, leads por etiqueta, perdidos por motivo).
 Roda DEPOIS do build_from_xlsx_maio.py.
 """
@@ -12,7 +12,7 @@ WORKDIR   = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR  = os.path.join(WORKDIR, 'data_pipedrive')
 DASH_HTML = os.path.join(WORKDIR, 'publish', 'maio-2026.html')
 SALA_TPL  = os.path.join(WORKDIR, 'sala_template.html')
-OUT_SALA  = os.path.join(WORKDIR, 'publish', 'sala.html')
+OUT_SALA  = os.path.join(WORKDIR, 'publish', 'sala-junho.html')
 
 def load(fname):
     p = os.path.join(DATA_DIR, fname)
@@ -52,7 +52,7 @@ CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Adalberto Neto','Andresa Cal
                    'Felippe Porcella','Lorenzo Coronel','Samuel Brião','Fred','Gabriel Meneses'}
 
 # Data de início do funil Partner-Franqueados sob gestão da equipe
-PARTNER_START = _date(2026, 5, 27)
+PARTNER_START = _date(2026, 6, 1)
 
 re_df2 = load('re.xlsx')
 closer_by_funil = {'FRANQUIA': {}, 'PARTNER': {}}
@@ -215,10 +215,10 @@ if not re_cc1_df.empty:
 
 # Ritmo semanal RE + projeção do mês
 SEMANAS_MAIO = [
-    ('Sem 1', _date(2026,5,4),  _date(2026,5,9)),
-    ('Sem 2', _date(2026,5,11), _date(2026,5,16)),
-    ('Sem 3', _date(2026,5,18), _date(2026,5,23)),
-    ('Sem 4', _date(2026,5,25), _date(2026,5,30)),
+    ('Sem 1', _date(2026,6,1),  _date(2026,6,6)),
+    ('Sem 2', _date(2026,6,8),  _date(2026,6,13)),
+    ('Sem 3', _date(2026,6,15), _date(2026,6,20)),
+    ('Sem 4', _date(2026,6,22), _date(2026,6,27)),
 ]
 re_ritmo = []
 if not re_hm_df.empty and '_dt_hm' in re_hm_df.columns:
@@ -340,8 +340,8 @@ partner_ag_sdr = _partner_ag_sdr()
 deals_df = load('deals.xlsx')
 partner_deals = {'iniciados_mes': 0, 'iniciados_inicio': 0,
                  'perdidos_mes': 0,  'perdidos_inicio': 0}
-MONTH_START = _date(2026, 5, 1)
-MONTH_END   = _date(2026, 5, 31)
+MONTH_START = _date(2026, 6, 1)
+MONTH_END   = _date(2026, 6, 30)
 
 if not deals_df.empty:
     col_fun_d = next((c for c in deals_df.columns if 'funil' in c.lower()), None)
@@ -417,12 +417,12 @@ sala = sala.replace('__DATA_JSON__',       data_json)
 sala = sala.replace('__SALA_JSON__',       json.dumps(DS, ensure_ascii=False))
 sala = sala.replace('__TODAY__',           today_str)
 sala = sala.replace('__LAST_UPDATE__',     last_update)
-sala = sala.replace('__MES_LABEL__',       'MAIO 2026')
-sala = sala.replace('__ACTIVE_SALA_MAIO__',  'sala-tab-active')
-sala = sala.replace('__ACTIVE_SALA_JUNHO__', '')
+sala = sala.replace('__MES_LABEL__',       'JUNHO 2026')
+sala = sala.replace('__ACTIVE_SALA_MAIO__',  '')
+sala = sala.replace('__ACTIVE_SALA_JUNHO__', 'sala-tab-active')
 
 with open(OUT_SALA, 'w') as f:
     f.write(sala)
 
-print(f'✓ sala.html gerado — {last_update}')
+print(f'✓ sala-junho.html gerado — {last_update}')
 print(f'  reag={reag_count} | etiquetas={len(leads_by_etiqueta)} | motivos={len(perdidos_por_motivo_clean)}')

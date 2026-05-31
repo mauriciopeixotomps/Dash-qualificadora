@@ -22,15 +22,15 @@ last_update = datetime.now(_BRT).strftime('%d/%m/%Y %H:%M')
 WORKDIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS = os.path.join(os.path.dirname(WORKDIR), 'uploads')
 TEMPLATE = os.path.join(WORKDIR, 'dashboard_v2.html')
-OUT_HTML = os.path.join(WORKDIR, 'publish', 'maio-2026.html')
-METAS = os.path.join(WORKDIR, 'metas_maio_2026.json')
+OUT_HTML = os.path.join(WORKDIR, 'publish', 'junho-2026.html')
+METAS = os.path.join(WORKDIR, 'metas_junho_2026.json')
 
-MONTH_START = date(2026, 5, 1)
-MONTH_END = date(2026, 5, 31)
+MONTH_START = date(2026, 6, 1)
+MONTH_END = date(2026, 6, 30)
 TODAY = date.today()  # dinâmico — pega a data real do build
-ALL_DAYS = [date(2026, 5, d).isoformat() for d in range(1, 32)]
+ALL_DAYS = [date(2026, 6, d).isoformat() for d in range(1, 31)]
 
-# Maio: 12 SDRs (sem Jhully, com Amanda/Camily/Rafael)
+# Junho: 12 SDRs (sem Jhully, com Amanda/Camily/Rafael)
 SDR_LIST = ['Mélodi Nirvana','Lorenzo Meneghetti','Leonardo Soares','Glauber Bagetti',
             'Andriely Oliveira','Izadora Zacker','Henri Meneghetti',
             'João Gabriel Dutra','Jonatans Junior',
@@ -638,10 +638,10 @@ dashboard = to_native(dashboard)
 with open(TEMPLATE) as f:
     html = f.read()
 html = html.replace('__DATA_PLACEHOLDER__', json.dumps(dashboard, ensure_ascii=False))
-html = html.replace('__MONTH_LABEL__', 'Maio 2026')
+html = html.replace('__MONTH_LABEL__', 'Junho 2026')
 html = html.replace('__ACTIVE_ABRIL__', '')
-html = html.replace('__ACTIVE_MAIO__', 'active')
-html = html.replace('__ACTIVE_JUNHO__', '')
+html = html.replace('__ACTIVE_MAIO__', '')
+html = html.replace('__ACTIVE_JUNHO__', 'active')
 html = html.replace('__TODAY_ISO__', TODAY.isoformat())
 with open(OUT_HTML, 'w') as f:
     f.write(html)
