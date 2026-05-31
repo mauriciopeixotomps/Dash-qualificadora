@@ -10,13 +10,30 @@ from collections import defaultdict
 
 WORKDIR   = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR  = os.path.join(WORKDIR, 'data_pipedrive')
-DASH_HTML = os.path.join(WORKDIR, 'publish', 'maio-2026.html')
+DASH_HTML = os.path.join(WORKDIR, 'publish', 'junho-2026.html')
 SALA_TPL  = os.path.join(WORKDIR, 'sala_template.html')
 OUT_SALA  = os.path.join(WORKDIR, 'publish', 'sala-junho.html')
 
+MONTH_START = _date(2026, 6, 1)
+MONTH_END   = _date(2026, 6, 30)
+
 def load(fname):
+    """Carrega xlsx e filtra automaticamente ao mês de junho."""
     p = os.path.join(DATA_DIR, fname)
-    return pd.read_excel(p) if os.path.exists(p) else pd.DataFrame()
+    if not os.path.exists(p):
+        return pd.DataFrame()
+    df = pd.read_excel(p)
+    if df.empty:
+        return df
+    # Tenta filtrar pelo campo de data mais relevante (marcado > vencimento > criação)
+    for hint in ('marcado', 'vencimento', 'criado'):
+        col = next((c for c in df.columns if hint.lower() in c.lower()), None)
+        if col:
+            s = pd.to_datetime(df[col], errors='coerce')
+            mask = (s.dt.year == MONTH_START.year) & (s.dt.month == MONTH_START.month)
+            if mask.sum() > 0 or mask.notna().any():
+                return df[mask].copy()
+    return df  # sem coluna de data reconhecível: retorna tudo
 
 # ── 1) Extrai D e today do dashboard já gerado ──────────────────────────────
 with open(DASH_HTML) as f:
@@ -340,8 +357,6 @@ partner_ag_sdr = _partner_ag_sdr()
 deals_df = load('deals.xlsx')
 partner_deals = {'iniciados_mes': 0, 'iniciados_inicio': 0,
                  'perdidos_mes': 0,  'perdidos_inicio': 0}
-MONTH_START = _date(2026, 6, 1)
-MONTH_END   = _date(2026, 6, 30)
 
 if not deals_df.empty:
     col_fun_d = next((c for c in deals_df.columns if 'funil' in c.lower()), None)
