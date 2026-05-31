@@ -249,6 +249,18 @@ if not inv.empty and _mcf in inv.columns:
 elif not inv.empty and _due in inv.columns:
     inv['_due'] = pd.to_datetime(inv[_due], errors='coerce')
 
+# Filtra cada dataframe de atividades ao mês corrente antes de contar rankings/totais
+def _filter_mes(df):
+    if df.empty or '_due' not in df.columns: return df
+    return df[(df['_due'] >= pd.Timestamp(MONTH_START)) & (df['_due'] <= pd.Timestamp(MONTH_END))].copy()
+
+qual  = _filter_mes(qual)
+ag    = _filter_mes(ag)
+re_   = _filter_mes(re_)
+ns    = _filter_mes(ns)
+reag  = _filter_mes(reag) if '_due' in reag.columns else reag.iloc[0:0]
+inv   = _filter_mes(inv)
+
 daily_leads = daily_count(deals, '_created')
 daily_lost  = daily_count(perdidos, '_lost')
 daily_qual = daily_count(qual, '_due')
