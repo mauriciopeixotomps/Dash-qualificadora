@@ -779,7 +779,10 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
   const total_d = meta.working_days_total   || 20;
   const paceTarget = Math.round(GOAL * elapsed / total_d);
 
-  const entries = Object.entries(reObj).sort((a,b)=>b[1]-a[1]);
+  // Se não há RE ainda, usa AG ou future para montar lista de SDRs
+  const agObj  = (D.sdr && D.sdr.ag) ? D.sdr.ag : {};
+  const allNames = new Set([...Object.keys(reObj), ...Object.keys(agObj), ...Object.keys(futObj)]);
+  const entries = [...allNames].map(n => [n, reObj[n]||0]).sort((a,b)=>b[1]-a[1]);
   if(!entries.length){ $('sdr-list').innerHTML='<div style="color:var(--muted);padding:6px">Sem dados</div>'; return; }
 
   const container = $('sdr-list');

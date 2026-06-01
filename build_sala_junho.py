@@ -26,14 +26,15 @@ def load(fname):
     if df.empty:
         return df
     # Tenta filtrar pelo campo de data mais relevante (marcado > vencimento > criação)
+    # Só usa a coluna se ela produz ao menos 1 linha no mês — evita zerar re_fut (atividades futuras têm "marcado" vazio)
     for hint in ('marcado', 'vencimento', 'criado'):
         col = next((c for c in df.columns if hint.lower() in c.lower()), None)
         if col:
             s = pd.to_datetime(df[col], errors='coerce')
             mask = (s.dt.year == MONTH_START.year) & (s.dt.month == MONTH_START.month)
-            if mask.sum() > 0 or mask.notna().any():
+            if mask.sum() > 0:
                 return df[mask].copy()
-    return df  # sem coluna de data reconhecível: retorna tudo
+    return df.iloc[0:0]  # nenhuma coluna tem dados no mês: retorna vazio
 
 # ── 1) Extrai D e today do dashboard já gerado ──────────────────────────────
 with open(DASH_HTML) as f:
