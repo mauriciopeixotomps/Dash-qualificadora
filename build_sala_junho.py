@@ -404,6 +404,22 @@ perdidos_por_motivo_clean = {
     )
 }
 
+# Closer: futuras de hoje (responsável = closer que vai fazer a reunião)
+closer_today_fut = {'FRANQUIA': {}, 'PARTNER': {}}
+re_fut_today = load('re_fut.xlsx')
+if not re_fut_today.empty:
+    col_venc = next((c for c in re_fut_today.columns if 'vencimento' in c.lower()), None)
+    col_resp  = next((c for c in re_fut_today.columns if 'responsável' in c.lower()), None)
+    if col_venc and col_resp:
+        re_fut_today['_v'] = pd.to_datetime(re_fut_today[col_venc], errors='coerce')
+        hoje_fut = re_fut_today[re_fut_today['_v'].dt.date == today_date_dt]
+        for name, cnt in hoje_fut[col_resp].dropna().value_counts().items():
+            name = str(name)
+            if name in CLOSER_FRANQUIA:
+                closer_today_fut['FRANQUIA'][name] = int(cnt)
+            elif name in CLOSER_PARTNER:
+                closer_today_fut['PARTNER'][name] = int(cnt)
+
 DS = {
     'reag': reag_count,
     'reag_hoje': reag_hoje,
@@ -415,6 +431,7 @@ DS = {
     'perdidos_por_motivo': perdidos_por_motivo_clean,
     'perdidos_pos_cc1': perdidos_pos_cc1,
     'closer_by_funil': closer_by_funil,
+    'closer_today_fut': closer_today_fut,
     'sdr_today': sdr_today,
     're_heatmap': re_heatmap,
     're_semanas': re_semanas,

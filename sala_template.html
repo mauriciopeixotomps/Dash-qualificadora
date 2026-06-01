@@ -794,34 +794,36 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
 
 // ── CLOSER RANKING — FRANQUIA | PARTNER lado a lado ───────
 (function renderCloser(){
-  const cbf      = DS.closer_by_funil || {};
-  const franqObj = cbf.FRANQUIA || {};
-  const partObj  = cbf.PARTNER  || {};
-  const futObj   = (D.closer && D.closer.future) ? D.closer.future : {};
+  const cbf      = DS.closer_by_funil  || {};
+  const ctf      = DS.closer_today_fut || {};  // futuras de hoje por closer
   const meta     = D.meta || {};
   const GOAL     = meta.closer_goal || 40;
   const elapsed  = meta.working_days_elapsed || 1;
   const total_d  = meta.working_days_total   || 20;
   const paceTarget = Math.round(GOAL * elapsed / total_d);
 
-  function renderGroup(obj, containerId, label, color){
+  function renderGroup(reObj, futTodayObj, containerId, label, color){
     const container = $(containerId);
-    if (!container || !Object.keys(obj).length) return;
+    if (!container) return;
+    // Se não há RE ainda, usa futuras de hoje como fonte dos closers
+    const allNames = new Set([...Object.keys(reObj), ...Object.keys(futTodayObj)]);
+    if (!allNames.size) return;
     const hdr = document.createElement('div');
     hdr.className = 'group-hdr';
     hdr.style.color = color;
     hdr.textContent = label;
     container.appendChild(hdr);
-    Object.entries(obj)
-      .sort((a,b) => b[1]-a[1])
-      .forEach(([name, re]) => {
-        const fut = futObj[name] || 0;
+    [...allNames]
+      .sort((a,b) => ((reObj[b]||0) - (reObj[a]||0)) || ((futTodayObj[b]||0) - (futTodayObj[a]||0)))
+      .forEach(name => {
+        const re  = reObj[name]      || 0;
+        const fut = futTodayObj[name] || 0;
         container.appendChild(buildRankRow(name, re, fut, paceTarget, GOAL, color));
       });
   }
 
-  renderGroup(franqObj, 'closer-franquia', 'FRANQUIA', '#22c55e');
-  renderGroup(partObj,  'closer-partner',  'PARTNER',  '#a855f7');
+  renderGroup(cbf.FRANQUIA||{}, ctf.FRANQUIA||{}, 'closer-franquia', 'FRANQUIA', '#22c55e');
+  renderGroup(cbf.PARTNER ||{}, ctf.PARTNER ||{}, 'closer-partner',  'PARTNER',  '#a855f7');
 })();
 
 // ── PRODUTOS ──────────────────────────────────────────────
@@ -943,11 +945,16 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
   const re_t  = st.re  || {};
   const ns_t  = st.ns  || {};
   const fut_t = st.fut || {};
-  const sdrs = Object.keys((D.sdr && D.sdr.re) ? D.sdr.re : {})
-    .sort((a,b)=>{
-      const ra = D.sdr.re[a]||0, rb = D.sdr.re[b]||0;
-      return rb - ra;
-    });
+  const allSdrNames = new Set([
+    ...Object.keys((D.sdr && D.sdr.re)  ? D.sdr.re  : {}),
+    ...Object.keys((D.sdr && D.sdr.ag)  ? D.sdr.ag  : {}),
+    ...Object.keys(fut_t),
+  ]);
+  const sdrs = [...allSdrNames].sort((a,b)=>{
+    const ra = (D.sdr?.re?.[a]||0), rb = (D.sdr?.re?.[b]||0);
+    const fa = fut_t[a]||0, fb = fut_t[b]||0;
+    return (rb - ra) || (fb - fa);
+  });
 
   const tbody = $('sdr-today-tbody');
   let totAg=0, totRe=0, totNs=0, totFut=0;
