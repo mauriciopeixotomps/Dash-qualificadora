@@ -16,7 +16,7 @@ jobs:
 
       - name: Fetch Pipedrive data
         env:
-          PIPEDRIVE_API_TOKEN: ${{ secrets.PIPEDRIVE_API_TOKEN }}
+          PIPEDRIVE_API_TOKEN: ${{ secrets.PIPEDRIVE_TOKEN }}
           PIPEDRIVE_COMPANY_DOMAIN: ${{ secrets.PIPEDRIVE_COMPANY_DOMAIN }}
         run: |
           python3 - <<'PYEOF'
