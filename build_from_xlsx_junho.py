@@ -64,7 +64,7 @@ _perd_all    = load_pd('perdidos.xlsx')
 # Filtra deals e perdidos ao mês específico (deals.xlsx agora cobre Maio+Junho)
 def _filter_month(df, date_col, m_start, m_end):
     s = pd.to_datetime(df[date_col], errors='coerce')
-    return df[(s >= pd.Timestamp(m_start)) & (s <= pd.Timestamp(m_end))].copy()
+    return df[(s.dt.date >= m_start) & (s.dt.date <= m_end)].copy()
 
 deals        = _filter_month(_deals_all, 'Negócio - Negócio criado em', MONTH_START, MONTH_END)
 perdidos_raw = _filter_month(_perd_all,  'Negócio - Data de perda',     MONTH_START, MONTH_END) \
