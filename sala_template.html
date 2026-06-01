@@ -197,7 +197,7 @@ body {
 /* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
 #col-c {
   display: grid;
-  grid-template-rows: 2fr 3fr 3fr;
+  grid-template-rows: 1fr 4fr 3fr;
   gap: 3px;
   height: 100%;
   min-height: 0;
@@ -218,32 +218,32 @@ body {
 
 .prod-row {
   display: grid;
-  grid-template-columns: 105px 1fr 85px;
+  grid-template-columns: 100px 1fr 82px;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
-  margin-bottom: 1px;
+  margin-bottom: 0px;
 }
 .prod-name {
-  font-size:10px; font-weight:600; text-transform:uppercase;
-  letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-size:9px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.prod-bar-wrap   { background:#1e293b; border-radius:3px; height:8px; overflow:hidden; }
+.prod-bar-wrap   { background:#1e293b; border-radius:3px; height:6px; overflow:hidden; }
 .prod-bar-fill   { height:100%; border-radius:3px; transition:width .3s; }
-.prod-nums       { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.prod-nums       { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .prod-sub        { font-size:8px; color:var(--muted); text-align:right; white-space:nowrap; }
 
 .prod-total-card {
-  background:#0f1d35; border:1px solid #2d4a6e; border-radius:5px;
-  padding:4px 6px; margin-bottom:3px;
+  background:#0f1d35; border:1px solid #2d4a6e; border-radius:3px;
+  padding:2px 4px; margin-bottom:1px;
 }
 
 /* negócios bar */
-.neg-row { display:grid; grid-template-columns:110px 1fr 42px; align-items:center; gap:6px; flex-shrink:0; }
-.neg-name { font-size:10px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.neg-bar-wrap { background:#1e293b; border-radius:3px; height:9px; overflow:hidden; }
+.neg-row { display:grid; grid-template-columns:110px 1fr 42px; align-items:center; gap:4px; flex-shrink:0; margin-bottom:1px; }
+.neg-name { font-size:9.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.neg-bar-wrap { background:#1e293b; border-radius:3px; height:7px; overflow:hidden; }
 .neg-bar-fill { height:100%; border-radius:3px; }
-.neg-val { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+.neg-val { font-size:9.5px; text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
 
 /* ── CHARTS ──────────────────────────────────────────── */
 .chart-wrap { flex:1; position:relative; min-height:0; }
