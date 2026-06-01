@@ -1,0 +1,159 @@
+name: Sync Pipedrive Franquia Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Pipedrive data
+        env:
+          PIPEDRIVE_API_TOKEN: ${{ secrets.PIPEDRIVE_API_TOKEN }}
+          PIPEDRIVE_COMPANY_DOMAIN: ${{ secrets.PIPEDRIVE_COMPANY_DOMAIN }}
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, urllib.request, urllib.parse, urllib.error
+          from datetime import datetime, date, timedelta
+
+          API_TOKEN = os.environ['PIPEDRIVE_API_TOKEN']
+          DOMAIN    = os.environ['PIPEDRIVE_COMPANY_DOMAIN'].strip().rstrip('/')
+          BASE      = f'https://{DOMAIN}.pipedrive.com/api/v1'
+
+          def api_get(path, params=None):
+              p = dict(params or {})
+              p['api_token'] = API_TOKEN
+              url = f'{BASE}/{path}?' + urllib.parse.urlencode(p)
+              req = urllib.request.Request(url, headers={'Accept': 'application/json'})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.loads(r.read())
+
+          # ── Descobrir pipeline de franquia ─────────────────────────
+          resp = api_get('pipelines')
+          pipeline_id = None
+          for pl in (resp.get('data') or []):
+              name_lower = pl['name'].lower()
+              if any(k in name_lower for k in ('franquia', 'expansao', 'expansão')):
+                  pipeline_id = pl['id']
+                  print(f"Pipeline encontrado: {pl['name']} (id={pipeline_id})")
+                  break
+          if pipeline_id is None:
+              raise SystemExit("Pipeline de franquia não encontrado!")
+
+          # ── Intervalo do mês atual ──────────────────────────────────
+          today = date.today()
+          mes   = today.strftime('%Y-%m')
+          month_start = f'{today.year}-{today.month:02d}-01'
+          if today.month == 12:
+              last_day = date(today.year + 1, 1, 1) - timedelta(days=1)
+          else:
+              last_day = date(today.year, today.month + 1, 1) - timedelta(days=1)
+          month_end = last_day.strftime('%Y-%m-%d')
+
+          # ── Buscar stages do pipeline ───────────────────────────────
+          stages_resp = api_get('stages', {'pipeline_id': pipeline_id})
+          stage_map = {st['id']: st['name'] for st in (stages_resp.get('data') or [])}
+
+          # ── Buscar todos os deals do pipeline ──────────────────────
+          deals = []
+          start = 0
+          while True:
+              r = api_get('deals', {
+                  'pipeline_id': pipeline_id,
+                  'status': 'all',
+                  'limit': 500,
+                  'start': start,
+              })
+              batch = r.get('data') or []
+              deals.extend(batch)
+              more = (r.get('additional_data') or {}).get('pagination', {}).get('more_items_in_collection', False)
+              if not more or not batch:
+                  break
+              start += len(batch)
+
+          # Contratos = deals won com close_time no mês
+          contratos_mes   = 0
+          contratos_por_dia = {}
+          funil_franquia  = {}
+
+          for deal in deals:
+              if deal.get('status') == 'won':
+                  won_time = deal.get('won_time') or deal.get('close_time') or ''
+                  won_date = won_time[:10]
+                  if won_date.startswith(mes):
+                      contratos_mes += 1
+                      contratos_por_dia[won_date] = contratos_por_dia.get(won_date, 0) + 1
+              elif deal.get('status') == 'open':
+                  stage_name = stage_map.get(deal.get('stage_id'), 'Desconhecida')
+                  funil_franquia[stage_name] = funil_franquia.get(stage_name, 0) + 1
+
+          # ── Buscar atividades concluídas do mês ────────────────────
+          reunioes_mes    = 0
+          reunioes_por_dia = {}
+          start = 0
+          while True:
+              r = api_get('activities', {
+                  'done':       1,
+                  'limit':      500,
+                  'start':      start,
+                  'start_date': month_start,
+                  'end_date':   month_end,
+              })
+              batch = r.get('data') or []
+              for act in batch:
+                  act_type = (act.get('type') or '').lower()
+                  # aceita qualquer variação de "reunião" ou "meeting"
+                  if 'reuni' in act_type or 'meeting' in act_type:
+                      act_date = (act.get('due_date') or '')[:10]
+                      if act_date.startswith(mes):
+                          reunioes_mes += 1
+                          reunioes_por_dia[act_date] = reunioes_por_dia.get(act_date, 0) + 1
+              more = (r.get('additional_data') or {}).get('pagination', {}).get('more_items_in_collection', False)
+              if not more or not batch:
+                  break
+              start += len(batch)
+
+          # ── Taxa de conversão ───────────────────────────────────────
+          taxa = round(contratos_mes / reunioes_mes * 100, 2) if reunioes_mes > 0 else 0.0
+
+          # ── Dias úteis decorridos no mês ────────────────────────────
+          dias_uteis = 0
+          d = date(today.year, today.month, 1)
+          while d <= today:
+              if d.weekday() < 5:   # seg–sex
+                  dias_uteis += 1
+              d += timedelta(days=1)
+
+          output = {
+              'generated_at':       datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+              'mes':                mes,
+              'reunioes_mes':       reunioes_mes,
+              'contratos_mes':      contratos_mes,
+              'taxa_conversao_pct': taxa,
+              'reunioes_por_dia':   dict(sorted(reunioes_por_dia.items())),
+              'contratos_por_dia':  dict(sorted(contratos_por_dia.items())),
+              'funil_franquia':     funil_franquia,
+              'pipeline_id':        pipeline_id,
+              'dias_uteis_decorridos': dias_uteis,
+          }
+
+          with open('pipedrive-data.json', 'w', encoding='utf-8') as f:
+              json.dump(output, f, ensure_ascii=False, indent=2)
+
+          print(f"OK — {reunioes_mes} reuniões, {contratos_mes} contratos, {taxa}% taxa")
+          PYEOF
+
+      - name: Commit & push pipedrive-data.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pipedrive-data.json
+          git diff --cached --quiet && echo "Sem alterações." || \
+            git commit -m "chore: atualizar pipedrive-data.json [skip ci]" && git push

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comissão — Franquia</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #070c18;
+  --card:   #121a2c;
+  --card2:  #0f172a;
+  --border: #1e293b;
+  --text:   #e2e8f0;
+  --muted:  #94a3b8;
+  --dim:    #64748b;
+  --green:  #22c55e;
+  --amber:  #f59e0b;
+  --red:    #ef4444;
+  --purple: #a855f7;
+  --cyan:   #06b6d4;
+  --blue:   #3b82f6;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container { max-width: 960px; margin: 0 auto; }
+
+h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+.subtitle { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.card h2 {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--muted);
+  display: flex; align-items: center; gap: 6px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.card h2::before {
+  content: ''; display: inline-block; width: 3px; height: 14px;
+  border-radius: 2px; background: var(--accent, var(--muted)); flex-shrink: 0;
+}
+
+.big { font-size: 42px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.med { font-size: 28px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+.sublabel { font-size: 11px; color: var(--dim); margin-top: 4px; }
+
+/* Progress bar */
+.prog-track { background: #1e293b; height: 24px; border-radius: 6px; overflow: hidden; position: relative; margin: 10px 0 4px; }
+.prog-fill   { height: 100%; border-radius: 6px 0 0 6px; transition: width .4s; }
+
+/* Tier cards */
+.tier-row { display: flex; gap: 8px; margin-top: 10px; }
+.tier-card {
+  flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card2); text-align: center; position: relative;
+  transition: border-color .2s;
+}
+.tier-card.active { border-color: var(--accent-tier, var(--green)); box-shadow: 0 0 0 1px var(--accent-tier, var(--green)); }
+.tier-card .tc-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.tier-card .tc-taxa  { font-size: 18px; font-weight: 700; }
+.tier-card .tc-val   { font-size: 11px; color: var(--dim); margin-top: 3px; }
+.tier-card .tc-badge {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 999px;
+  background: var(--accent-tier, var(--green)); color: #000;
+  white-space: nowrap;
+}
+
+/* Comparison table */
+.comp-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+.comp-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.comp-table th:first-child { text-align: left; }
+.comp-table td { padding: 8px 8px; text-align: right; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.comp-table td:first-child { text-align: left; font-weight: 500; }
+.comp-table tr.active-row td { background: rgba(168,85,247,.06); }
+.comp-table tr:last-child td { border-bottom: none; }
+
+/* Funil bar */
+.funil-row { display: grid; grid-template-columns: 150px 1fr 42px; align-items: center; gap: 8px; margin-bottom: 8px; }
+.funil-bar-wrap { background: #1e293b; border-radius: 4px; height: 14px; overflow: hidden; }
+.funil-bar-fill { height: 100%; background: var(--purple); border-radius: 4px; }
+.funil-val { font-size: 12px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Simulator */
+.sim-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.sim-field label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+.sim-field input {
+  width: 100%; background: #0f172a; border: 1px solid var(--border);
+  color: #f1f5f9; font-size: 22px; font-weight: 700;
+  padding: 8px 12px; border-radius: 6px; font-variant-numeric: tabular-nums;
+}
+.sim-field input:focus { outline: none; border-color: var(--purple); }
+.sim-result {
+  background: #0f172a; border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px; margin-bottom: 14px;
+}
+.sim-result .sr-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; font-size: 12px; }
+.sim-result .sr-label { color: var(--muted); }
+.sim-result .sr-val   { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+
+/* Ref table */
+.ref-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.ref-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.ref-table th:first-child { text-align: left; }
+.ref-table td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.ref-table td:first-child { text-align: left; }
+.ref-table tr:last-child td { border-bottom: none; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.badge.green  { background: rgba(34,197,94,.2);  color: #4ade80; }
+.badge.amber  { background: rgba(245,158,11,.2); color: #fbbf24; }
+.badge.red    { background: rgba(239,68,68,.2);  color: #f87171; }
+
+.ts { font-size: 11px; color: var(--dim); margin-top: 12px; }
+.err { color: var(--amber); font-size: 12px; padding: 10px; background: rgba(245,158,11,.07); border-radius: 6px; border: 1px solid rgba(245,158,11,.2); }
+
+@media (max-width: 640px) {
+  .tier-row { flex-direction: column; }
+  .funil-row { grid-template-columns: 110px 1fr 36px; }
+  .sim-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>💰 Comissão — Franquia</h1>
+  <div class="subtitle" id="subtitle">Carregando dados do Pipedrive...</div>
+
+  <!-- BLOCO 1 — Status do gatilho -->
+  <div class="card" style="--accent:#22c55e;">
+    <h2 style="--accent:var(--green);">Bloco 1 — Status do Gatilho (≥ 10 contratos)</h2>
+    <div id="bloco1">
+      <div class="label">Contratos fechados no mês</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-top:4px;">
+        <span class="big" id="b1-contratos" style="color:var(--muted);">—</span>
+        <span style="font-size:18px;color:var(--dim);">/ 10</span>
+        <span class="badge" id="b1-badge" style="margin-left:4px;"></span>
+      </div>
+      <div class="prog-track" style="margin-top:12px;">
+        <div class="prog-fill" id="b1-bar" style="width:0%;background:var(--muted);"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:3px;">
+        <span>0</span><span style="color:var(--amber);">10 (gatilho)</span>
+      </div>
+      <div id="b1-falta" style="font-size:12px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- BLOCO 2 — Taxa de conversão -->
+  <div class="card">
+    <h2 style="--accent:var(--cyan);">Bloco 2 — Taxa RE × Contrato</h2>
+    <div id="bloco2">
+      <div class="grid2" style="gap:12px;margin-bottom:14px;">
+        <div>
+          <div class="label">Taxa atual</div>
+          <div class="big" id="b2-taxa" style="color:var(--muted);">—</div>
+          <div class="sublabel" id="b2-detalhe">— reuniões · — contratos</div>
+        </div>
+        <div>
+          <div class="label">Faixa ativa</div>
+          <div class="med" id="b2-faixa" style="color:var(--muted);">—</div>
+          <div class="sublabel" id="b2-valor">R$ — por RE</div>
+        </div>
+      </div>
+
+      <div class="tier-row" id="b2-tiers">
+        <div class="tier-card" id="tier0" style="--accent-tier:var(--red);">
+          <div class="tc-label">Faixa 1</div>
+          <div class="tc-taxa" style="color:var(--red);">&lt; 2%</div>
+          <div class="tc-val">R$ 0 / RE</div>
+        </div>
+        <div class="tier-card" id="tier1" style="--accent-tier:var(--amber);">
+          <div class="tc-label">Faixa 2</div>
+          <div class="tc-taxa" style="color:var(--amber);">2 – 3,5%</div>
+          <div class="tc-val">R$ 10 / RE</div>
+        </div>
+        <div class="tier-card" id="tier2" style="--accent-tier:var(--green);">
+          <div class="tc-label">Faixa 3</div>
+          <div class="tc-taxa" style="color:var(--green);">≥ 3,5%</div>
+          <div class="tc-val">R$ 20 / RE</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCO 3 — Projeção de comissão -->
+  <div class="card">
+    <h2 style="--accent:var(--green);">Bloco 3 — Projeção de Comissão</h2>
+    <div id="bloco3">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Fórmula: RE × R$/RE + Contratos × R$100</div>
+      <table class="comp-table" id="b3-table">
+        <thead>
+          <tr>
+            <th>Faixa</th>
+            <th>Taxa</th>
+            <th>R$/RE</th>
+            <th>RE × R$/RE</th>
+            <th>Contratos × R$100</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="b3-row0">
+            <td><span style="color:var(--red);">Faixa 1</span></td>
+            <td style="color:var(--dim);">&lt; 2%</td>
+            <td>R$ 0</td>
+            <td id="b3-re0">—</td><td id="b3-c0">—</td><td id="b3-t0" style="font-weight:700;">—</td>
+          </tr>
+          <tr id="b3-row1">
+            <td><span style="color:var(--amber);">Faixa 2</span></td>
+            <td style="color:var(--dim);">2 – 3,5%</td>
+            <td>R$ 10</td>
+            <td id="b3-re1">—</td><td id="b3-c1">—</td><td id="b3-t1" style="font-weight:700;">—</td>
+          </tr>
+          <tr id="b3-row2">
+            <td><span style="color:var(--green);">Faixa 3</span></td>
+            <td style="color:var(--dim);">≥ 3,5%</td>
+            <td>R$ 20</td>
+            <td id="b3-re2">—</td><td id="b3-c2">—</td><td id="b3-t2" style="font-weight:700;">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BLOCO 4 — Pace de contratos -->
+  <div class="card">
+    <h2 style="--accent:var(--blue);">Bloco 4 — Pace de Contratos</h2>
+    <div id="bloco4">
+      <div class="grid2" style="gap:14px;margin-bottom:14px;">
+        <div>
+          <div class="label">RE projetado no fim do mês</div>
+          <div class="med" id="b4-re-proj" style="color:var(--cyan);">—</div>
+          <div class="sublabel" id="b4-re-base"></div>
+        </div>
+        <div>
+          <div class="label">Dias úteis decorridos</div>
+          <div class="med" id="b4-du" style="color:var(--muted);">—</div>
+          <div class="sublabel">de 22 dias úteis no mês</div>
+        </div>
+      </div>
+
+      <table class="comp-table" id="b4-table">
+        <thead>
+          <tr>
+            <th>Faixa</th>
+            <th>Contratos esperados (RE atual)</th>
+            <th>Contratos esperados (RE proj.)</th>
+            <th>Real vs Esperado</th>
+            <th>Faltam para atingir</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color:var(--amber);">Faixa 2 (2%)</span></td>
+            <td id="b4-esp1-atual">—</td>
+            <td id="b4-esp1-proj">—</td>
+            <td id="b4-delta1">—</td>
+            <td id="b4-falta1">—</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--green);">Faixa 3 (3,5%)</span></td>
+            <td id="b4-esp2-atual">—</td>
+            <td id="b4-esp2-proj">—</td>
+            <td id="b4-delta2">—</td>
+            <td id="b4-falta2">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BLOCO 5 — Funil Pipedrive -->
+  <div class="card">
+    <h2 style="--accent:var(--purple);">Bloco 5 — Funil Pipedrive (Deals em Aberto)</h2>
+    <div id="bloco5">
+      <div style="font-size:12px;color:var(--muted);">Carregando...</div>
+    </div>
+  </div>
+
+  <!-- BLOCO 6 — Simulador -->
+  <div class="card">
+    <h2 style="--accent:var(--cyan);">Bloco 6 — Simulador</h2>
+    <div class="sim-row">
+      <div class="sim-field">
+        <label>RE no mês (reuniões realizadas)</label>
+        <input type="number" id="sim-re" min="0" value="0">
+      </div>
+      <div class="sim-field">
+        <label>Contratos fechados</label>
+        <input type="number" id="sim-c" min="0" value="0">
+      </div>
+    </div>
+
+    <div class="sim-result" id="sim-result">
+      <div class="sr-row">
+        <span class="sr-label">Taxa</span>
+        <span class="sr-val" id="sr-taxa" style="color:var(--muted);">—</span>
+      </div>
+      <div class="sr-row">
+        <span class="sr-label">Faixa ativa</span>
+        <span class="sr-val" id="sr-faixa" style="color:var(--muted);">—</span>
+      </div>
+      <div class="sr-row">
+        <span class="sr-label">Status gatilho</span>
+        <span class="sr-val" id="sr-gatilho">—</span>
+      </div>
+      <div class="sr-row" style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;">
+        <span class="sr-label" style="font-size:13px;">Comissão total (faixa ativa)</span>
+        <span class="sr-val" id="sr-comissao" style="font-size:22px;color:var(--green);">—</span>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Comparativo de todas as faixas</div>
+    <table class="comp-table" id="sim-comp-table">
+      <thead>
+        <tr>
+          <th>Faixa</th>
+          <th>Taxa Necessária</th>
+          <th>RE × R$/RE</th>
+          <th>Contratos × R$100</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="sc-row0"><td style="color:var(--red);">Faixa 1</td><td style="color:var(--dim);">&lt; 2%</td><td id="sc-re0">—</td><td id="sc-c0">—</td><td id="sc-t0" style="font-weight:700;">—</td></tr>
+        <tr id="sc-row1"><td style="color:var(--amber);">Faixa 2</td><td style="color:var(--dim);">2 – 3,5%</td><td id="sc-re1">—</td><td id="sc-c1">—</td><td id="sc-t1" style="font-weight:700;">—</td></tr>
+        <tr id="sc-row2"><td style="color:var(--green);">Faixa 3</td><td style="color:var(--dim);">≥ 3,5%</td><td id="sc-re2">—</td><td id="sc-c2">—</td><td id="sc-t2" style="font-weight:700;">—</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;">Tabela de referência — valor marginal</div>
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Ação</th>
+          <th>Faixa 1 (&lt;2%)</th>
+          <th>Faixa 2 (2–3,5%)</th>
+          <th>Faixa 3 (≥3,5%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>+1 RE (mantendo taxa)</td>
+          <td style="color:var(--red);">+R$ 0</td>
+          <td style="color:var(--amber);">+R$ 10</td>
+          <td style="color:var(--green);">+R$ 20</td>
+        </tr>
+        <tr>
+          <td>+1 Contrato</td>
+          <td>+R$ 100</td>
+          <td>+R$ 100</td>
+          <td>+R$ 100</td>
+        </tr>
+        <tr>
+          <td>Subir Faixa 1 → 2 (2% exato)</td>
+          <td colspan="3" id="ref-f12" style="text-align:center;color:var(--amber);">—</td>
+        </tr>
+        <tr>
+          <td>Subir Faixa 2 → 3 (3,5% exato)</td>
+          <td colspan="3" id="ref-f23" style="text-align:center;color:var(--green);">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ts" id="ts-footer"></div>
+</div>
+
+<script>
+const BRL = v => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+const N   = v => v.toLocaleString('pt-BR');
+
+const TIERS = [
+  { min: 0,   max: 2,    val: 0,  label: '< 2%',    color: 'var(--red)',    id: 'tier0' },
+  { min: 2,   max: 3.5,  val: 10, label: '2–3,5%',  color: 'var(--amber)', id: 'tier1' },
+  { min: 3.5, max: Infinity, val: 20, label: '≥ 3,5%', color: 'var(--green)', id: 'tier2' },
+];
+const GATE   = 10;
+const DU_TOT = 22;
+
+function getTier(taxa) {
+  if (taxa >= 3.5) return 2;
+  if (taxa >= 2)   return 1;
+  return 0;
+}
+
+function calcComissao(re, contratos, tierIdx) {
+  return re * TIERS[tierIdx].val + contratos * 100;
+}
+
+let _re = 0, _contratos = 0, _taxa = 0;
+
+function applyData(pd) {
+  const re        = pd ? (pd.reunioes_mes        ?? 0) : 0;
+  const contratos = pd ? (pd.contratos_mes       ?? 0) : 0;
+  const taxa      = pd ? (pd.taxa_conversao_pct  ?? 0) : 0;
+  const funil     = pd ? (pd.funil_franquia      || {}) : {};
+  const du        = pd ? (pd.dias_uteis_decorridos ?? 0) : 0;
+  const gerado    = pd ? pd.generated_at : null;
+
+  _re = re; _contratos = contratos; _taxa = taxa;
+
+  // Subtitle
+  const mes = pd ? pd.mes : '—';
+  document.getElementById('subtitle').textContent =
+    pd ? `Mês: ${mes} · Última sync Pipedrive: ${gerado ? new Date(gerado).toLocaleString('pt-BR') : '—'}` : 'Dados Pipedrive não disponíveis — exibindo apenas estrutura.';
+
+  // ── Bloco 1 ──────────────────────────────────────────────
+  document.getElementById('b1-contratos').textContent = contratos;
+  const gPct = Math.min(contratos / GATE * 100, 100);
+  const gColor = contratos >= GATE ? 'var(--green)' : contratos >= 7 ? 'var(--amber)' : 'var(--red)';
+  document.getElementById('b1-contratos').style.color = gColor;
+  document.getElementById('b1-bar').style.width = gPct + '%';
+  document.getElementById('b1-bar').style.background = gColor;
+  const badge = document.getElementById('b1-badge');
+  if (contratos >= GATE) {
+    badge.textContent = '✓ GATILHO ATIVADO'; badge.className = 'badge green';
+  } else if (contratos >= 7) {
+    badge.textContent = 'PERTO'; badge.className = 'badge amber';
+  } else {
+    badge.textContent = 'ABAIXO'; badge.className = 'badge red';
+  }
+  const falta = Math.max(0, GATE - contratos);
+  document.getElementById('b1-falta').textContent = falta > 0
+    ? `Faltam ${falta} contrato${falta > 1 ? 's' : ''} para acionar o gatilho.`
+    : 'Gatilho atingido! Comissão por RE desbloqueada.';
+  document.getElementById('b1-falta').style.color = falta > 0 ? gColor : 'var(--green)';
+
+  // ── Bloco 2 ──────────────────────────────────────────────
+  const tierIdx = getTier(taxa);
+  const tier    = TIERS[tierIdx];
+  document.getElementById('b2-taxa').textContent = taxa.toFixed(2) + '%';
+  document.getElementById('b2-taxa').style.color = tier.color;
+  document.getElementById('b2-detalhe').textContent = `${N(re)} reuniões · ${N(contratos)} contratos`;
+  document.getElementById('b2-faixa').textContent = tier.label;
+  document.getElementById('b2-faixa').style.color = tier.color;
+  document.getElementById('b2-valor').textContent = `R$ ${tier.val} por RE`;
+  TIERS.forEach((t, i) => {
+    const el = document.getElementById(t.id);
+    el.classList.toggle('active', i === tierIdx);
+    // remove previous badge
+    const prev = el.querySelector('.tc-badge');
+    if (prev) prev.remove();
+    if (i === tierIdx) {
+      const b = document.createElement('div');
+      b.className = 'tc-badge';
+      b.textContent = 'VOCÊ ESTÁ AQUI';
+      el.appendChild(b);
+    }
+  });
+
+  // ── Bloco 3 ──────────────────────────────────────────────
+  const cPart = contratos * 100;
+  [[0,1,2]].flat().forEach(i => {
+    const rePart = re * TIERS[i].val;
+    const total  = rePart + cPart;
+    document.getElementById(`b3-re${i}`).textContent = BRL(rePart);
+    document.getElementById(`b3-c${i}`).textContent  = BRL(cPart);
+    document.getElementById(`b3-t${i}`).textContent  = BRL(total);
+    document.getElementById(`b3-t${i}`).style.color  = TIERS[i].color;
+    document.getElementById(`b3-row${i}`).classList.toggle('active-row', i === tierIdx);
+  });
+
+  // ── Bloco 4 ──────────────────────────────────────────────
+  const reProj = du > 0 ? Math.round(re / du * DU_TOT) : re;
+  document.getElementById('b4-re-proj').textContent = N(reProj);
+  document.getElementById('b4-re-base').textContent =
+    du > 0 ? `${N(re)} RE em ${du} DU → ritmo: ${(re/du).toFixed(1)} RE/DU` : 'Dias úteis decorridos = 0';
+  document.getElementById('b4-du').textContent = `${du} / ${DU_TOT}`;
+
+  const paces = [
+    { rate: 0.02,  ids: ['b4-esp1-atual','b4-esp1-proj','b4-delta1','b4-falta1'] },
+    { rate: 0.035, ids: ['b4-esp2-atual','b4-esp2-proj','b4-delta2','b4-falta2'] },
+  ];
+  paces.forEach(({ rate, ids }) => {
+    const espAtual = Math.ceil(re      * rate);
+    const espProj  = Math.ceil(reProj  * rate);
+    const delta    = contratos - espAtual;
+    const faltam   = Math.max(0, Math.ceil(re * rate) - contratos);
+
+    document.getElementById(ids[0]).textContent = N(espAtual);
+    document.getElementById(ids[1]).textContent = N(espProj);
+
+    const dEl = document.getElementById(ids[2]);
+    dEl.textContent = (delta >= 0 ? '+' : '') + N(delta);
+    dEl.style.color = delta >= 0 ? 'var(--green)' : 'var(--red)';
+    dEl.style.fontWeight = '700';
+
+    const fEl = document.getElementById(ids[3]);
+    fEl.textContent = faltam > 0 ? `${N(faltam)} faltam` : '✓ atingido';
+    fEl.style.color = faltam > 0 ? 'var(--red)' : 'var(--green)';
+  });
+
+  // ── Bloco 5 — Funil ──────────────────────────────────────
+  const b5 = document.getElementById('bloco5');
+  const funiEntries = Object.entries(funil).sort((a,b) => b[1]-a[1]);
+  if (funiEntries.length === 0) {
+    b5.innerHTML = `<div class="${pd ? 'sublabel' : 'err'}">${pd ? 'Nenhum deal em aberto no pipeline.' : 'Dados Pipedrive não disponíveis.'}</div>`;
+  } else {
+    const maxV = funiEntries[0][1];
+    b5.innerHTML = funiEntries.map(([stage, cnt]) => `
+      <div class="funil-row">
+        <span style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${stage}</span>
+        <div class="funil-bar-wrap"><div class="funil-bar-fill" style="width:${maxV>0?cnt/maxV*100:0}%;"></div></div>
+        <span class="funil-val">${cnt}</span>
+      </div>`).join('');
+  }
+
+  // Preencher simulador com valores reais
+  document.getElementById('sim-re').value = re;
+  document.getElementById('sim-c').value  = contratos;
+  runSim();
+
+  // Timestamp footer
+  if (gerado) {
+    document.getElementById('ts-footer').textContent = `Dados sincronizados em ${new Date(gerado).toLocaleString('pt-BR')} via Pipedrive.`;
+  }
+}
+
+function runSim() {
+  const re        = parseInt(document.getElementById('sim-re').value) || 0;
+  const contratos = parseInt(document.getElementById('sim-c').value)  || 0;
+  const taxa      = re > 0 ? contratos / re * 100 : 0;
+  const tierIdx   = getTier(taxa);
+  const tier      = TIERS[tierIdx];
+  const total     = calcComissao(re, contratos, tierIdx);
+  const gatilho   = contratos >= GATE;
+  const cPart     = contratos * 100;
+
+  document.getElementById('sr-taxa').textContent    = taxa.toFixed(2) + '%';
+  document.getElementById('sr-taxa').style.color    = tier.color;
+  document.getElementById('sr-faixa').textContent   = tier.label;
+  document.getElementById('sr-faixa').style.color   = tier.color;
+  const gEl = document.getElementById('sr-gatilho');
+  gEl.textContent = gatilho ? '✓ Ativado (' + contratos + ' contratos)' : `⚠ ${contratos}/${GATE} — faltam ${GATE-contratos}`;
+  gEl.style.color = gatilho ? 'var(--green)' : contratos >= 7 ? 'var(--amber)' : 'var(--red)';
+  document.getElementById('sr-comissao').textContent = BRL(total);
+  document.getElementById('sr-comissao').style.color = tier.color;
+
+  // Comparativo
+  [0,1,2].forEach(i => {
+    const rePart = re * TIERS[i].val;
+    document.getElementById(`sc-re${i}`).textContent = BRL(rePart);
+    document.getElementById(`sc-c${i}`).textContent  = BRL(cPart);
+    document.getElementById(`sc-t${i}`).textContent  = BRL(rePart + cPart);
+    document.getElementById(`sc-t${i}`).style.color  = TIERS[i].color;
+    document.getElementById(`sc-row${i}`).classList.toggle('active-row', i === tierIdx);
+  });
+
+  // Referência: contratos necessários para subir de faixa
+  const c_para_f2  = re > 0 ? Math.ceil(re * 0.02)  : null;
+  const c_para_f3  = re > 0 ? Math.ceil(re * 0.035) : null;
+  document.getElementById('ref-f12').textContent = c_para_f2  !== null
+    ? `${N(c_para_f2)} contratos com ${N(re)} RE (falta ${Math.max(0,c_para_f2-contratos)})`  : '—';
+  document.getElementById('ref-f23').textContent = c_para_f3  !== null
+    ? `${N(c_para_f3)} contratos com ${N(re)} RE (falta ${Math.max(0,c_para_f3-contratos)})` : '—';
+}
+
+document.getElementById('sim-re').addEventListener('input', runSim);
+document.getElementById('sim-c').addEventListener('input', runSim);
+
+// Load pipedrive-data.json
+fetch('pipedrive-data.json?t=' + Date.now())
+  .then(r => { if (!r.ok) throw 0; return r.json(); })
+  .then(pd => applyData(pd))
+  .catch(() => {
+    document.getElementById('subtitle').innerHTML =
+      '<span style="color:var(--amber);">⚠ pipedrive-data.json não encontrado — exibindo estrutura com zeros. Execute o workflow para gerar os dados.</span>';
+    applyData(null);
+  });
+</script>
+</body>
+</html>
