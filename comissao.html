@@ -134,10 +134,53 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
 .ts { font-size: 11px; color: var(--dim); margin-top: 12px; }
 .err { color: var(--amber); font-size: 12px; padding: 10px; background: rgba(245,158,11,.07); border-radius: 6px; border: 1px solid rgba(245,158,11,.2); }
 
+/* ── Scroll wrapper para tabelas wide ───────────────────── */
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
 @media (max-width: 640px) {
-  .tier-row { flex-direction: column; }
-  .funil-row { grid-template-columns: 110px 1fr 36px; }
-  .sim-row { grid-template-columns: 1fr; }
+  body { padding: 12px 12px 32px; font-size: 14px; }
+
+  h1 { font-size: 18px; }
+  .subtitle { font-size: 12px; margin-bottom: 16px; }
+
+  .card { padding: 14px 12px; margin-bottom: 12px; border-radius: 8px; }
+  .card h2 { font-size: 11px; margin-bottom: 12px; padding-bottom: 8px; }
+
+  /* Números grandes — menores no mobile */
+  .big { font-size: 36px; }
+  .med { font-size: 24px; }
+
+  /* Bloco 1 — barra de progresso mais alta para toque */
+  .prog-track { height: 28px; border-radius: 8px; }
+
+  /* Bloco 2 — tier cards horizontais compactos */
+  .tier-row { gap: 6px; }
+  .tier-card { padding: 10px 6px; }
+  .tier-card .tc-label { font-size: 9px; }
+  .tier-card .tc-taxa  { font-size: 15px; }
+  .tier-card .tc-val   { font-size: 10px; }
+  .tier-card .tc-badge { font-size: 8px; padding: 2px 5px; top: -9px; }
+
+  /* Tabelas — scroll horizontal + fonte menor */
+  .comp-table, .ref-table {
+    font-size: 11px;
+    min-width: 420px;  /* força scroll quando necessário */
+  }
+  .comp-table th, .ref-table th { padding: 5px 6px; font-size: 9px; }
+  .comp-table td, .ref-table td { padding: 7px 6px; }
+
+  /* Funil */
+  .funil-row { grid-template-columns: 100px 1fr 32px; gap: 6px; }
+  .funil-bar-wrap { height: 12px; }
+  .funil-val { font-size: 11px; }
+
+  /* Simulador */
+  .sim-row { grid-template-columns: 1fr; gap: 10px; }
+  .sim-field input { font-size: 28px; padding: 10px 14px; border-radius: 8px; }
+  .sim-result { padding: 12px; }
+  .sim-result .sr-row { font-size: 13px; margin-bottom: 8px; }
+  .sim-result .sr-val { font-size: 16px; }
+  #sr-comissao { font-size: 26px !important; }
 }
 </style>
 </head>
@@ -209,7 +252,7 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
     <h2 style="--accent:var(--green);">Bloco 3 — Projeção de Comissão</h2>
     <div id="bloco3">
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Fórmula: RE × R$/RE + Contratos × R$100</div>
-      <table class="comp-table" id="b3-table">
+      <div class="tbl-scroll"><table class="comp-table" id="b3-table">
         <thead>
           <tr>
             <th>Faixa</th>
@@ -240,7 +283,7 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
             <td id="b3-re2">—</td><td id="b3-c2">—</td><td id="b3-t2" style="font-weight:700;">—</td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </div>
   </div>
 
@@ -261,7 +304,7 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
         </div>
       </div>
 
-      <table class="comp-table" id="b4-table">
+      <div class="tbl-scroll"><table class="comp-table" id="b4-table">
         <thead>
           <tr>
             <th>Faixa</th>
@@ -287,7 +330,7 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
             <td id="b4-falta2">—</td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </div>
   </div>
 
@@ -333,7 +376,7 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
     </div>
 
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Comparativo de todas as faixas</div>
-    <table class="comp-table" id="sim-comp-table">
+    <div class="tbl-scroll"><table class="comp-table" id="sim-comp-table">
       <thead>
         <tr>
           <th>Faixa</th>
@@ -348,10 +391,10 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
         <tr id="sc-row1"><td style="color:var(--amber);">Faixa 2</td><td style="color:var(--dim);">2 – 3,5%</td><td id="sc-re1">—</td><td id="sc-c1">—</td><td id="sc-t1" style="font-weight:700;">—</td></tr>
         <tr id="sc-row2"><td style="color:var(--green);">Faixa 3</td><td style="color:var(--dim);">≥ 3,5%</td><td id="sc-re2">—</td><td id="sc-c2">—</td><td id="sc-t2" style="font-weight:700;">—</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;">Tabela de referência — valor marginal</div>
-    <table class="ref-table">
+    <div class="tbl-scroll"><table class="ref-table">
       <thead>
         <tr>
           <th>Ação</th>
@@ -382,7 +425,7 @@ h1 { font-size: 20px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
           <td colspan="3" id="ref-f23" style="text-align:center;color:var(--green);">—</td>
         </tr>
       </tbody>
-    </table>
+    </table></div>
   </div>
 
   <div class="ts" id="ts-footer"></div>
