@@ -195,10 +195,10 @@ body {
 }
 
 /* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
-#col-c { display:flex; flex-direction:column; gap:4px; justify-content:flex-start; height:100%; min-height:0; }
-#col-c-products  { flex:0 0 auto; max-height:175px; overflow:hidden; }
-#col-c-negocios  { flex:0 0 auto; max-height:110px; overflow:hidden; }
-#col-c-ritmo     { flex:1; min-height:120px; overflow:hidden; }
+#col-c { display:flex; flex-direction:column; gap:3px; height:100%; min-height:0; }
+#col-c-products  { flex: 3 0 0; min-height:0; overflow:hidden; }
+#col-c-negocios  { flex: 2 0 0; min-height:0; overflow:hidden; }
+#col-c-ritmo     { flex: 3 0 0; min-height:0; overflow:hidden; }
 .inv-split { display:grid; grid-template-columns:1fr 1fr; gap:0 8px; height:100%; }
 .inv-col-hdr { font-size:9px; font-weight:700; letter-spacing:.07em; margin-bottom:4px; }
 .inv-row { display:grid; grid-template-columns:80px 1fr 22px; align-items:center; gap:4px; margin-bottom:3px; }
@@ -603,12 +603,12 @@ body {
 
     <div class="panel" id="col-c-negocios" style="--accent-color:#3b82f6">
       <div class="panel-title">Negócios Iniciados</div>
-      <div class="panel-body" id="neg-list"></div>
+      <div class="panel-body" id="neg-list" style="overflow-y:auto"></div>
     </div>
 
     <div class="panel" id="col-c-products" style="--accent-color:#a855f7">
       <div class="panel-title">CC1 Realizadas — Por Produto</div>
-      <div class="panel-body" id="prod-list"></div>
+      <div class="panel-body" id="prod-list" style="overflow-y:auto"></div>
     </div>
 
     <div class="panel" id="col-c-ritmo" style="--accent-color:#22c55e">
