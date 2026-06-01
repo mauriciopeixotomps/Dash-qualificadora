@@ -315,10 +315,16 @@ body {
 .perd-val { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; color:var(--red); }
 
 /* ── COL F — PACE + MOTIVOS + TAXA ───────────────────── */
-#col-f { display:flex; flex-direction:column; gap:4px; height:100%; overflow:hidden; min-height:0; }
-#col-f-meta     { flex:1; min-height:0; overflow:hidden; }
-#col-f-motivos  { flex:0 0 auto; overflow:hidden; }
-#col-f-perdidos { flex:0 0 auto; overflow:hidden; }
+#col-f {
+  display: grid;
+  grid-template-rows: 2fr 1fr 2fr;
+  gap: 3px;
+  height: 100%;
+  min-height: 0;
+}
+#col-f-meta     { min-height:0; overflow:hidden; }
+#col-f-motivos  { min-height:0; overflow:hidden; }
+#col-f-perdidos { min-height:0; overflow:hidden; }
 
 /* perda pós cc1 */
 .ppc1-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
@@ -434,16 +440,16 @@ body {
   .tbl { font-size: 11px; }
   .tbl td, .tbl th { padding: 3px 4px; }
 
-  /* Col F — pace + motivos + taxa */
+  /* Col F — mobile */
   #col-f {
     display: flex !important;
     flex-direction: column !important;
     gap: 8px;
     height: auto !important;
-    overflow: visible !important;
+    grid-template-rows: none !important;
   }
   #col-f-meta, #col-f-motivos, #col-f-perdidos {
-    flex: none !important;
+    min-height: auto !important;
     height: auto !important;
     overflow: visible !important;
   }
