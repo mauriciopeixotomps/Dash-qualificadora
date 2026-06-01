@@ -131,18 +131,30 @@ if not inv_df.empty:
         from collections import Counter as _Ctr
         sdr_inv = {str(k): int(v) for k, v in inv_df[col_inv_cri].dropna().value_counts().items()}
 
-# Leads por etiqueta (negócios iniciados por modelo)
-# Combina ag.xlsx (ativos/ganhos) + perdidos.xlsx para total iniciado por modelo
-leads_by_etiqueta = defaultdict(int)
-for fname in ('ag.xlsx', 'perdidos.xlsx'):
+# Leads por etiqueta — conta deals únicos por etiqueta usando todos os arquivos disponíveis
+# re_fut.xlsx é a melhor fonte no início do mês (50 reuniões agendadas, 1 por deal)
+_etq_seen = {}  # titulo → etiqueta (dedup por deal)
+for fname in ('re_fut.xlsx', 'ag.xlsx', 're.xlsx', 'ns.xlsx', 'qual.xlsx', 'perdidos.xlsx'):
     df_etq = load(fname)
-    if not df_etq.empty:
-        col_etq = next((c for c in df_etq.columns if 'etiqueta' in c.lower() or 'label' in c.lower()), None)
-        if col_etq:
-            for val, cnt in df_etq[col_etq].dropna().value_counts().items():
-                key = str(val).strip()
-                if key and key != 'nan':
-                    leads_by_etiqueta[key] += int(cnt)
+    if df_etq.empty: continue
+    col_etq = next((c for c in df_etq.columns if 'etiqueta' in c.lower() or 'label' in c.lower()), None)
+    col_tit = next((c for c in df_etq.columns if 'título' in c.lower() or 'nome' in c.lower()), None)
+    if not col_etq: continue
+    if col_tit:
+        for _, row in df_etq[[col_tit, col_etq]].dropna(subset=[col_etq]).iterrows():
+            tit = str(row[col_tit]).strip()
+            etq = str(row[col_etq]).strip()
+            if tit and etq and etq != 'nan' and tit not in _etq_seen:
+                _etq_seen[tit] = etq
+    else:
+        for val in df_etq[col_etq].dropna():
+            etq = str(val).strip()
+            if etq and etq != 'nan':
+                _etq_seen[etq + str(len(_etq_seen))] = etq  # sem título: conta direto
+
+leads_by_etiqueta = defaultdict(int)
+for etq in _etq_seen.values():
+    leads_by_etiqueta[etq] += 1
 leads_by_etiqueta = dict(leads_by_etiqueta)
 
 # Perdidos por motivo × produto
