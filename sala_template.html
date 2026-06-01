@@ -204,7 +204,7 @@ body {
 
 .prod-row {
   display: grid;
-  grid-template-columns: 110px 1fr 70px;
+  grid-template-columns: 110px 1fr 90px;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
@@ -214,7 +214,7 @@ body {
   font-size:10px; font-weight:600; text-transform:uppercase;
   letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.prod-bar-wrap   { background:#1e293b; border-radius:3px; height:10px; overflow:hidden; }
+.prod-bar-wrap   { background:#1e293b; border-radius:3px; height:8px; overflow:hidden; }
 .prod-bar-fill   { height:100%; border-radius:3px; transition:width .3s; }
 .prod-nums       { font-size:10px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .prod-sub        { font-size:8px; color:var(--muted); text-align:right; white-space:nowrap; }
@@ -854,9 +854,9 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
       <div class="prod-bar-wrap">
         <div class="prod-bar-fill" style="background:${p.color};width:${pc}%"></div>
       </div>
-      <div>
+      <div style="text-align:right;line-height:1.2">
         <div class="prod-nums" style="color:${p.color}">${re}<span style="color:var(--muted);font-size:9px"> /${p.meta}</span></div>
-        <div class="prod-sub">→${hoje} <span style="color:${faltaColor};font-weight:700">${faltaStr}</span></div>
+        <div style="font-size:8px;color:var(--muted)">→${hoje} <span style="color:${faltaColor};font-weight:700">${faltaStr}</span></div>
       </div>
     `;
     container.appendChild(row);
@@ -877,12 +877,12 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
   cardFranq.innerHTML = `
     <div class="prod-row" style="margin-bottom:0">
       <span class="prod-name" style="color:#22c55e;font-size:10px">▶ TOTAL FRANQUIA</span>
-      <div class="prod-bar-wrap" style="height:11px">
+      <div class="prod-bar-wrap" style="height:8px">
         <div class="prod-bar-fill" style="background:#22c55e;width:${pcFranq}%"></div>
       </div>
-      <div>
+      <div style="text-align:right;line-height:1.2">
         <div class="prod-nums" style="color:#22c55e">${totalFranq}<span style="color:var(--muted);font-size:9px"> /450</span></div>
-        <div class="prod-sub">→${hojeFranq} <span style="color:${fcColor};font-weight:700">${fcStr}</span></div>
+        <div style="font-size:8px;color:var(--muted)">→${hojeFranq} <span style="color:${fcColor};font-weight:700">${fcStr}</span></div>
       </div>
     </div>
   `;
@@ -903,9 +903,9 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
     <div class="prod-bar-wrap">
       <div class="prod-bar-fill" style="background:#a855f7;width:${pcGs}%"></div>
     </div>
-    <div>
+    <div style="text-align:right;line-height:1.2">
       <div class="prod-nums" style="color:#a855f7">${gsRe}<span style="color:var(--muted);font-size:9px"> /150</span></div>
-      <div class="prod-sub">→${hojeGs} <span style="color:${gcColor};font-weight:700">${gcStr}</span></div>
+      <div style="font-size:8px;color:var(--muted)">→${hojeGs} <span style="color:${gcColor};font-weight:700">${gcStr}</span></div>
     </div>
   `;
   container.appendChild(rowGs);
