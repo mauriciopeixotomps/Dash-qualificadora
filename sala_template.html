@@ -147,35 +147,43 @@ body {
 
 .rank-row {
   display: grid;
-  grid-template-columns: 86px 1fr 52px 28px;
+  grid-template-columns: 82px 1fr 46px 26px;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex-shrink: 0;
+  min-height: 0;
+  padding: 1px 0;
 }
-/* Apenas em painéis de row2: crescer para preencher o espaço */
-#sdr-list .rank-row,
-#closer-franquia .rank-row,
-#closer-partner .rank-row { flex: 1; min-height: 0; }
+/* Painéis de ranking: scroll vertical se necessário */
+#sdr-list,
+#closer-franquia,
+#closer-partner {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 .rank-name {
-  font-size:10px; font-weight:500;
+  font-size:9.5px; font-weight:500;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .bar-wrap {
-  position:relative; height:10px; background:#1e293b; border-radius:3px; overflow:visible;
+  position:relative; height:7px; background:#1e293b; border-radius:3px; overflow:visible;
 }
 .bar-real   { position:absolute; left:0; top:0; height:100%; border-radius:3px; }
 .bar-future { position:absolute; top:0; height:100%; opacity:.55; }
 .bar-pace-marker {
-  position:absolute; top:-2px; width:2px; height:14px;
+  position:absolute; top:-2px; width:2px; height:11px;
   background:var(--red); border-radius:1px; z-index:5;
 }
 .rank-nums {
   text-align:right;
-  line-height: 1.15;
+  line-height: 1.1;
 }
-.rank-re   { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; display:block; }
-.rank-sub  { font-size:8px; color:var(--muted); white-space:nowrap; }
-.rank-fut  { font-size:9px; color:var(--orange); text-align:right; white-space:nowrap; }
+.rank-re   { font-size:10px; font-weight:700; font-variant-numeric:tabular-nums; display:block; }
+.rank-sub  { font-size:7.5px; color:var(--muted); white-space:nowrap; }
+.rank-fut  { font-size:8px; color:var(--orange); text-align:right; white-space:nowrap; }
 
 /* ── GRUPO HEADER (closers Franquia/Partner) ─────────── */
 .group-hdr {
@@ -196,19 +204,19 @@ body {
 .inv-row { display:grid; grid-template-columns:80px 1fr 22px; align-items:center; gap:4px; margin-bottom:3px; }
 .inv-bar-wrap { background:#1e293b; border-radius:2px; height:8px; overflow:hidden; }
 .inv-bar-fill { height:100%; border-radius:2px; }
-.ritmo-row { display:grid; grid-template-columns:38px 62px 1fr 44px; align-items:center; gap:4px; margin-bottom:1px; }
-.ritmo-bar-wrap { position:relative; height:11px; background:#1e293b; border-radius:3px; overflow:hidden; }
+.ritmo-row { display:grid; grid-template-columns:36px 58px 1fr 42px; align-items:center; gap:3px; margin-bottom:1px; }
+.ritmo-bar-wrap { position:relative; height:9px; background:#1e293b; border-radius:3px; overflow:hidden; }
 .ritmo-bar      { position:absolute; left:0; top:0; height:100%; border-radius:3px; transition:width .3s; }
 .ritmo-bar-proj { position:absolute; left:0; top:0; height:100%; border-radius:3px;
                   background:repeating-linear-gradient(90deg,#166534 0,#166534 5px,transparent 5px,transparent 10px); }
 
 .prod-row {
   display: grid;
-  grid-template-columns: 110px 1fr 90px;
+  grid-template-columns: 105px 1fr 85px;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 .prod-name {
   font-size:10px; font-weight:600; text-transform:uppercase;
