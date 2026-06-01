@@ -195,10 +195,16 @@ body {
 }
 
 /* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
-#col-c { display:flex; flex-direction:column; gap:3px; height:100%; min-height:0; }
-#col-c-products  { flex: 3 0 0; min-height:0; overflow:hidden; }
-#col-c-negocios  { flex: 2 0 0; min-height:0; overflow:hidden; }
-#col-c-ritmo     { flex: 3 0 0; min-height:0; overflow:hidden; }
+#col-c {
+  display: grid;
+  grid-template-rows: 2fr 3fr 3fr;
+  gap: 3px;
+  height: 100%;
+  min-height: 0;
+}
+#col-c-products  { min-height:0; overflow:hidden; }
+#col-c-negocios  { min-height:0; overflow:hidden; }
+#col-c-ritmo     { min-height:0; overflow:hidden; }
 .inv-split { display:grid; grid-template-columns:1fr 1fr; gap:0 8px; height:100%; }
 .inv-col-hdr { font-size:9px; font-weight:700; letter-spacing:.07em; margin-bottom:4px; }
 .inv-row { display:grid; grid-template-columns:80px 1fr 22px; align-items:center; gap:4px; margin-bottom:3px; }
@@ -399,15 +405,16 @@ body {
     max-height: none !important;
   }
 
-  /* Col C — produtos, negócios, ritmo */
+  /* Col C — mobile: vira coluna vertical simples */
   #col-c {
     display: flex !important;
     flex-direction: column !important;
     gap: 8px;
     height: auto !important;
+    grid-template-rows: none !important;
   }
   #col-c-products, #col-c-negocios, #col-c-ritmo {
-    flex: none !important;
+    min-height: auto !important;
     height: auto !important;
     overflow: visible !important;
   }
