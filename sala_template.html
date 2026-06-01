@@ -38,7 +38,7 @@ html, body {
 
 body {
   display: grid;
-  grid-template-rows: 40px 62px 1.4fr 1fr;
+  grid-template-rows: 40px 62px 1.2fr 1.2fr;
   height: 100vh;
   overflow: hidden;
   gap: 0;
@@ -317,7 +317,7 @@ body {
 /* ── COL F — PACE + MOTIVOS + TAXA ───────────────────── */
 #col-f {
   display: grid;
-  grid-template-rows: 2fr 1fr 2fr;
+  grid-template-rows: 3fr 1fr 2fr;
   gap: 3px;
   height: 100%;
   min-height: 0;
@@ -1014,6 +1014,15 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
 (function renderPerdidos(){
   const pm = DS.perdidos_por_motivo || {};
   const container = $('perd-list');
+  // Oculta painel quando sem dados (início do mês)
+  if (!Object.keys(pm).length) {
+    const panel = document.getElementById('col-f-motivos');
+    if (panel) panel.style.display = 'none';
+    // Redistribui espaço: meta e perdidos dividem tudo
+    const colF = document.getElementById('col-f');
+    if (colF) colF.style.gridTemplateRows = '3fr 2fr';
+    return;
+  }
   const totals = Object.entries(pm).map(([motivo,produtos])=>{
     return [motivo, Object.values(produtos).reduce((s,v)=>s+(v||0),0)];
   }).sort((a,b)=>b[1]-a[1]);
