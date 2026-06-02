@@ -49,19 +49,30 @@ jobs:
                           raise
               raise RuntimeError(f"Falhou após {retries} tentativas: {url}")
 
-          def fetch_all(path, params):
-              """Pagina automaticamente e retorna todos os itens."""
+          def fetch_paged(path, params, stop_fn=None, max_pages=20):
+              """Pagina até max_pages ou até stop_fn retornar True num item."""
               items, start = [], 0
-              while True:
-                  r = api_get(path, {**params, 'limit': 500, 'start': start})
+              for page in range(max_pages):
+                  r = api_get(path, {**params, 'limit': 100, 'start': start})
                   batch = r.get('data') or []
-                  items.extend(batch)
+                  if not batch:
+                      break
+                  if stop_fn:
+                      keep = []
+                      for item in batch:
+                          if stop_fn(item):
+                              items.extend(keep)
+                              return items, True   # parou cedo
+                          keep.append(item)
+                      items.extend(keep)
+                  else:
+                      items.extend(batch)
                   more = (r.get('additional_data') or {}).get('pagination', {}).get('more_items_in_collection', False)
-                  if not more or not batch:
+                  if not more:
                       break
                   start += len(batch)
-                  print(f"  {path}: {len(items)} itens carregados...")
-              return items
+                  print(f"  {path}: {len(items)} itens...")
+              return items, False
 
           # ── Mês atual ──────────────────────────────────────────────
           today = date.today()
@@ -84,9 +95,14 @@ jobs:
           # ── Stages ─────────────────────────────────────────────────
           stage_map = {s['id']: s['name'] for s in (api_get('stages', {'pipeline_id': pipeline_id}).get('data') or [])}
 
-          # ── Contratos: busca só deals WON do mês ───────────────────
+          # ── Contratos: won do mês (ordena por won_time DESC, para ao sair do mês)
           print("Buscando contratos (won)...")
-          won_deals = fetch_all('deals', {'pipeline_id': pipeline_id, 'status': 'won'})
+          def before_month(d):
+              t = (d.get('won_time') or d.get('close_time') or '')[:7]
+              return bool(t) and t < mes
+          won_deals, _ = fetch_paged('deals',
+              {'pipeline_id': pipeline_id, 'status': 'won', 'sort': 'close_time DESC'},
+              stop_fn=before_month, max_pages=10)
           contratos_mes, contratos_por_dia = 0, {}
           for d in won_deals:
               won_date = (d.get('won_time') or d.get('close_time') or '')[:10]
@@ -95,20 +111,23 @@ jobs:
                   contratos_por_dia[won_date] = contratos_por_dia.get(won_date, 0) + 1
           print(f"Contratos no mês: {contratos_mes}")
 
-          # ── Funil: busca só deals OPEN ─────────────────────────────
+          # ── Funil: open deals (máx 20 páginas = 2000 deals)
           print("Buscando funil (open)...")
-          open_deals = fetch_all('deals', {'pipeline_id': pipeline_id, 'status': 'open'})
+          open_deals, _ = fetch_paged('deals',
+              {'pipeline_id': pipeline_id, 'status': 'open'}, max_pages=20)
           funil_franquia = {}
           for d in open_deals:
               stage = stage_map.get(d.get('stage_id'), 'Desconhecida')
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── Atividades do mês ──────────────────────────────────────
+          # ── Atividades do mês (máx 10 páginas = 1000 atividades)
           print("Buscando atividades...")
-          acts = fetch_all('activities', {'done': 1, 'start_date': month_start, 'end_date': month_end})
+          acts, _ = fetch_paged('activities',
+              {'done': 1, 'start_date': month_start, 'end_date': month_end}, max_pages=10)
           tipos_vistos = sorted({(a.get('type') or '').lower() for a in acts})
           print(f"Tipos encontrados: {tipos_vistos}")
+          print(f"Total atividades no período: {len(acts)}")
 
           franquia_ids = {d['id'] for d in won_deals + open_deals}
           reunioes_mes, reunioes_por_dia = 0, {}
