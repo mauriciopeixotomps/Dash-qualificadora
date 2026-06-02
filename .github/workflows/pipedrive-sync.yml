@@ -97,9 +97,13 @@ jobs:
                   stage_name = stage_map.get(deal.get('stage_id'), 'Desconhecida')
                   funil_franquia[stage_name] = funil_franquia.get(stage_name, 0) + 1
 
-          # ── Buscar atividades concluídas do mês ────────────────────
-          reunioes_mes    = 0
+          # ── IDs dos deals do pipeline de franquia ──────────────────
+          franquia_deal_ids = {d['id'] for d in deals}
+
+          # ── Buscar atividades concluídas do mês vinculadas ao pipeline
+          reunioes_mes     = 0
           reunioes_por_dia = {}
+          tipos_vistos     = set()
           start = 0
           while True:
               r = api_get('activities', {
@@ -111,17 +115,22 @@ jobs:
               })
               batch = r.get('data') or []
               for act in batch:
-                  act_type = (act.get('type') or '').lower()
-                  # aceita qualquer variação de "reunião" ou "meeting"
-                  if 'cc1' in act_type or 'reuni' in act_type or 'meeting' in act_type:
-                      act_date = (act.get('due_date') or '')[:10]
-                      if act_date.startswith(mes):
-                          reunioes_mes += 1
-                          reunioes_por_dia[act_date] = reunioes_por_dia.get(act_date, 0) + 1
+                  tipos_vistos.add((act.get('type') or '').lower())
+                  act_date  = (act.get('due_date') or '')[:10]
+                  deal_id   = act.get('deal_id')
+                  act_type  = (act.get('type') or '').lower()
+                  # Conta se: vinculada a deal do pipeline OU tipo contém cc1/reuni/meeting
+                  if act_date.startswith(mes) and (
+                      deal_id in franquia_deal_ids or
+                      'cc1' in act_type or 'reuni' in act_type or 'meeting' in act_type
+                  ):
+                      reunioes_mes += 1
+                      reunioes_por_dia[act_date] = reunioes_por_dia.get(act_date, 0) + 1
               more = (r.get('additional_data') or {}).get('pagination', {}).get('more_items_in_collection', False)
               if not more or not batch:
                   break
               start += len(batch)
+          print(f"Tipos de atividade vistos: {tipos_vistos}")
 
           # ── Taxa de conversão ───────────────────────────────────────
           taxa = round(contratos_mes / reunioes_mes * 100, 2) if reunioes_mes > 0 else 0.0
