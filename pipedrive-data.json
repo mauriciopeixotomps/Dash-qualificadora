@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-02T15:02:09Z",
+  "generated_at": "2026-06-02T17:25:14Z",
   "mes": "2026-06",
   "reunioes_mes": 0,
   "contratos_mes": 5,
@@ -10,15 +10,15 @@
   },
   "funil_franquia": {
     "Proposta": 17,
-    "Pré-Qualificação": 461,
-    "Desconhecida": 8813,
+    "Pré-Qualificação": 462,
+    "Desconhecida": 8803,
     "MQL FRANQUIA": 104,
-    "Em atendimento": 49,
+    "Em atendimento": 48,
     "SQL": 93,
-    "Oportunidade": 35,
+    "Oportunidade": 36,
     "Lead Franquia": 6,
     "Negociação": 12,
-    "Oportunidade Quente": 15
+    "Oportunidade Quente": 16
   },
   "pipeline_id": 42,
   "dias_uteis_decorridos": 2
