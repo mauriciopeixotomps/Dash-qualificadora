@@ -261,6 +261,11 @@ ns    = _filter_mes(ns)
 reag  = _filter_mes(reag) if '_due' in reag.columns else reag.iloc[0:0]
 inv   = _filter_mes(inv)
 
+# re_fut usa Data de vencimento (atividades futuras) — filtra ao mês corrente
+if not re_fut.empty and 'Atividade - Data de vencimento' in re_fut.columns:
+    _rf = pd.to_datetime(re_fut['Atividade - Data de vencimento'], errors='coerce').dt.date
+    re_fut = re_fut[(_rf >= MONTH_START) & (_rf <= MONTH_END)].copy()
+
 daily_leads = daily_count(deals, '_created')
 daily_lost  = daily_count(perdidos, '_lost')
 daily_qual = daily_count(qual, '_due')

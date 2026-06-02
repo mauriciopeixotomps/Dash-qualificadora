@@ -250,6 +250,23 @@ if not inv.empty and _mcf in inv.columns:
 elif not inv.empty and _due in inv.columns:
     inv['_due'] = pd.to_datetime(inv[_due], errors='coerce')
 
+# Filtra atividades ao mês corrente (fetch puxa Maio+Junho; cada dash conta só seu mês)
+def _filter_mes(df):
+    if df.empty or '_due' not in df.columns: return df
+    d = df['_due'].dt.date
+    return df[(d >= MONTH_START) & (d <= MONTH_END)].copy()
+
+qual = _filter_mes(qual)
+ag   = _filter_mes(ag)
+re_  = _filter_mes(re_)
+ns   = _filter_mes(ns)
+inv  = _filter_mes(inv)
+
+# re_fut usa Data de vencimento (atividades futuras) — filtra ao mês corrente
+if not re_fut.empty and 'Atividade - Data de vencimento' in re_fut.columns:
+    _rf = pd.to_datetime(re_fut['Atividade - Data de vencimento'], errors='coerce').dt.date
+    re_fut = re_fut[(_rf >= MONTH_START) & (_rf <= MONTH_END)].copy()
+
 daily_leads = daily_count(deals, '_created')
 daily_lost  = daily_count(perdidos, '_lost')
 daily_qual = daily_count(qual, '_due')
