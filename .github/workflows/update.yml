@@ -2,50 +2,39 @@ name: Atualiza Dashboard
 
 on:
   schedule:
-    # Seg–Sex: a cada 30 min, 08h–18h BRT (= 11h–21h UTC)
     - cron: '0,30 11-21 * * 1-5'
-    # Sábado: 18h BRT (= 21h UTC)
     - cron: '0 21 * * 6'
-  workflow_dispatch:   # permite disparo manual pela interface do GitHub
+  workflow_dispatch:
 
 permissions:
-  contents: write      # necessário para o push final
+  contents: write
 
 jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-
       - name: Instala dependências
         run: pip install pandas openpyxl
-
       - name: Fetch Pipedrive
         env:
           PIPEDRIVE_TOKEN: ${{ secrets.PIPEDRIVE_TOKEN }}
         run: python3 fetch_pipedrive.py
-
       - name: Build Maio 2026
         run: python3 build_from_xlsx_maio.py
-
       - name: Build Junho 2026
         run: python3 build_from_xlsx_junho.py
-
       - name: Build Sala TV — Maio
         run: python3 build_sala.py
-
       - name: Build Sala TV — Junho
         run: python3 build_sala_junho.py
-
       - name: Publica HTMLs no repo
         run: |
           cp publish/maio-2026.html  maio-2026.html
@@ -59,7 +48,7 @@ jobs:
             echo "= Sem mudanças, nada a comitar."
           else
             git commit -m "Auto-update $(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M BRT')"
-            git pull --rebase origin main || true
+            git pull --rebase --autostash origin main || true
             git push
             echo "✓ Dashboard atualizado"
           fi
