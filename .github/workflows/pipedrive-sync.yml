@@ -95,17 +95,20 @@ jobs:
           # ── Stages ─────────────────────────────────────────────────
           stage_map = {s['id']: s['name'] for s in (api_get('stages', {'pipeline_id': pipeline_id}).get('data') or [])}
 
-          # ── Tipo exato de "CC1 Realizada" na conta ─────────────────
-          act_types_resp = api_get('activityTypes')
+          # ── Tipo exato de "CC1 Realizada" — busca em activityTypes ──
           cc1_keys = set()
-          print("Tipos de atividade cadastrados:")
-          for at in (act_types_resp.get('data') or []):
-              key  = (at.get('key')  or '').lower()
-              name = (at.get('name') or '').lower()
-              print(f"  key={key} name={name}")
-              if 'cc1' in key or 'cc1' in name or 'realiz' in name:
-                  cc1_keys.add(key)
-          print(f"Chaves CC1 encontradas: {cc1_keys}")
+          try:
+              for at in (api_get('activityTypes').get('data') or []):
+                  key  = (at.get('key')  or '').lower()
+                  name = (at.get('name') or '').lower()
+                  print(f"  activityType: key={key} name={name}")
+                  if 'cc1' in key or 'cc1' in name or 'realiz' in name:
+                      cc1_keys.add(key)
+          except Exception as e:
+              print(f"activityTypes falhou: {e}")
+          # Fallback: 'meeting' é a chave padrão renomeada para CC1 Realizada
+          cc1_keys.update(['meeting', 'cc1_realizada', 'cc1'])
+          print(f"Chaves CC1 usadas: {cc1_keys}")
 
           # ── Contratos: won do mês (ordena por won_time DESC, para ao sair do mês)
           print("Buscando contratos (won)...")
@@ -133,29 +136,28 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── Atividades concluídas — mais recentes primeiro, para quando sair do mês
-          print("Buscando atividades (update_time DESC)...")
-          def before_mes_act(a):
-              done_at = (a.get('marked_as_done_time') or a.get('update_time') or '')[:7]
-              return bool(done_at) and done_at < mes
-          acts, _ = fetch_paged('activities',
-              {'done': 1, 'user_id': 0, 'sort': 'update_time DESC'},
-              stop_fn=before_mes_act, max_pages=20)
-          print(f"Atividades no/após o mês: {len(acts)}")
-          tipos_vistos = sorted({(a.get('type') or '').lower() for a in acts})
-          print(f"Tipos encontrados: {tipos_vistos}")
+          # ── Atividades CC1/meeting do mês — filtra por tipo e due_date DESC
+          print("Buscando atividades CC1 (due_date DESC)...")
+          def before_month_due(a):
+              due = (a.get('due_date') or '')[:7]
+              return bool(due) and due < mes
 
           franquia_ids = {d['id'] for d in won_deals + open_deals}
           reunioes_mes, reunioes_por_dia = 0, {}
-          for act in acts:
-              act_type = (act.get('type') or '').lower()
-              deal_id  = act.get('deal_id')
-              done_at  = (act.get('marked_as_done_time') or act.get('update_time') or '')[:10]
-              if not done_at.startswith(mes):
-                  continue
-              if deal_id in franquia_ids or act_type in cc1_keys or 'cc1' in act_type or 'meeting' in act_type:
-                  reunioes_mes += 1
-                  reunioes_por_dia[done_at] = reunioes_por_dia.get(done_at, 0) + 1
+
+          for type_key in cc1_keys:
+              acts, stopped = fetch_paged('activities',
+                  {'done': 1, 'type': type_key, 'sort': 'due_date DESC'},
+                  stop_fn=before_month_due, max_pages=10)
+              print(f"  tipo={type_key}: {len(acts)} atividades encontradas")
+              for act in acts:
+                  due = (act.get('due_date') or '')[:10]
+                  deal_id = act.get('deal_id')
+                  if not due.startswith(mes):
+                      continue
+                  if deal_id in franquia_ids:
+                      reunioes_mes += 1
+                      reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões no mês: {reunioes_mes}")
 
           # ── Taxa e dias úteis ───────────────────────────────────────
