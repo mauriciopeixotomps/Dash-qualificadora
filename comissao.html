@@ -456,7 +456,11 @@ function calcComissao(re, contratos, tierIdx) {
 let _re = 0, _contratos = 0, _taxa = 0;
 
 function applyData(pd) {
-  const re        = pd ? (pd.reunioes_mes        ?? 0) : 0;
+  // re_fq = reuniões Franquia (para cálculo da TAXA)
+  // re_total = reuniões toda a equipe (para cálculo da COMISSÃO)
+  const re_fq     = pd ? (pd.reunioes_franquia ?? pd.reunioes_mes ?? 0) : 0;
+  const re_total  = pd ? (pd.reunioes_total    ?? pd.reunioes_mes ?? 0) : 0;
+  const re        = re_total;  // base para comissão
   const contratos = pd ? (pd.contratos_mes       ?? 0) : 0;
   const taxa      = pd ? (pd.taxa_conversao_pct  ?? 0) : 0;
   const funil     = pd ? (pd.funil_franquia      || {}) : {};
@@ -496,7 +500,7 @@ function applyData(pd) {
   const tier    = TIERS[tierIdx];
   document.getElementById('b2-taxa').textContent = taxa.toFixed(2) + '%';
   document.getElementById('b2-taxa').style.color = tier.color;
-  document.getElementById('b2-detalhe').textContent = `${N(re)} reuniões · ${N(contratos)} contratos`;
+  document.getElementById('b2-detalhe').textContent = `${N(re_fq)} RE Franquia · ${N(re_total)} RE Total · ${N(contratos)} contratos`;
   document.getElementById('b2-faixa').textContent = tier.label;
   document.getElementById('b2-faixa').style.color = tier.color;
   document.getElementById('b2-valor').textContent = `R$ ${tier.val} por RE`;
@@ -527,10 +531,11 @@ function applyData(pd) {
   });
 
   // ── Bloco 4 ──────────────────────────────────────────────
-  const reProj = du > 0 ? Math.round(re / du * DU_TOT) : re;
+  // Bloco 4: usa RE Franquia para taxa e projeção de contratos
+  const reProj = du > 0 ? Math.round(re_fq / du * DU_TOT) : re_fq;
   document.getElementById('b4-re-proj').textContent = N(reProj);
   document.getElementById('b4-re-base').textContent =
-    du > 0 ? `${N(re)} RE em ${du} DU → ritmo: ${(re/du).toFixed(1)} RE/DU` : 'Dias úteis decorridos = 0';
+    du > 0 ? `${N(re_fq)} RE Franquia em ${du} DU → ritmo: ${(re_fq/du).toFixed(1)} RE/DU` : 'Dias úteis decorridos = 0';
   document.getElementById('b4-du').textContent = `${du} / ${DU_TOT}`;
 
   const paces = [
@@ -538,7 +543,7 @@ function applyData(pd) {
     { rate: 0.035, ids: ['b4-esp2-atual','b4-esp2-proj','b4-delta2','b4-falta2'] },
   ];
   paces.forEach(({ rate, ids }) => {
-    const espAtual = Math.ceil(re      * rate);
+    const espAtual = Math.ceil(re_fq   * rate);
     const espProj  = Math.ceil(reProj  * rate);
     const delta    = contratos - espAtual;
     const faltam   = Math.max(0, Math.ceil(re * rate) - contratos);

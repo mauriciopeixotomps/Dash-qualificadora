@@ -196,15 +196,22 @@ jobs:
           tipos_recentes = Counter((a.get('type') or '') for a in acts_recent if a.get('done'))
           print(f"Tipos em recents (done): {dict(tipos_recentes)}")
 
+          reunioes_total = 0   # todas as reuniões da equipe (Franquia + Partner)
           for act in acts_recent:
               if not act.get('done'): continue
               due      = (act.get('due_date') or '')[:10]
               user_id  = str(act.get('user_id') or act.get('assigned_to_user_id') or '')
               act_type = (act.get('type') or '').lower()
-              if due.startswith(mes) and user_id in franquia_user_ids and act_type == 'meeting':
+              if not (due.startswith(mes) and act_type == 'meeting'):
+                  continue
+              # Conta para o total geral
+              reunioes_total += 1
+              # Conta para Franquia (para cálculo da taxa)
+              if user_id in franquia_user_ids:
                   reunioes_mes += 1
                   reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões Franquia no mês: {reunioes_mes}")
+          print(f"Reuniões total equipe no mês: {reunioes_total}")
 
           # ── Taxa e dias úteis ───────────────────────────────────────
           taxa = round(contratos_mes / reunioes_mes * 100, 2) if reunioes_mes > 0 else 0.0
@@ -214,7 +221,9 @@ jobs:
           output = {
               'generated_at':          datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
               'mes':                   mes,
-              'reunioes_mes':          reunioes_mes,
+              'reunioes_franquia':     reunioes_mes,    # para cálculo da taxa
+              'reunioes_total':        reunioes_total,  # para cálculo da comissão
+              'reunioes_mes':          reunioes_mes,    # compat. retroativa
               'contratos_mes':         contratos_mes,
               'taxa_conversao_pct':    taxa,
               'reunioes_por_dia':      dict(sorted(reunioes_por_dia.items())),
@@ -225,7 +234,7 @@ jobs:
           }
           with open('pipedrive-data.json', 'w', encoding='utf-8') as f:
               json.dump(output, f, ensure_ascii=False, indent=2)
-          print(f"OK — {reunioes_mes} reuniões, {contratos_mes} contratos, {taxa}%")
+          print(f"OK — {reunioes_mes} RE-Franquia, {reunioes_total} RE-Total, {contratos_mes} contratos, {taxa}%")
           PYEOF
 
       - name: Commit & push pipedrive-data.json
