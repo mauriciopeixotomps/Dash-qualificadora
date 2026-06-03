@@ -158,23 +158,36 @@ jobs:
                   print(f"  Closer Franquia: {u['name']} (id={u['id']})")
           print(f"User IDs Franquia: {franquia_user_ids}")
 
-          # ── CC1 Realizadas — busca TODAS as meetings done, filtra no Python
-          print("Buscando TODAS as meetings concluídas...")
+          # ── Debug: quais tipos têm atividades em junho 2026? ──────────
+          print(f"Buscando TODAS atividades concluídas (sem filtro de tipo)...")
           reunioes_mes, reunioes_por_dia = 0, {}
 
-          acts, _ = fetch_paged('activities', {'type': 'meeting', 'done': 1}, max_pages=50)
-          print(f"Total meetings concluídas: {len(acts)}")
+          from collections import Counter, defaultdict
+          acts_all, _ = fetch_paged('activities', {'done': 1}, max_pages=50)
+          print(f"Total atividades concluídas: {len(acts_all)}")
 
-          # Debug: distribuição por mês
-          from collections import Counter
-          meses_dist = Counter((a.get('due_date') or '')[:7] for a in acts)
-          for m, c in sorted(meses_dist.items())[-6:]:
-              print(f"  {m}: {c} meetings")
+          # Tipos com due_date em junho
+          junho_por_tipo = defaultdict(int)
+          for a in acts_all:
+              if (a.get('due_date') or '').startswith(mes):
+                  junho_por_tipo[(a.get('type') or 'sem_tipo')] += 1
+          print(f"Tipos com due_date em {mes}: {dict(junho_por_tipo)}")
 
-          for act in acts:
+          # Distribuição dos últimos meses
+          meses_dist = Counter((a.get('due_date') or '')[:7] for a in acts_all)
+          for m, c in sorted(meses_dist.items())[-8:]:
+              print(f"  {m}: {c} atividades")
+
+          # Contagem final: tipo mais provável para CC1 Realizada em junho
+          cc1_junho_types = set(junho_por_tipo.keys())
+          print(f"Tipos candidatos para junho: {cc1_junho_types}")
+          for act in acts_all:
               due     = (act.get('due_date') or '')[:10]
               user_id = act.get('user_id') or act.get('assigned_to_user_id')
-              if due.startswith(mes) and user_id in franquia_user_ids:
+              act_type = (act.get('type') or '').lower()
+              if due.startswith(mes) and user_id in franquia_user_ids and (
+                  'cc1' in act_type or 'realiz' in act_type or act_type == 'meeting'
+              ):
                   reunioes_mes += 1
                   reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões Franquia no mês: {reunioes_mes}")
