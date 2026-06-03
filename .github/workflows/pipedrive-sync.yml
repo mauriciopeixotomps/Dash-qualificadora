@@ -158,18 +158,19 @@ jobs:
                   print(f"  Closer Franquia: {u['name']} (id={u['id']})")
           print(f"User IDs Franquia: {franquia_user_ids}")
 
-          # ── CC1 Realizadas — filtra por responsável da Franquia ────────
-          print("Buscando meetings CC1 Realizadas por id DESC...")
+          # ── CC1 Realizadas — busca TODAS as meetings done, filtra no Python
+          print("Buscando TODAS as meetings concluídas...")
           reunioes_mes, reunioes_por_dia = 0, {}
 
-          def before_month_meeting(a):
-              due = (a.get('due_date') or '')[:7]
-              return bool(due) and due < mes
+          acts, _ = fetch_paged('activities', {'type': 'meeting', 'done': 1}, max_pages=50)
+          print(f"Total meetings concluídas: {len(acts)}")
 
-          acts, _ = fetch_paged('activities',
-              {'type': 'meeting', 'done': 1, 'sort': 'id DESC'},
-              stop_fn=before_month_meeting, max_pages=20)
-          print(f"Meetings encontradas (mês atual+): {len(acts)}")
+          # Debug: distribuição por mês
+          from collections import Counter
+          meses_dist = Counter((a.get('due_date') or '')[:7] for a in acts)
+          for m, c in sorted(meses_dist.items())[-6:]:
+              print(f"  {m}: {c} meetings")
+
           for act in acts:
               due     = (act.get('due_date') or '')[:10]
               user_id = act.get('user_id') or act.get('assigned_to_user_id')
