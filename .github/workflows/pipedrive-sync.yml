@@ -29,11 +29,13 @@ jobs:
           API_TOKEN = os.environ['PIPEDRIVE_API_TOKEN']
           DOMAIN    = os.environ['PIPEDRIVE_COMPANY_DOMAIN'].strip().rstrip('/')
           BASE      = f'https://{DOMAIN}.pipedrive.com/api/v1'
+          BASE2     = f'https://{DOMAIN}.pipedrive.com/api/v2'
 
-          def api_get(path, params=None, retries=5):
+          def api_get(path, params=None, retries=5, v2=False):
               p = dict(params or {})
               p['api_token'] = API_TOKEN
-              url = f'{BASE}/{path}?' + urllib.parse.urlencode(p)
+              base = BASE2 if v2 else BASE
+              url = f'{base}/{path}?' + urllib.parse.urlencode(p)
               req = urllib.request.Request(url, headers={'Accept': 'application/json'})
               for attempt in range(retries):
                   try:
@@ -52,11 +54,11 @@ jobs:
                           raise
               raise RuntimeError(f"Falhou após {retries} tentativas")
 
-          def fetch_paged(path, params, stop_fn=None, max_pages=20):
+          def fetch_paged(path, params, stop_fn=None, max_pages=20, v2=False):
               """Pagina até max_pages ou até stop_fn retornar True num item."""
               items, start = [], 0
               for page in range(max_pages):
-                  r = api_get(path, {**params, 'limit': 100, 'start': start})
+                  r = api_get(path, {**params, 'limit': 100, 'start': start}, v2=v2)
                   batch = r.get('data') or []
                   if not batch:
                       break
@@ -158,36 +160,24 @@ jobs:
                   print(f"  Closer Franquia: {u['name']} (id={u['id']})")
           print(f"User IDs Franquia: {franquia_user_ids}")
 
-          # ── Debug: quais tipos têm atividades em junho 2026? ──────────
-          print(f"Buscando TODAS atividades concluídas (sem filtro de tipo)...")
+          # ── CC1 Realizadas via API v2 (suporta filtro de data real) ──
+          print(f"Buscando meetings via API v2 com filtro de data...")
           reunioes_mes, reunioes_por_dia = 0, {}
 
-          from collections import Counter, defaultdict
-          acts_all, _ = fetch_paged('activities', {'done': 1}, max_pages=50)
-          print(f"Total atividades concluídas: {len(acts_all)}")
+          acts_v2, _ = fetch_paged('activities', {
+              'done':         'true',
+              'type':         'meeting',
+              'due_date_gte': month_start,
+              'due_date_lte': month_end,
+          }, max_pages=20, v2=True)
+          print(f"Activities v2 encontradas: {len(acts_v2)}")
+          for a in acts_v2[:5]:
+              print(f"  v2 sample: due={a.get('due_date')} user={a.get('user_id')} in_franquia={a.get('user_id') in franquia_user_ids}")
 
-          # Tipos com due_date em junho
-          junho_por_tipo = defaultdict(int)
-          for a in acts_all:
-              if (a.get('due_date') or '').startswith(mes):
-                  junho_por_tipo[(a.get('type') or 'sem_tipo')] += 1
-          print(f"Tipos com due_date em {mes}: {dict(junho_por_tipo)}")
-
-          # Distribuição dos últimos meses
-          meses_dist = Counter((a.get('due_date') or '')[:7] for a in acts_all)
-          for m, c in sorted(meses_dist.items())[-8:]:
-              print(f"  {m}: {c} atividades")
-
-          # Contagem final: tipo mais provável para CC1 Realizada em junho
-          cc1_junho_types = set(junho_por_tipo.keys())
-          print(f"Tipos candidatos para junho: {cc1_junho_types}")
-          for act in acts_all:
+          for act in acts_v2:
               due     = (act.get('due_date') or '')[:10]
-              user_id = act.get('user_id') or act.get('assigned_to_user_id')
-              act_type = (act.get('type') or '').lower()
-              if due.startswith(mes) and user_id in franquia_user_ids and (
-                  'cc1' in act_type or 'realiz' in act_type or act_type == 'meeting'
-              ):
+              user_id = act.get('user_id') or act.get('owner_id')
+              if due.startswith(mes) and user_id in franquia_user_ids:
                   reunioes_mes += 1
                   reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões Franquia no mês: {reunioes_mes}")
