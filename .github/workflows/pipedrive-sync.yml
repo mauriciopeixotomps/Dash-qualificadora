@@ -160,24 +160,34 @@ jobs:
                   print(f"  Closer Franquia: {u['name']} (id={u['id']})")
           print(f"User IDs Franquia: {franquia_user_ids}")
 
-          # ── CC1 Realizadas via API v2 (suporta filtro de data real) ──
-          print(f"Buscando meetings via API v2 com filtro de data...")
+          # ── CC1 Realizadas via /recents — atividades modificadas desde 01/mês
+          print(f"Buscando atividades via /recents desde {month_start}...")
           reunioes_mes, reunioes_por_dia = 0, {}
 
-          acts_v2, _ = fetch_paged('activities', {
-              'done':         'true',
-              'type':         'meeting',
-              'due_date_gte': month_start,
-              'due_date_lte': month_end,
-          }, max_pages=20, v2=True)
-          print(f"Activities v2 encontradas: {len(acts_v2)}")
-          for a in acts_v2[:5]:
-              print(f"  v2 sample: due={a.get('due_date')} user={a.get('user_id')} in_franquia={a.get('user_id') in franquia_user_ids}")
+          recents, _ = fetch_paged('recents', {
+              'since_timestamp': f'{month_start} 00:00:00',
+              'items':           'activity',
+          }, max_pages=20)
+          print(f"Recents encontrados: {len(recents)}")
 
-          for act in acts_v2:
+          # /recents retorna {item_type, data:{...}}
+          acts_recent = []
+          for r in recents:
+              item = r.get('data') or r
+              if isinstance(item, dict):
+                  acts_recent.append(item)
+
+          from collections import Counter
+          tipos_recentes = Counter((a.get('type') or '') for a in acts_recent if a.get('done'))
+          print(f"Tipos em recents (done): {dict(tipos_recentes)}")
+
+          for act in acts_recent:
+              if not act.get('done'):
+                  continue
               due     = (act.get('due_date') or '')[:10]
-              user_id = act.get('user_id') or act.get('owner_id')
-              if due.startswith(mes) and user_id in franquia_user_ids:
+              user_id = act.get('user_id') or act.get('assigned_to_user_id')
+              act_type = (act.get('type') or '').lower()
+              if due.startswith(mes) and user_id in franquia_user_ids and act_type == 'meeting':
                   reunioes_mes += 1
                   reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões Franquia no mês: {reunioes_mes}")
