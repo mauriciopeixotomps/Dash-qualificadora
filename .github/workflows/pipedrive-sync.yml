@@ -142,26 +142,24 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── Atividades CC1/meeting do mês — filtra por tipo e due_date DESC
-          print("Buscando atividades CC1 (due_date DESC)...")
-          def before_month_due(a):
-              due = (a.get('due_date') or '')[:7]
-              return bool(due) and due < mes
-
+          # ── Atividades CC1 do mês — busca por due_date sem filtro done na API
+          print(f"Buscando atividades CC1 do mês {mes}...")
           franquia_ids = {d['id'] for d in won_deals + open_deals}
           reunioes_mes, reunioes_por_dia = 0, {}
 
           for type_key in cc1_keys:
-              acts, stopped = fetch_paged('activities',
-                  {'done': 1, 'type': type_key, 'sort': 'due_date DESC'},
-                  stop_fn=before_month_due, max_pages=10)
-              print(f"  tipo={type_key}: {len(acts)} atividades encontradas")
+              acts, _ = fetch_paged('activities', {
+                  'type':       type_key,
+                  'start_date': month_start,
+                  'end_date':   month_end,
+              }, max_pages=10)
+              print(f"  tipo={type_key}: {len(acts)} atividades no período")
               for act in acts:
-                  due = (act.get('due_date') or '')[:10]
-                  deal_id = act.get('deal_id')
-                  if not due.startswith(mes):
+                  if not act.get('done'):
                       continue
-                  if deal_id in franquia_ids:
+                  due     = (act.get('due_date') or '')[:10]
+                  deal_id = act.get('deal_id')
+                  if due.startswith(mes) and deal_id in franquia_ids:
                       reunioes_mes += 1
                       reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões no mês: {reunioes_mes}")
