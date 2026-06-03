@@ -1,12 +1,14 @@
 {
-  "generated_at": "2026-06-03T02:28:42Z",
+  "generated_at": "2026-06-03T02:31:38Z",
   "mes": "2026-06",
-  "reunioes_mes": 5,
+  "reunioes_mes": 38,
   "contratos_mes": 8,
-  "taxa_conversao_pct": 160.0,
+  "taxa_conversao_pct": 21.05,
   "reunioes_por_dia": {
-    "2026-06-01": 4,
-    "2026-06-05": 1
+    "2026-06-01": 19,
+    "2026-06-02": 17,
+    "2026-06-05": 1,
+    "2026-06-08": 1
   },
   "contratos_por_dia": {
     "2026-06-01": 5,
