@@ -220,8 +220,22 @@ def fetch_timeline(field_key, start_dt, days=31):
     return out
 
 def _fetch_open_won():
-    result = fetch_timeline('add_time', MONTH_START, days=61)  # Maio + Junho
-    print(f'   {len(result)} deals open+won criados em Maio+Junho (timeline)')
+    # A API do Pipedrive retorna 500 em janelas grandes (>~31 dias) no /deals/timeline.
+    # Busca mês a mês (31 dias cada) e junta, evitando o erro 500.
+    from datetime import date as _d
+    result = []
+    seen = set()
+    janelas = [
+        _d(2026, 5, 1),   # Maio
+        _d(2026, 6, 1),   # Junho
+    ]
+    for inicio in janelas:
+        parcial = fetch_timeline('add_time', inicio, days=31)
+        for deal in parcial:
+            if deal['id'] not in seen:
+                seen.add(deal['id'])
+                result.append(deal)
+    print(f'   {len(result)} deals open+won criados em Maio+Junho (timeline, 2 janelas)')
     return result
 
 def _fetch_lost():
