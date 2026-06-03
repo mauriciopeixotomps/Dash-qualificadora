@@ -167,7 +167,7 @@ jobs:
           recents, _ = fetch_paged('recents', {
               'since_timestamp': f'{month_start} 00:00:00',
               'items':           'activity',
-          }, max_pages=20)
+          }, max_pages=100)
           print(f"Recents encontrados: {len(recents)}")
 
           # /recents retorna {item_type, data:{...}}
