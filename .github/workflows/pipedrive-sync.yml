@@ -128,10 +128,12 @@ jobs:
               stop_fn=before_month, max_pages=10)
           contratos_mes, contratos_por_dia = 0, {}
           for d in won_deals:
-              won_date = (d.get('won_time') or d.get('close_time') or '')[:10]
+              # Usa SOMENTE won_time — close_time pode ser de outra data
+              won_date = (d.get('won_time') or '')[:10]
               if won_date.startswith(mes):
                   contratos_mes += 1
                   contratos_por_dia[won_date] = contratos_por_dia.get(won_date, 0) + 1
+                  print(f"  contrato: won_time={won_date} title={d.get('title','')[:40]}")
           print(f"Contratos no mês: {contratos_mes}")
 
           # ── Funil: open deals (máx 20 páginas = 2000 deals)
