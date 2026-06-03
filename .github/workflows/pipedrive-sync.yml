@@ -142,14 +142,22 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── CC1 Realizadas (type=meeting) — sem filtro de data na API
-          # start_date/end_date só funciona para done=0; filtramos tudo no Python
-          print(f"Buscando meetings (CC1 Realizadas) sem filtro de data...")
+          # ── CC1 Realizadas (type=meeting) — mais recentes primeiro, para no mês anterior
+          print(f"Buscando meetings (CC1 Realizadas) por id DESC...")
           franquia_ids = {d['id'] for d in won_deals + open_deals}
           reunioes_mes, reunioes_por_dia = 0, {}
 
-          acts, _ = fetch_paged('activities', {'type': 'meeting', 'done': 1}, max_pages=20)
-          print(f"Total meetings concluídas: {len(acts)}")
+          def before_month_meeting(a):
+              due = (a.get('due_date') or '')[:7]
+              return bool(due) and due < mes
+
+          acts, stopped = fetch_paged('activities',
+              {'type': 'meeting', 'done': 1, 'sort': 'id DESC'},
+              stop_fn=before_month_meeting, max_pages=20)
+          print(f"Meetings no mês ou posteriores: {len(acts)}")
+          # Debug: mostra sample das primeiras atividades
+          for a in acts[:5]:
+              print(f"  sample: due={a.get('due_date')} deal_id={a.get('deal_id')} in_franquia={a.get('deal_id') in franquia_ids}")
           for act in acts:
               due     = (act.get('due_date') or '')[:10]
               deal_id = act.get('deal_id')
