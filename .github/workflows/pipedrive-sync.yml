@@ -121,28 +121,27 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── Atividades concluídas (sem filtro de data — filtramos no Python)
-          print("Buscando atividades...")
-          acts, _ = fetch_paged('activities', {'done': 1, 'user_id': 0}, max_pages=15)
-          print(f"Total atividades concluídas: {len(acts)}")
-
-          # Mostra campos de data e tipos para debug
-          sample = acts[:3]
-          for a in sample:
-              print(f"  sample: type={a.get('type')} due={a.get('due_date')} done_at={a.get('marked_as_done_time')} update={a.get('update_time')}")
+          # ── Atividades concluídas — mais recentes primeiro, para quando sair do mês
+          print("Buscando atividades (update_time DESC)...")
+          def before_mes_act(a):
+              done_at = (a.get('marked_as_done_time') or a.get('update_time') or '')[:7]
+              return bool(done_at) and done_at < mes
+          acts, _ = fetch_paged('activities',
+              {'done': 1, 'user_id': 0, 'sort': 'update_time DESC'},
+              stop_fn=before_mes_act, max_pages=20)
+          print(f"Atividades no/após o mês: {len(acts)}")
           tipos_vistos = sorted({(a.get('type') or '').lower() for a in acts})
           print(f"Tipos encontrados: {tipos_vistos}")
 
           franquia_ids = {d['id'] for d in won_deals + open_deals}
           reunioes_mes, reunioes_por_dia = 0, {}
           for act in acts:
-              act_type  = (act.get('type') or '').lower()
-              deal_id   = act.get('deal_id')
-              # data de realização: tenta marked_as_done_time, depois due_date, depois update_time
-              done_at = (act.get('marked_as_done_time') or act.get('due_date') or act.get('update_time') or '')[:10]
+              act_type = (act.get('type') or '').lower()
+              deal_id  = act.get('deal_id')
+              done_at  = (act.get('marked_as_done_time') or act.get('update_time') or '')[:10]
               if not done_at.startswith(mes):
                   continue
-              if deal_id in franquia_ids or 'cc1' in act_type or 'reuni' in act_type or 'meeting' in act_type:
+              if deal_id in franquia_ids or 'meeting' in act_type or 'cc1' in act_type or 'reuni' in act_type:
                   reunioes_mes += 1
                   reunioes_por_dia[done_at] = reunioes_por_dia.get(done_at, 0) + 1
           print(f"Reuniões no mês: {reunioes_mes}")
