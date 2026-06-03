@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-03T02:47:16Z",
+  "generated_at": "2026-06-03T02:52:53Z",
   "mes": "2026-06",
   "reunioes_mes": 38,
-  "contratos_mes": 8,
-  "taxa_conversao_pct": 21.05,
+  "contratos_mes": 6,
+  "taxa_conversao_pct": 15.79,
   "reunioes_por_dia": {
     "2026-06-01": 19,
     "2026-06-02": 17,
@@ -11,7 +11,7 @@
     "2026-06-08": 1
   },
   "contratos_por_dia": {
-    "2026-06-01": 5,
+    "2026-06-01": 3,
     "2026-06-02": 3
   },
   "funil_franquia": {
