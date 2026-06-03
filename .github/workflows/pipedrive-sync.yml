@@ -121,25 +121,30 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── Atividades do mês (máx 10 páginas = 1000 atividades)
+          # ── Atividades concluídas (sem filtro de data — filtramos no Python)
           print("Buscando atividades...")
-          acts, _ = fetch_paged('activities',
-              {'done': 1, 'start_date': month_start, 'end_date': month_end}, max_pages=10)
+          acts, _ = fetch_paged('activities', {'done': 1, 'user_id': 0}, max_pages=15)
+          print(f"Total atividades concluídas: {len(acts)}")
+
+          # Mostra campos de data e tipos para debug
+          sample = acts[:3]
+          for a in sample:
+              print(f"  sample: type={a.get('type')} due={a.get('due_date')} done_at={a.get('marked_as_done_time')} update={a.get('update_time')}")
           tipos_vistos = sorted({(a.get('type') or '').lower() for a in acts})
           print(f"Tipos encontrados: {tipos_vistos}")
-          print(f"Total atividades no período: {len(acts)}")
 
           franquia_ids = {d['id'] for d in won_deals + open_deals}
           reunioes_mes, reunioes_por_dia = 0, {}
           for act in acts:
-              act_type = (act.get('type') or '').lower()
-              act_date = (act.get('due_date') or '')[:10]
-              deal_id  = act.get('deal_id')
-              if not act_date.startswith(mes):
+              act_type  = (act.get('type') or '').lower()
+              deal_id   = act.get('deal_id')
+              # data de realização: tenta marked_as_done_time, depois due_date, depois update_time
+              done_at = (act.get('marked_as_done_time') or act.get('due_date') or act.get('update_time') or '')[:10]
+              if not done_at.startswith(mes):
                   continue
               if deal_id in franquia_ids or 'cc1' in act_type or 'reuni' in act_type or 'meeting' in act_type:
                   reunioes_mes += 1
-                  reunioes_por_dia[act_date] = reunioes_por_dia.get(act_date, 0) + 1
+                  reunioes_por_dia[done_at] = reunioes_por_dia.get(done_at, 0) + 1
           print(f"Reuniões no mês: {reunioes_mes}")
 
           # ── Taxa e dias úteis ───────────────────────────────────────
