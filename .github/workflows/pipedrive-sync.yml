@@ -133,12 +133,20 @@ jobs:
               stop_fn=before_month, max_pages=10)
           contratos_mes, contratos_por_dia = 0, {}
           for d in won_deals:
-              # Usa SOMENTE won_time — close_time pode ser de outra data
-              won_date = (d.get('won_time') or '')[:10]
+              wt = d.get('won_time') or ''
+              if not wt:
+                  continue
+              # Converte won_time UTC → horário de Brasília (UTC-3)
+              try:
+                  from datetime import timezone
+                  dt_utc = datetime.strptime(wt[:19], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+                  dt_br  = dt_utc - timedelta(hours=3)
+                  won_date = dt_br.strftime('%Y-%m-%d')
+              except Exception:
+                  won_date = wt[:10]
               if won_date.startswith(mes):
                   contratos_mes += 1
                   contratos_por_dia[won_date] = contratos_por_dia.get(won_date, 0) + 1
-                  print(f"  contrato: won_time={won_date} title={d.get('title','')[:40]}")
           print(f"Contratos no mês: {contratos_mes}")
 
           # ── Funil: open deals (máx 20 páginas = 2000 deals)
