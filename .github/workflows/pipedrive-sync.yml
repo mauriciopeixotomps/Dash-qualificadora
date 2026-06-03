@@ -142,26 +142,38 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── CC1 Realizadas (type=meeting) — mais recentes primeiro, para no mês anterior
-          print(f"Buscando meetings (CC1 Realizadas) por id DESC...")
-          franquia_ids = {d['id'] for d in won_deals + open_deals}
+          # ── Closers da Franquia — busca por nome via /users ───────────
+          FRANQUIA_CLOSERS = {
+              'adalberto neto', 'bruna salazar', 'felippe porcella', 'fred',
+              'gabriel meneses', 'leonardo ribeiro', 'lorenzo coronel',
+              'samuel brião', 'suzanny mauren dihelem', 'thuany ghabril',
+              'william dias', 'émerson cavitchoni', 'emerson cavitchoni',
+          }
+          users_resp = api_get('users')
+          franquia_user_ids = set()
+          for u in (users_resp.get('data') or []):
+              name = (u.get('name') or '').lower().strip()
+              if any(c in name for c in FRANQUIA_CLOSERS) or name in FRANQUIA_CLOSERS:
+                  franquia_user_ids.add(u['id'])
+                  print(f"  Closer Franquia: {u['name']} (id={u['id']})")
+          print(f"User IDs Franquia: {franquia_user_ids}")
+
+          # ── CC1 Realizadas — filtra por responsável da Franquia ────────
+          print("Buscando meetings CC1 Realizadas por id DESC...")
           reunioes_mes, reunioes_por_dia = 0, {}
 
           def before_month_meeting(a):
               due = (a.get('due_date') or '')[:7]
               return bool(due) and due < mes
 
-          acts, stopped = fetch_paged('activities',
+          acts, _ = fetch_paged('activities',
               {'type': 'meeting', 'done': 1, 'sort': 'id DESC'},
               stop_fn=before_month_meeting, max_pages=20)
-          print(f"Meetings no mês ou posteriores: {len(acts)}")
-          # Debug: mostra sample das primeiras atividades
-          for a in acts[:5]:
-              print(f"  sample: due={a.get('due_date')} deal_id={a.get('deal_id')} in_franquia={a.get('deal_id') in franquia_ids}")
+          print(f"Meetings encontradas (mês atual+): {len(acts)}")
           for act in acts:
               due     = (act.get('due_date') or '')[:10]
-              deal_id = act.get('deal_id')
-              if due.startswith(mes) and deal_id in franquia_ids:
+              user_id = act.get('user_id') or act.get('assigned_to_user_id')
+              if due.startswith(mes) and user_id in franquia_user_ids:
                   reunioes_mes += 1
                   reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões Franquia no mês: {reunioes_mes}")
