@@ -86,13 +86,18 @@ jobs:
           last_day = (date(today.year, today.month % 12 + 1, 1) - timedelta(days=1)) if today.month < 12 else date(today.year, 12, 31)
           month_end = last_day.strftime('%Y-%m-%d')
 
-          # ── Pipeline de franquia ────────────────────────────────────
+          # ── Listar TODOS os pipelines ───────────────────────────────
           resp = api_get('pipelines')
+          print("Todos os pipelines:")
+          for pl in (resp.get('data') or []):
+              print(f"  id={pl['id']} name={pl['name']}")
+
+          # ── Pipeline de franquia ────────────────────────────────────
           pipeline_id = None
           for pl in (resp.get('data') or []):
               if any(k in pl['name'].lower() for k in ('franquia', 'expansao', 'expansão')):
                   pipeline_id = pl['id']
-                  print(f"Pipeline: {pl['name']} (id={pipeline_id})")
+                  print(f"Pipeline selecionado: {pl['name']} (id={pipeline_id})")
                   break
           if not pipeline_id:
               raise SystemExit("Pipeline de franquia não encontrado!")
