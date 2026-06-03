@@ -99,17 +99,21 @@ jobs:
           stage_map = {s['id']: s['name'] for s in (api_get('stages', {'pipeline_id': pipeline_id}).get('data') or [])}
 
           # ── Tipo "CC1 Realizada" — descobre a chave correta ──────────
-          cc1_keys = []
+          all_types = {}
           for at in (api_get('activityTypes').get('data') or []):
-              # Pipedrive usa 'key_string' como campo da chave
               key  = (at.get('key_string') or at.get('key') or '').lower()
               name = (at.get('name') or '').lower()
-              print(f"  activityType: key={key} name={name}")
-              if 'cc1' in key or 'cc1' in name or 'realiz' in name or key == 'meeting':
-                  cc1_keys.append(key)
+              print(f"  ALL_TYPE: key={repr(key)} name={repr(name)}")
+              if key:
+                  all_types[key] = name
+          # Encontra a chave da "CC1 Realizada"
+          cc1_keys = [k for k, n in all_types.items()
+                      if 'cc1' in k or 'cc1' in n or ('realiz' in n and 'cc1' in n)]
+          if not cc1_keys:
+              # fallback: qualquer tipo com "realizada" no nome que seja cc
+              cc1_keys = [k for k, n in all_types.items() if 'realiz' in n]
           if not cc1_keys:
               cc1_keys = ['meeting']
-          cc1_keys = [k for k in cc1_keys if k]  # remove strings vazias
           print(f"Chaves CC1 usadas: {cc1_keys}")
 
           # ── Contratos: won do mês (ordena por won_time DESC, para ao sair do mês)
