@@ -95,6 +95,18 @@ jobs:
           # ── Stages ─────────────────────────────────────────────────
           stage_map = {s['id']: s['name'] for s in (api_get('stages', {'pipeline_id': pipeline_id}).get('data') or [])}
 
+          # ── Tipo exato de "CC1 Realizada" na conta ─────────────────
+          act_types_resp = api_get('activityTypes')
+          cc1_keys = set()
+          print("Tipos de atividade cadastrados:")
+          for at in (act_types_resp.get('data') or []):
+              key  = (at.get('key')  or '').lower()
+              name = (at.get('name') or '').lower()
+              print(f"  key={key} name={name}")
+              if 'cc1' in key or 'cc1' in name or 'realiz' in name:
+                  cc1_keys.add(key)
+          print(f"Chaves CC1 encontradas: {cc1_keys}")
+
           # ── Contratos: won do mês (ordena por won_time DESC, para ao sair do mês)
           print("Buscando contratos (won)...")
           def before_month(d):
@@ -141,7 +153,7 @@ jobs:
               done_at  = (act.get('marked_as_done_time') or act.get('update_time') or '')[:10]
               if not done_at.startswith(mes):
                   continue
-              if deal_id in franquia_ids or 'meeting' in act_type or 'cc1' in act_type or 'reuni' in act_type:
+              if deal_id in franquia_ids or act_type in cc1_keys or 'cc1' in act_type or 'meeting' in act_type:
                   reunioes_mes += 1
                   reunioes_por_dia[done_at] = reunioes_por_dia.get(done_at, 0) + 1
           print(f"Reuniões no mês: {reunioes_mes}")
