@@ -181,11 +181,21 @@ jobs:
           tipos_recentes = Counter((a.get('type') or '') for a in acts_recent if a.get('done'))
           print(f"Tipos em recents (done): {dict(tipos_recentes)}")
 
+          # Debug: total meetings done em junho (sem filtro de user)
+          total_junho_meetings = 0
           for act in acts_recent:
-              if not act.get('done'):
-                  continue
-              due     = (act.get('due_date') or '')[:10]
-              user_id = act.get('user_id') or act.get('assigned_to_user_id')
+              if not act.get('done'): continue
+              due = (act.get('due_date') or '')[:10]
+              if due.startswith(mes) and (act.get('type') or '') == 'meeting':
+                  total_junho_meetings += 1
+                  uid = act.get('user_id')
+                  print(f"  meeting junho: due={due} user_id={uid} in_franquia={uid in franquia_user_ids}")
+          print(f"Total meetings junho (todos users): {total_junho_meetings}")
+
+          for act in acts_recent:
+              if not act.get('done'): continue
+              due      = (act.get('due_date') or '')[:10]
+              user_id  = act.get('user_id') or act.get('assigned_to_user_id')
               act_type = (act.get('type') or '').lower()
               if due.startswith(mes) and user_id in franquia_user_ids and act_type == 'meeting':
                   reunioes_mes += 1
