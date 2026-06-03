@@ -142,27 +142,21 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── Atividades CC1 do mês — busca por due_date sem filtro done na API
-          print(f"Buscando atividades CC1 do mês {mes}...")
+          # ── CC1 Realizadas (type=meeting) — sem filtro de data na API
+          # start_date/end_date só funciona para done=0; filtramos tudo no Python
+          print(f"Buscando meetings (CC1 Realizadas) sem filtro de data...")
           franquia_ids = {d['id'] for d in won_deals + open_deals}
           reunioes_mes, reunioes_por_dia = 0, {}
 
-          for type_key in cc1_keys:
-              acts, _ = fetch_paged('activities', {
-                  'type':       type_key,
-                  'start_date': month_start,
-                  'end_date':   month_end,
-              }, max_pages=10)
-              print(f"  tipo={type_key}: {len(acts)} atividades no período")
-              for act in acts:
-                  if not act.get('done'):
-                      continue
-                  due     = (act.get('due_date') or '')[:10]
-                  deal_id = act.get('deal_id')
-                  if due.startswith(mes) and deal_id in franquia_ids:
-                      reunioes_mes += 1
-                      reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
-          print(f"Reuniões no mês: {reunioes_mes}")
+          acts, _ = fetch_paged('activities', {'type': 'meeting', 'done': 1}, max_pages=20)
+          print(f"Total meetings concluídas: {len(acts)}")
+          for act in acts:
+              due     = (act.get('due_date') or '')[:10]
+              deal_id = act.get('deal_id')
+              if due.startswith(mes) and deal_id in franquia_ids:
+                  reunioes_mes += 1
+                  reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
+          print(f"Reuniões Franquia no mês: {reunioes_mes}")
 
           # ── Taxa e dias úteis ───────────────────────────────────────
           taxa = round(contratos_mes / reunioes_mes * 100, 2) if reunioes_mes > 0 else 0.0
