@@ -133,10 +133,11 @@ jobs:
           users_resp = api_get('users')
           franquia_user_ids = set()
           for u in (users_resp.get('data') or []):
-              name = (u.get('name') or '').lower().strip()
-              if any(c in name for c in FRANQUIA_CLOSERS) or name in FRANQUIA_CLOSERS:
-                  franquia_user_ids.add(u['id'])
-                  print(f"  Closer Franquia: {u['name']} (id={u['id']})")
+              name = str(u.get('name') or '').lower().strip()
+              uid  = u.get('id')
+              if uid and (any(c in name for c in FRANQUIA_CLOSERS) or name in FRANQUIA_CLOSERS):
+                  franquia_user_ids.add(str(uid))
+                  print(f"  Closer Franquia: {u['name']} (id={uid})")
           print(f"User IDs Franquia: {franquia_user_ids}")
 
           # ── Contratos: won do mês pelo closer da Franquia ─────────────
@@ -151,7 +152,7 @@ jobs:
           from datetime import timezone as _tz
           for d in won_deals:
               wt       = d.get('won_time') or ''
-              owner_id = d.get('user_id') or d.get('owner_id')
+              owner_id = str(d.get('user_id') or d.get('owner_id') or '')
               if not wt:
                   continue
               try:
@@ -198,7 +199,7 @@ jobs:
           for act in acts_recent:
               if not act.get('done'): continue
               due      = (act.get('due_date') or '')[:10]
-              user_id  = act.get('user_id') or act.get('assigned_to_user_id')
+              user_id  = str(act.get('user_id') or act.get('assigned_to_user_id') or '')
               act_type = (act.get('type') or '').lower()
               if due.startswith(mes) and user_id in franquia_user_ids and act_type == 'meeting':
                   reunioes_mes += 1
