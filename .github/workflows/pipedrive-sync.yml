@@ -101,13 +101,15 @@ jobs:
           # ── Tipo "CC1 Realizada" — descobre a chave correta ──────────
           cc1_keys = []
           for at in (api_get('activityTypes').get('data') or []):
-              key  = (at.get('key')  or '').lower()
+              # Pipedrive usa 'key_string' como campo da chave
+              key  = (at.get('key_string') or at.get('key') or '').lower()
               name = (at.get('name') or '').lower()
               print(f"  activityType: key={key} name={name}")
               if 'cc1' in key or 'cc1' in name or 'realiz' in name or key == 'meeting':
                   cc1_keys.append(key)
           if not cc1_keys:
               cc1_keys = ['meeting']
+          cc1_keys = [k for k in cc1_keys if k]  # remove strings vazias
           print(f"Chaves CC1 usadas: {cc1_keys}")
 
           # ── Contratos: won do mês (ordena por won_time DESC, para ao sair do mês)
