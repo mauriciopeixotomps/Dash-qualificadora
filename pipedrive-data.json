@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T23:48:39Z",
+  "generated_at": "2026-06-04T04:26:28Z",
   "mes": "2026-06",
   "reunioes_franquia": 51,
   "reunioes_total": 137,
@@ -22,8 +22,9 @@
     "SQL": 28,
     "Oportunidade": 13,
     "Negociação": 5,
-    "Oportunidade Quente": 5
+    "Oportunidade Quente": 4,
+    "Pré-Qualificação": 1
   },
   "pipeline_id": 42,
-  "dias_uteis_decorridos": 3
+  "dias_uteis_decorridos": 4
 }
