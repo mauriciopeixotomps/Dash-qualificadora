@@ -530,42 +530,68 @@ def keep_ns(a):
     if criador in EXCLUDE_USERS: return False
     return True
 
-# Enriquece deal_by_id com deals de Março e Abril (janela ampla)
-print('→ Enriquecendo deal_by_id com deals de Mar-Abr...')
-start_month = date(2026, 3, 1)
-extra = fetch_timeline('add_time', start_month, days=61)
-added = 0
-for d in extra:
-    if d['id'] not in deal_by_id:
-        deal_by_id[d['id']] = d
-        added += 1
-print(f'   +{added} deals de Abril | total deal_by_id: {len(deal_by_id)}')
+# Enriquece deal_by_id com TODOS os deals open/won via paginação em lote (500/página).
+# (lost já foi buscado integralmente por _fetch_lost). Substitui as ~4.000 chamadas
+# individuais que estouravam o rate limit (429) do Pipedrive — agora são ~20-40 páginas.
+print('→ Buscando deals open/won em lote (paginado) para completar deal_by_id...')
 
-# Ainda faltam? Busca por ID individual (sem limite — garante funil correto para todas as atividades)
+def _fetch_deals_bulk(status):
+    out = []
+    start = 0
+    while True:
+        params = {'api_token': TOKEN, 'status': status, 'limit': 500, 'start': start,
+                  'sort': 'add_time DESC'}
+        url = f'{BASE}/deals?' + urllib.parse.urlencode(params)
+        body = None
+        for attempt in range(6):
+            try:
+                with urllib.request.urlopen(url, timeout=120) as r:
+                    body = json.loads(r.read())
+                break
+            except Exception as exc:
+                if attempt == 5: raise
+                wait = 10 * (attempt + 1)
+                print(f'     ⚠️  bulk {status} erro (tentativa {attempt+1}), esperando {wait}s... [{exc}]')
+                time.sleep(wait)
+        data = body.get('data') or []
+        out.extend(data)
+        pag = (body.get('additional_data') or {}).get('pagination') or {}
+        if not pag.get('more_items_in_collection'): break
+        start = pag.get('next_start', start + 500)
+    return out
+
+bulk_added = 0
+for status in ('open', 'won'):
+    for d in _fetch_deals_bulk(status):
+        if d['id'] not in deal_by_id:
+            deal_by_id[d['id']] = d
+            bulk_added += 1
+print(f'   +{bulk_added} deals via lote | total deal_by_id: {len(deal_by_id)}')
+
+# Fallback: deals ainda faltando (raro) — busca individual só dos remanescentes
 missing_deal_ids = {a.get('deal_id') for a in acts_raw if a.get('deal_id') and a.get('deal_id') not in deal_by_id}
 missing_deal_ids.discard(None)
-print(f'→ Faltam {len(missing_deal_ids)} deals (busca individual, todos)...')
-
-def _fetch_deal(did):
-    url = f'{BASE}/deals/{did}?api_token={TOKEN}'
-    for attempt in range(3):
-        try:
-            with urllib.request.urlopen(url, timeout=20) as r:
-                body = json.loads(r.read())
-            return did, body.get('data')
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
-                time.sleep(2 * (attempt + 1))
-                continue
-            return did, None
-        except Exception:
-            return did, None
-    return did, None
-
-with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-    for did, d in executor.map(_fetch_deal, list(missing_deal_ids)):
-        if d:
-            deal_by_id[did] = d
+if missing_deal_ids:
+    print(f'→ Fallback: {len(missing_deal_ids)} deals restantes (busca individual)...')
+    def _fetch_deal(did):
+        url = f'{BASE}/deals/{did}?api_token={TOKEN}'
+        for attempt in range(3):
+            try:
+                with urllib.request.urlopen(url, timeout=20) as r:
+                    body = json.loads(r.read())
+                return did, body.get('data')
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                return did, None
+            except Exception:
+                return did, None
+        return did, None
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        for did, d in executor.map(_fetch_deal, list(missing_deal_ids)):
+            if d:
+                deal_by_id[did] = d
 print(f'   ✓ deal_by_id total: {len(deal_by_id)} deals')
 
 # Aplica filtros por tipo (depois que deal_by_id está completo)
