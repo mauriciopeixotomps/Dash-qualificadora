@@ -190,42 +190,46 @@ jobs:
               funil_franquia[stage] = funil_franquia.get(stage, 0) + 1
           print(f"Deals em aberto: {sum(funil_franquia.values())}")
 
-          # ── CC1 Realizadas via /recents — atividades modificadas desde 01/mês
-          print(f"Buscando atividades via /recents desde {month_start}...")
+          # ── CC1 Realizadas — busca por user_id (preciso e sem limite de recents)
+          print(f"Buscando meetings por user_id (done, tipo=meeting)...")
           reunioes_mes, reunioes_por_dia = 0, {}
+          reunioes_total = 0
 
-          recents, _ = fetch_paged('recents', {
-              'since_timestamp': f'{month_start} 00:00:00',
-              'items':           'activity',
-          }, max_pages=100)
-          print(f"Recents encontrados: {len(recents)}")
+          # Todos os user IDs da conta (para contar total da equipe)
+          all_user_ids = [str(u['id']) for u in (users_resp.get('data') or []) if u.get('id')]
 
-          # /recents retorna {item_type, data:{...}}
-          acts_recent = []
-          for r in recents:
-              item = r.get('data') or r
-              if isinstance(item, dict):
-                  acts_recent.append(item)
+          def get_meetings_for_user(uid):
+              """Retorna meetings concluídas do mês para um user_id."""
+              acts, _ = fetch_paged('activities', {
+                  'user_id': uid,
+                  'type':    'meeting',
+                  'done':    1,
+              }, max_pages=30)
+              result = []
+              for a in acts:
+                  due = (a.get('due_date') or '')[:10]
+                  if due.startswith(mes):
+                      result.append(a)
+              return result
 
-          from collections import Counter
-          tipos_recentes = Counter((a.get('type') or '') for a in acts_recent if a.get('done'))
-          print(f"Tipos em recents (done): {dict(tipos_recentes)}")
-
-          reunioes_total = 0   # todas as reuniões da equipe (Franquia + Partner)
-          for act in acts_recent:
-              if not act.get('done'): continue
-              due      = (act.get('due_date') or '')[:10]
-              user_id  = str(act.get('user_id') or act.get('assigned_to_user_id') or '')
-              act_type = (act.get('type') or '').lower()
-              if not (due.startswith(mes) and act_type == 'meeting'):
-                  continue
-              # Conta para o total geral
-              reunioes_total += 1
-              # Conta para Franquia (para cálculo da taxa)
-              if user_id in franquia_user_ids:
+          # Conta meetings Franquia
+          for uid in franquia_user_ids:
+              user_acts = get_meetings_for_user(uid)
+              for act in user_acts:
+                  due = (act.get('due_date') or '')[:10]
                   reunioes_mes += 1
                   reunioes_por_dia[due] = reunioes_por_dia.get(due, 0) + 1
           print(f"Reuniões Franquia no mês: {reunioes_mes}")
+
+          # Conta total (todos os users com meetings no mês)
+          seen_ids = set()
+          for uid in all_user_ids:
+              user_acts = get_meetings_for_user(uid)
+              for act in user_acts:
+                  act_id = act.get('id')
+                  if act_id and act_id not in seen_ids:
+                      seen_ids.add(act_id)
+                      reunioes_total += 1
           print(f"Reuniões total equipe no mês: {reunioes_total}")
 
           # ── Taxa e dias úteis ───────────────────────────────────────
