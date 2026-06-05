@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 * * * *'
   workflow_dispatch:
+    inputs:
+      mes_override:
+        description: 'Mês para gerar dados (ex: 2026-05). Deixe em branco para mês atual.'
+        required: false
+        default: ''
   push:
     branches:
       - main
@@ -21,6 +26,7 @@ jobs:
         env:
           PIPEDRIVE_API_TOKEN: ${{ secrets.PIPEDRIVE_TOKEN }}
           PIPEDRIVE_COMPANY_DOMAIN: ${{ secrets.PIPEDRIVE_COMPANY_DOMAIN }}
+          MES_OVERRIDE: ${{ github.event.inputs.mes_override }}
         run: |
           python3 - <<'PYEOF'
           import json, os, time, urllib.request, urllib.parse, urllib.error
@@ -79,12 +85,21 @@ jobs:
                   print(f"  {path}: {len(items)} itens...")
               return items, False
 
-          # ── Mês atual ──────────────────────────────────────────────
-          today = date.today()
-          mes   = today.strftime('%Y-%m')
-          month_start = f'{today.year}-{today.month:02d}-01'
+          # ── Mês (atual ou override) ─────────────────────────────────
+          mes_override = os.environ.get('MES_OVERRIDE', '').strip()
+          if mes_override and len(mes_override) == 7:
+              ano, mon = int(mes_override[:4]), int(mes_override[5:7])
+              today = date(ano, mon, 28)   # usa dia 28 para evitar problemas de fim de mês
+              mes   = mes_override
+          else:
+              today = date.today()
+              mes   = today.strftime('%Y-%m')
+          month_start = f'{mes}-01'
           last_day = (date(today.year, today.month % 12 + 1, 1) - timedelta(days=1)) if today.month < 12 else date(today.year, 12, 31)
-          month_end = last_day.strftime('%Y-%m-%d')
+          month_end   = last_day.strftime('%Y-%m-%d')
+          # Arquivo de saída: pipedrive-data.json (atual) ou pipedrive-data-YYYY-MM.json
+          output_file = 'pipedrive-data.json' if not mes_override else f'pipedrive-data-{mes}.json'
+          print(f"Mês: {mes} | Arquivo: {output_file}")
 
           # ── Listar TODOS os pipelines ───────────────────────────────
           resp = api_get('pipelines')
@@ -232,7 +247,7 @@ jobs:
               'pipeline_id':           pipeline_id,
               'dias_uteis_decorridos': dias_uteis,
           }
-          with open('pipedrive-data.json', 'w', encoding='utf-8') as f:
+          with open(output_file, 'w', encoding='utf-8') as f:
               json.dump(output, f, ensure_ascii=False, indent=2)
           print(f"OK — {reunioes_mes} RE-Franquia, {reunioes_total} RE-Total, {contratos_mes} contratos, {taxa}%")
           PYEOF
@@ -241,6 +256,6 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pipedrive-data.json
+          git add pipedrive-data.json pipedrive-data-*.json 2>/dev/null || true
           git diff --cached --quiet && echo "Sem alterações." || \
-            git commit -m "chore: atualizar pipedrive-data.json [skip ci]" && git push
+            git commit -m "chore: atualizar dados Pipedrive [skip ci]" && git push
