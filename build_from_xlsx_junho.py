@@ -39,8 +39,10 @@ SDR_SET = set(SDR_LIST)
 
 # Closer teams (alinhado com os painéis Pipedrive Insights)
 # Andresa Caldas é Franquia (confirmação do gestor — apesar de aparecer nos 2 painéis do Pipedrive)
-CLOSER_PARTNER = {'Maria Luísa','Djulia Silva','Haynnã','Samuel Almeida','Raissa Antunes',
-                  'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres','Raíssa Nobre'}
+# GS Partner Franqueados — funil próprio (closers Raissas)
+CLOSER_GS_FRANQUEADOS = {'Raissa Antunes','Raíssa Nobre'}
+CLOSER_PARTNER = {'Maria Luísa','Djulia Silva','Haynnã','Samuel Almeida',
+                  'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres'}
 CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Adalberto Neto','Andresa Caldas',
                    'Émerson Cavitchoni','Suzanny Mauren Dihelem','Leonardo Ribeiro',
                    'Felippe Porcella','Lorenzo Coronel','Samuel Brião',
@@ -193,13 +195,25 @@ def row_prod(row, df_cols, key='ag'):
     return None
 
 def row_prod_with_franquia_partner(row, df_cols, key='ag'):
-    """Classifica 'Franquia Partner': etiqueta de origem Partner + responsável do time Franquia.
-    Usa etiqueta (origem do lead) e closer (quem fez a reunião) — não depende do funil, que pode mudar.
+    """Classifica por TIME DO CLOSER (quem realizou a reunião) — alinhado ao relatório
+    'REALIZADAS FRANQUIA' do Pipedrive (filtra por Usuário responsável).
+    - Responsável = closer Franquia → produto pela etiqueta do lead
+      (Agro→Studio Agro, Fiscal→Studio Fiscal, Partner/Raissa→Franquia Partner)
+    - Responsável = closer Partner → GS PARTNER
+    - Responsável não-closer (ex: SDR em agendamento) → fallback por etiqueta (row_prod)
     """
-    etiqueta = row.get('Negócio - Etiqueta') if 'Negócio - Etiqueta' in df_cols else None
     responsavel = str(row.get('Atividade - Usuário responsável', '')).strip()
-    if etiqueta and 'partner' in str(etiqueta).lower() and responsavel in CLOSER_FRANQUIA:
-        return 'Franquia Partner'
+    etq = str(row.get('Negócio - Etiqueta', '') or '').lower() if 'Negócio - Etiqueta' in df_cols else ''
+    if responsavel in CLOSER_GS_FRANQUEADOS:
+        return 'GS Partner Franqueados'
+    if responsavel in CLOSER_FRANQUIA:
+        if 'agro' in etq:   return 'Studio Agro'
+        if 'fiscal' in etq: return 'Studio Fiscal'
+        if 'partner' in etq or 'raissa' in etq: return 'Franquia Partner'
+        p = row_prod(row, df_cols, key)
+        return p if p in ('Studio Agro', 'Studio Fiscal') else 'Franquia Partner'
+    if responsavel in CLOSER_PARTNER:
+        return 'GS PARTNER'
     return row_prod(row, df_cols, key)
 
 # ============== DEALS — produto ==============
