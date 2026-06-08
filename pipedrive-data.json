@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-07T22:10:29Z",
+  "generated_at": "2026-06-08T00:15:29Z",
   "mes": "2026-06",
   "reunioes_franquia": 71,
   "reunioes_total": 184,
@@ -19,14 +19,14 @@
     "Proposta": 11,
     "MQL FRANQUIA": 20,
     "Lead Franquia": 11,
-    "Desconhecida": 1897,
+    "Desconhecida": 1898,
     "Em atendimento": 8,
-    "SQL": 29,
+    "SQL": 28,
     "Oportunidade": 12,
     "Pré-Qualificação": 4,
     "Negociação": 5,
     "Oportunidade Quente": 3
   },
   "pipeline_id": 42,
-  "dias_uteis_decorridos": 5
+  "dias_uteis_decorridos": 6
 }
