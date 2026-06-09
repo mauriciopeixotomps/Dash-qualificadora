@@ -855,10 +855,13 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
   const elapsed = meta.working_days_elapsed || 1;
   const total_d = meta.working_days_total   || 20;
 
+  // Metas vêm do JSON do mês (D.meta.metas_por_produto); fallback 150
+  const mpp = (meta.metas_por_produto) || {};
+  const metaOf = (k, def) => (mpp[k] && mpp[k].realizadas) ? mpp[k].realizadas : def;
   const PRODS = [
-    { key:'Studio Agro',      label:'Studio Agro',      meta:150, color:'#22c55e' },
-    { key:'Studio Fiscal',    label:'Studio Fiscal',    meta:150, color:'#818cf8' },
-    { key:'Franquia Partner', label:'Franquia Partner', meta:150, color:'#a855f7' },
+    { key:'Studio Agro',      label:'Studio Agro',      meta: metaOf('Studio Agro',150),      color:'#22c55e' },
+    { key:'Studio Fiscal',    label:'Studio Fiscal',    meta: metaOf('Studio Fiscal',150),    color:'#818cf8' },
+    { key:'Franquia Partner', label:'Franquia Partner', meta: metaOf('Franquia Partner',150), color:'#a855f7' },
   ];
 
   PRODS.forEach(p => {
@@ -886,7 +889,7 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
   // TOTAL FRANQUIA
   const franqKeys  = ['Studio Agro','Studio Fiscal','Franquia Partner'];
   const totalFranq = franqKeys.reduce((s,k)=>s+(rp[k]||0), 0);
-  const metaFranq  = 450;
+  const metaFranq  = franqKeys.reduce((s,k)=>s+metaOf(k,150), 0);
   const pcFranq    = pct(totalFranq, metaFranq);
   const hojeFranq  = Math.round(metaFranq * elapsed / total_d);
   const faltaFranq = totalFranq - hojeFranq;
@@ -902,7 +905,7 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
         <div class="prod-bar-fill" style="background:#22c55e;width:${pcFranq}%"></div>
       </div>
       <div style="text-align:right;line-height:1.2">
-        <div class="prod-nums" style="color:#22c55e">${totalFranq}<span style="color:var(--muted);font-size:9px"> /450</span></div>
+        <div class="prod-nums" style="color:#22c55e">${totalFranq}<span style="color:var(--muted);font-size:9px"> /${metaFranq}</span></div>
         <div style="font-size:8px;color:var(--muted)">→${hojeFranq} <span style="color:${fcColor};font-weight:700">${fcStr}</span></div>
       </div>
     </div>
@@ -911,7 +914,7 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
 
   // GS PARTNER
   const gsRe   = rp['GS PARTNER'] || 0;
-  const metaGs = 150;
+  const metaGs = metaOf('GS PARTNER', 150);
   const pcGs   = pct(gsRe, metaGs);
   const hojeGs = Math.round(metaGs * elapsed / total_d);
   const faltaGs = gsRe - hojeGs;
@@ -925,7 +928,7 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
       <div class="prod-bar-fill" style="background:#a855f7;width:${pcGs}%"></div>
     </div>
     <div style="text-align:right;line-height:1.2">
-      <div class="prod-nums" style="color:#a855f7">${gsRe}<span style="color:var(--muted);font-size:9px"> /150</span></div>
+      <div class="prod-nums" style="color:#a855f7">${gsRe}<span style="color:var(--muted);font-size:9px"> /${metaGs}</span></div>
       <div style="font-size:8px;color:var(--muted)">→${hojeGs} <span style="color:${gcColor};font-weight:700">${gcStr}</span></div>
     </div>
   `;
