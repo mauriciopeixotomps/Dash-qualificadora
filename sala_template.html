@@ -930,6 +930,33 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
     </div>
   `;
   container.appendChild(rowGs);
+
+  // ── TOTAL GERAL (todos os funis) ──────────────────────────
+  const totalGeral = totalFranq + gsRe + (rp['GS Partner Franqueados'] || 0);
+  const metaGeral  = meta.team_total_re_goal || 600;
+  const pcGeral    = pct(totalGeral, metaGeral);
+  const hojeGeral  = Math.round(metaGeral * elapsed / total_d);
+  const faltaGeral = totalGeral - hojeGeral;
+  const ggColor    = faltaGeral >= 0 ? '#22c55e' : '#ef4444';
+  const ggStr      = faltaGeral >= 0 ? `+${faltaGeral}` : String(faltaGeral);
+  const futGeral   = (D.totals && D.totals.future_re) || 0;
+
+  const cardGeral = document.createElement('div');
+  cardGeral.className = 'prod-total-card';
+  cardGeral.style.cssText = 'background:#0f1d35;border:1px solid #3b5278;border-radius:3px;padding:3px 5px;margin-top:3px;';
+  cardGeral.innerHTML = `
+    <div class="prod-row" style="margin-bottom:0">
+      <span class="prod-name" style="color:#fbbf24;font-size:10px;font-weight:700">★ TOTAL GERAL</span>
+      <div class="prod-bar-wrap" style="height:9px">
+        <div class="prod-bar-fill" style="background:linear-gradient(90deg,#22c55e,#fbbf24);width:${pcGeral}%"></div>
+      </div>
+      <div style="text-align:right;line-height:1.2">
+        <div class="prod-nums" style="color:#fbbf24;font-size:11px">${totalGeral}<span style="color:var(--muted);font-size:9px"> /${metaGeral}</span></div>
+        <div style="font-size:8px;color:var(--muted)">→${hojeGeral} <span style="color:${ggColor};font-weight:700">${ggStr}</span> · <span style="color:#f97316;font-weight:700">▶${futGeral}</span> p/ acontecer</div>
+      </div>
+    </div>
+  `;
+  container.appendChild(cardGeral);
 })();
 
 // ── NEGÓCIOS POR MODELO ────────────────────────────────────
