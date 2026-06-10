@@ -382,9 +382,8 @@ for d in deals_maio_raw + deals_lost_raw:
     lt_dt = pd.to_datetime(lt).date()
     if not (MONTH_START <= lt_dt <= MONTH_END): continue
     pid = d.get('pipeline_id')
-    if pid not in (42, 44, 50): continue  # FRANQUIA / PARTNER / Partner-Franqueados
-    # Etapas iniciais (Qualificação) só se aplicam aos funis 42/44; pipeline 50 entra direto
-    if pid in (42, 44) and d.get('stage_id') not in QUALIF_STAGES: continue
+    if pid not in (42, 44): continue           # Perdidos: só FRANQUIA / PARTNER (espelha filtro Pipedrive)
+    if d.get('stage_id') not in QUALIF_STAGES: continue  # etapas de Qualificação
     _perd_seen.add(d['id'])
     perdidos_maio.append(deal_row(d, include_lost_fields=True))
 
