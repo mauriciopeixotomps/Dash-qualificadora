@@ -129,6 +129,13 @@ leads_by_etiqueta = dict(leads_by_etiqueta)
 
 # Perdidos por motivo × produto
 perdidos_df = load('perdidos.xlsx')
+# Mantém só negócios CRIADOS e PERDIDOS dentro de maio
+if not perdidos_df.empty and 'Negócio - Data de perda' in perdidos_df.columns \
+   and 'Negócio - Negócio criado em' in perdidos_df.columns:
+    _cri = pd.to_datetime(perdidos_df['Negócio - Negócio criado em'], errors='coerce').dt.date
+    _pdt = pd.to_datetime(perdidos_df['Negócio - Data de perda'], errors='coerce').dt.date
+    perdidos_df = perdidos_df[(_cri >= _date(2026,5,1)) & (_cri <= _date(2026,5,31)) &
+                              (_pdt >= _date(2026,5,1)) & (_pdt <= _date(2026,5,31))].copy()
 perdidos_por_motivo = defaultdict(lambda: defaultdict(int))
 MOTIVOS_VALIDOS = {'Sem perfil','Sem interesse','Sem Retorno','Sem Contato','Perfil Fake','Buscando Parceria'}
 PRODUTOS_MAP = {

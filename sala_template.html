@@ -1044,13 +1044,9 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
 (function renderPerdidos(){
   const pm = DS.perdidos_por_motivo || {};
   const container = $('perd-list');
-  // Oculta painel quando sem dados (início do mês)
+  // Sem dados: mostra placeholder (painel permanece visível)
   if (!Object.keys(pm).length) {
-    const panel = document.getElementById('col-f-motivos');
-    if (panel) panel.style.display = 'none';
-    // Redistribui espaço: meta e perdidos dividem tudo
-    const colF = document.getElementById('col-f');
-    if (colF) colF.style.gridTemplateRows = '3fr 2fr';
+    container.innerHTML = '<div style="color:var(--muted);font-size:10px;padding:6px">Sem perdas (criadas e perdidas no mês) no período</div>';
     return;
   }
   const totals = Object.entries(pm).map(([motivo,produtos])=>{

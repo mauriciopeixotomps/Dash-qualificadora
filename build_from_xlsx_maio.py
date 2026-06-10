@@ -70,9 +70,19 @@ def _filter_month(df, date_col, m_start, m_end):
     return df[(s.dt.date >= m_start) & (s.dt.date <= m_end)].copy()
 
 deals        = _filter_month(_deals_all, 'Negócio - Negócio criado em', MONTH_START, MONTH_END)
-perdidos_raw = _filter_month(_perd_all,  'Negócio - Data de perda',     MONTH_START, MONTH_END) \
-               if 'Negócio - Data de perda' in _perd_all.columns \
-               else _perd_all.copy()
+# Perdidos: só negócios CRIADOS e PERDIDOS dentro do mês
+def _filter_criado_e_perdido(df, m_start, m_end):
+    cri  = pd.to_datetime(df['Negócio - Negócio criado em'], errors='coerce').dt.date
+    perd = pd.to_datetime(df['Negócio - Data de perda'], errors='coerce').dt.date
+    mask = (cri >= m_start) & (cri <= m_end) & (perd >= m_start) & (perd <= m_end)
+    return df[mask].copy()
+
+if 'Negócio - Data de perda' in _perd_all.columns and 'Negócio - Negócio criado em' in _perd_all.columns:
+    perdidos_raw = _filter_criado_e_perdido(_perd_all, MONTH_START, MONTH_END)
+elif 'Negócio - Data de perda' in _perd_all.columns:
+    perdidos_raw = _filter_month(_perd_all, 'Negócio - Data de perda', MONTH_START, MONTH_END)
+else:
+    perdidos_raw = _perd_all.copy()
 qual         = load_pd('qual.xlsx')
 ag           = load_pd('ag.xlsx')
 reag         = load_pd('reag.xlsx')
