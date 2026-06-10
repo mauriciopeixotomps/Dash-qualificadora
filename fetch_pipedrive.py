@@ -220,22 +220,41 @@ def fetch_timeline(field_key, start_dt, days=31):
     return out
 
 def _fetch_open_won():
-    # A API do Pipedrive retorna 500 em janelas grandes (>~31 dias) no /deals/timeline.
-    # Busca mês a mês (31 dias cada) e junta, evitando o erro 500.
-    from datetime import date as _d
+    # O /deals/timeline retorna dados INCOMPLETOS (perde muitos deals). Usa /deals
+    # paginado (add_time DESC), coletando tudo criado a partir de MONTH_START.
     result = []
-    seen = set()
-    janelas = [
-        _d(2026, 5, 1),   # Maio
-        _d(2026, 6, 1),   # Junho
-    ]
-    for inicio in janelas:
-        parcial = fetch_timeline('add_time', inicio, days=31)
-        for deal in parcial:
-            if deal['id'] not in seen:
-                seen.add(deal['id'])
-                result.append(deal)
-    print(f'   {len(result)} deals open+won criados em Maio+Junho (timeline, 2 janelas)')
+    start = 0
+    while True:
+        params = {'api_token': TOKEN, 'limit': 500, 'start': start, 'sort': 'add_time DESC'}
+        url = f'{BASE}/deals?' + urllib.parse.urlencode(params)
+        body = None
+        for attempt in range(6):
+            try:
+                with urllib.request.urlopen(url, timeout=120) as r:
+                    body = json.loads(r.read())
+                break
+            except Exception as exc:
+                if attempt == 5: raise
+                wait = 10 * (attempt + 1)
+                print(f'     ⚠️  deals page erro (tentativa {attempt+1}), esperando {wait}s... [{exc}]')
+                time.sleep(wait)
+        data = body.get('data') or []
+        stop = False
+        for d in data:
+            at = (d.get('add_time') or '')[:10]
+            if not at:
+                continue
+            if at < MONTH_START.isoformat():
+                stop = True
+                continue
+            if at > MONTH_END.isoformat():
+                continue
+            result.append(d)
+        pag = (body.get('additional_data') or {}).get('pagination') or {}
+        if stop or not pag.get('more_items_in_collection'):
+            break
+        start = pag.get('next_start', start + 500)
+    print(f'   {len(result)} deals criados em Maio+Junho (/deals paginado)')
     return result
 
 def _fetch_lost():
@@ -332,7 +351,7 @@ def deal_row(d, include_lost_fields=False):
 # - Negócios Iniciados (painel): criado em Maio + Etiqueta ∈ {Lead Studio Agro/Fiscal, Lead Partner}
 #   (não filtra por proprietário — pega 3.277)
 # - Novo relatório (perdidos): criado em Maio + perdido em Maio + Proprietário SDR (1.515)
-ETIQUETAS_VALIDAS_DEALS = {'Lead Studio Agro','Lead Studio Fiscal','Lead Partner'}
+ETIQUETAS_VALIDAS_DEALS = {'Lead Studio Agro','Lead Studio Fiscal','Lead Partner','Lead Partners (Raissa)'}
 
 def deal_label_name(d):
     lid = d.get('label')
@@ -347,20 +366,26 @@ def is_qualif_owned(d):
 # (espelha filtro Pipedrive: Etiqueta ∈ {Lead Studio Agro/Fiscal/Partner} + Funil ∈ {FRANQUIA,PARTNER})
 deals_maio = [deal_row(d, include_lost_fields=False) for d in deals_maio_raw
               if deal_label_name(d) in ETIQUETAS_VALIDAS_DEALS
-              and d.get('pipeline_id') in (42, 44)]
+              and d.get('pipeline_id') in (42, 44, 50)]
 
 # Perdidos: criado em Maio + perdido em Maio + Funil FR/PT + Etapa ∈ etapas iniciais (Qualificação)
 # Espelha o painel "Novo relatório de desempenho de negócio"
-deals_maio_ids = {d['id'] for d in deals_maio_raw}
+# Itera sobre o conjunto COMPLETO (deals_maio_raw já inclui lost via /deals paginado),
+# não só deals_lost_raw — garante captura de deals criados E perdidos no mês.
 perdidos_maio = []
-for d in deals_lost_raw:
-    if d['id'] not in deals_maio_ids: continue  # criado em Maio também
+_perd_seen = set()
+for d in deals_maio_raw + deals_lost_raw:
+    if d['id'] in _perd_seen: continue
+    if d.get('status') != 'lost': continue
     lt = d.get('lost_time')
     if not lt: continue
     lt_dt = pd.to_datetime(lt).date()
     if not (MONTH_START <= lt_dt <= MONTH_END): continue
-    if d.get('pipeline_id') not in (42, 44): continue  # só FRANQUIA / PARTNER
-    if d.get('stage_id') not in QUALIF_STAGES: continue  # só etapas iniciais
+    pid = d.get('pipeline_id')
+    if pid not in (42, 44, 50): continue  # FRANQUIA / PARTNER / Partner-Franqueados
+    # Etapas iniciais (Qualificação) só se aplicam aos funis 42/44; pipeline 50 entra direto
+    if pid in (42, 44) and d.get('stage_id') not in QUALIF_STAGES: continue
+    _perd_seen.add(d['id'])
     perdidos_maio.append(deal_row(d, include_lost_fields=True))
 
 print(f'   {len(deals_maio)} deals (criados+etiqueta válida) para deals.xlsx')
