@@ -158,15 +158,22 @@ body {
   min-height: 0;
   padding: 1px 0;
 }
-/* Painéis de ranking: scroll vertical se necessário */
+/* Painéis de ranking: rows preenchem a altura — todos visíveis, sem scroll */
 #sdr-list,
 #closer-franquia,
 #closer-partner {
-  overflow-y: auto;
+  overflow: hidden;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+/* Cada linha divide a altura igualmente (garante mostrar todos sem cortar) */
+#sdr-list .rank-row,
+#closer-franquia .rank-row,
+#closer-partner .rank-row {
+  flex: 1 1 0;
+  min-height: 0;
 }
 .rank-name {
   font-size:9.5px; font-weight:500;
