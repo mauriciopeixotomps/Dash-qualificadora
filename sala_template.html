@@ -195,6 +195,15 @@ body {
 }
 
 /* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
+#col-b {
+  display: grid;
+  grid-template-rows: 3fr 2fr;
+  gap: 4px;
+  height: 100%;
+  min-height: 0;
+}
+#col-b-closer  { min-height:0; overflow:hidden; }
+#col-b-motivos { min-height:0; overflow:hidden; }
 #col-c {
   display: grid;
   grid-template-rows: 3fr 4fr 3fr;
@@ -314,16 +323,15 @@ body {
 .perd-bar-fill { height:100%; border-radius:2px; background:var(--red); opacity:.7; }
 .perd-val { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; color:var(--red); }
 
-/* ── COL F — PACE + MOTIVOS + TAXA ───────────────────── */
+/* ── COL F — PACE + TAXA DE PERDA ───────────────────── */
 #col-f {
   display: grid;
-  grid-template-rows: 3fr 1fr 2fr;
+  grid-template-rows: 3fr 2fr;
   gap: 3px;
   height: 100%;
   min-height: 0;
 }
 #col-f-meta     { min-height:0; overflow:hidden; }
-#col-f-motivos  { min-height:0; overflow:hidden; }
 #col-f-perdidos { min-height:0; overflow:hidden; }
 
 /* perda pós cc1 */
@@ -448,7 +456,7 @@ body {
     height: auto !important;
     grid-template-rows: none !important;
   }
-  #col-f-meta, #col-f-motivos, #col-f-perdidos {
+  #col-f-meta, #col-f-perdidos, #col-b, #col-b-closer, #col-b-motivos {
     min-height: auto !important;
     height: auto !important;
     overflow: visible !important;
@@ -566,8 +574,9 @@ body {
     <div class="panel-body" id="sdr-list"></div>
   </div>
 
-  <!-- Col B — Closer CC1 por Franquia / Partner -->
-  <div class="panel" style="--accent-color:#3b82f6">
+  <!-- Col B — Closer (topo) + Motivos de Perda (base) -->
+  <div id="col-b">
+  <div class="panel" id="col-b-closer" style="--accent-color:#3b82f6">
     <div class="panel-title">CC1 Realizadas — Closer</div>
     <div class="legend-row">
       <span><span class="legend-dot" style="background:#22c55e"></span>Franquia</span>
@@ -580,6 +589,11 @@ body {
       <div class="panel-body" id="closer-franquia"></div>
       <div class="panel-body" id="closer-partner"></div>
     </div>
+  </div>
+  <div class="panel" id="col-b-motivos" style="--accent-color:#ef4444">
+    <div class="panel-title">Motivos de Perda</div>
+    <div class="panel-body" id="perd-list" style="overflow-y:auto"></div>
+  </div>
   </div>
 
   <!-- Col C — Produtos + Negócios -->
@@ -654,11 +668,6 @@ body {
         <canvas id="chart-meta"></canvas>
       </div>
       <div class="chart-note">Linhas tracejadas = meta proporcional aos dias úteis</div>
-    </div>
-
-    <div class="panel" id="col-f-motivos" style="--accent-color:#ef4444">
-      <div class="panel-title">Motivos de Perda</div>
-      <div class="panel-body" id="perd-list"></div>
     </div>
 
     <div class="panel" id="col-f-perdidos" style="--accent-color:#ef4444">
