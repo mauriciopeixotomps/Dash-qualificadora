@@ -345,6 +345,17 @@
     </div>
   </div>
 
+  <!-- Placar do Ritmo -->
+  <div class="card" id="placar-ritmo" style="margin-top:14px;"></div>
+
+  <!-- Produção diária em barras -->
+  <div class="card"><h3>Produção Diária — Realizadas &amp; Agendadas</h3>
+    <div class="canvas-wrap tall"><canvas id="daily-bars"></canvas></div>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Barras = quantidade realizada/agendada em cada dia. Linha = meta diária necessária para fechar a meta do mês.
+    </div>
+  </div>
+
   <!-- Pace metas headline -->
   <div class="section-title">Quanto falta para a meta</div>
   <div class="grid grid-2">
@@ -1183,6 +1194,79 @@ new Chart(document.getElementById('pace-cum'), {
     interaction:{mode:'index', intersect:false}
   }
 });
+
+// === PLACAR DO RITMO ===
+(function renderPlacar(){
+  const el = document.getElementById('placar-ritmo');
+  if (!el) return;
+  const meta     = D.meta.team_total_re_goal || sdrGoalTotal;
+  const total    = cumRe.length ? cumRe[lastIdx] : 0;   // realizadas acumuladas até hoje
+  const elapsed  = ELAPSED || 1;
+  const totalWd  = TOTAL_DAYS || 1;
+  const restantes = Math.max(0, totalWd - elapsed);
+  const mediaDia  = total / elapsed;
+  const faltam    = Math.max(0, meta - total);
+  const ritmoNec  = restantes > 0 ? faltam / restantes : 0;
+  const projecao  = Math.round(mediaDia * totalWd);
+  const pctMeta   = meta > 0 ? (total/meta*100) : 0;
+  const noRitmo   = projecao >= meta;
+  const cor       = noRitmo ? '#22c55e' : (projecao >= meta*0.85 ? '#f59e0b' : '#ef4444');
+  const statusTxt = noRitmo ? '✓ No ritmo da meta' : (projecao >= meta*0.85 ? '⚠ Levemente abaixo' : '✗ Abaixo do ritmo');
+
+  const cell = (label, valor, sub, color) => `
+    <div style="flex:1;min-width:120px;text-align:center;padding:10px 8px;background:#0f172a;border-radius:8px;border:1px solid #1e293b;">
+      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">${label}</div>
+      <div style="font-size:30px;font-weight:bold;color:${color||'#fff'};line-height:1.1;margin-top:4px;">${valor}</div>
+      <div style="font-size:10.5px;color:#64748b;margin-top:2px;">${sub||''}</div>
+    </div>`;
+
+  el.innerHTML = `
+    <h3 style="margin:0 0 12px 0;">🏁 Placar do Ritmo — Realizadas
+      <span style="font-size:13px;font-weight:600;color:${cor};margin-left:8px;">${statusTxt}</span>
+    </h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      ${cell('Realizadas', fmt(total), `${pctMeta.toFixed(0)}% da meta (${fmt(meta)})`, '#22c55e')}
+      ${cell('Média / dia útil', mediaDia.toFixed(1), `em ${elapsed} de ${totalWd} dias úteis`, '#60a5fa')}
+      ${cell('Ritmo necessário', ritmoNec.toFixed(1), `por dia · faltam ${fmt(faltam)} em ${restantes} dias`, cor)}
+      ${cell('Projeção fim do mês', fmt(projecao), `no ritmo atual · meta ${fmt(meta)}`, cor)}
+    </div>`;
+})();
+
+// === PRODUÇÃO DIÁRIA — BARRAS (Realizadas + Agendadas por dia) ===
+(function renderDailyBars(){
+  const canvas = document.getElementById('daily-bars');
+  if (!canvas) return;
+  const reDia = D.daily_series.map(d => d.re);
+  const agDia = D.daily_series.map(d => d.ag);
+  // meta diária = meta total / dias úteis do mês
+  const metaDiaria = (D.meta.team_total_re_goal || sdrGoalTotal) / (TOTAL_DAYS || 1);
+  const metaLine = D.daily_series.map(d => {
+    const dt = new Date(d.date + 'T00:00:00');
+    const wd = dt.getDay() >= 1 && dt.getDay() <= 5;
+    return wd ? Math.round(metaDiaria) : 0;
+  });
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: dailyLabels,
+      datasets: [
+        {label:'CC1 Realizadas', data: reDia, backgroundColor: COLORS.re, borderRadius:3,
+          datalabels:{display: ctx=>ctx.dataIndex<=lastIdx && ctx.raw>0, color:'#22c55e', anchor:'end', align:'top', font:{size:9,weight:'bold'}, formatter:v=>v}},
+        {label:'CC1 Agendadas', data: agDia, backgroundColor: 'rgba(168,85,247,0.55)', borderRadius:3,
+          datalabels:{display:false}},
+        {label:`Meta diária (${Math.round(metaDiaria)})`, type:'line', data: metaLine,
+          borderColor:'#f59e0b', borderDash:[5,4], borderWidth:2, pointRadius:0, fill:false,
+          datalabels:{display:false}},
+      ]
+    },
+    options: {
+      maintainAspectRatio:false, responsive:true, layout:{padding:{top:18}},
+      plugins:{ legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index', intersect:false} },
+      scales:{ x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt} },
+      interaction:{mode:'index', intersect:false}
+    }
+  });
+})();
 
 // === Pace meta totals (estáticos — não mudam com filtro) ===
 const sdrCount = Object.keys(D.sdr.ag || {}).length || 1;
