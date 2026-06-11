@@ -356,6 +356,11 @@
     </div>
   </div>
 
+  <!-- Leads gerados por produto -->
+  <div class="card" id="leads-por-produto-card"><h3>Leads Gerados por Produto</h3>
+    <div class="canvas-wrap"><canvas id="leads-produto"></canvas></div>
+  </div>
+
   <!-- Pace metas headline -->
   <div class="section-title">Quanto falta para a meta</div>
   <div class="grid grid-2">
@@ -1264,6 +1269,37 @@ new Chart(document.getElementById('pace-cum'), {
       plugins:{ legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index', intersect:false} },
       scales:{ x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt} },
       interaction:{mode:'index', intersect:false}
+    }
+  });
+})();
+
+// === LEADS GERADOS POR PRODUTO ===
+(function renderLeadsProduto(){
+  const canvas = document.getElementById('leads-produto');
+  if (!canvas) return;
+  const lpf = (D.product && D.product.leads_por_funil) || {};
+  const entries = Object.entries(lpf).sort((a,b)=>b[1]-a[1]);
+  if (!entries.length) { document.getElementById('leads-por-produto-card').style.display='none'; return; }
+  const total = entries.reduce((s,[,v])=>s+v,0);
+  const cores = {'Franquia':'#22c55e','GS Partner':'#a855f7','GS Partner Franqueados':'#f59e0b'};
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: entries.map(([k])=>k),
+      datasets: [{
+        data: entries.map(([,v])=>v),
+        backgroundColor: entries.map(([k])=> cores[k] || '#60a5fa'),
+        borderRadius: 4,
+        datalabels:{ color:'#fff', anchor:'end', align:'end', font:{size:12,weight:'bold'},
+          formatter:(v)=>`${fmt(v)}  (${(v/total*100).toFixed(0)}%)` }
+      }]
+    },
+    options: {
+      indexAxis:'y', maintainAspectRatio:false, responsive:true,
+      layout:{padding:{right:60}},
+      plugins:{ legend:{display:false},
+        title:{display:true, text:`Total: ${fmt(total)} leads`, color:'#94a3b8', font:{size:12}} },
+      scales:{ x:{beginAtZero:true, grid:gridOpt}, y:{grid:{display:false}} }
     }
   });
 })();

@@ -411,6 +411,16 @@ re_p = acts_by_product_smart(re_, 're', use_franquia_partner=True)
 ns_p = acts_by_product_smart(ns, 'ns', use_franquia_partner=True)
 
 leads_p = dict(deals['_product'].value_counts())
+
+# Leads por funil (100% confiável, soma o total de leads do mês)
+_FUNIL_NOME = {'FRANQUIA':'Franquia','PARTNER':'GS Partner',
+               'Partners GS- FRANQUEADOS':'GS Partner Franqueados',
+               'Partner - Franqueados':'GS Partner Franqueados'}
+leads_por_funil = {}
+if 'Negócio - Funil' in deals.columns:
+    for fun, cnt in deals['Negócio - Funil'].value_counts().items():
+        nome = _FUNIL_NOME.get(str(fun).strip(), str(fun))
+        leads_por_funil[nome] = leads_por_funil.get(nome, 0) + int(cnt)
 def _perdido_prod(r):
     etq = r.get('Negócio - Etiqueta') if 'Negócio - Etiqueta' in perdidos.columns else None
     p = etq_to_prod(etq) if etq is not None else None
@@ -646,6 +656,7 @@ dashboard = {
         'ag': ag_p, 're': re_p, 'ns': ns_p,
         'leads': leads_p, 'lost': lost_p,
         'loss_rate': loss_rate, 'mql_rate': mql_rate,
+        'leads_por_funil': leads_por_funil,
     },
     'loss': {
         'by_reason_product': {r: dict(d) for r, d in reason_product.items()},
