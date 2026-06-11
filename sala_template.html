@@ -1035,6 +1035,7 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
 (function renderPerdidos(){
   const pm = DS.perdidos_por_motivo || {};
   const container = $('perd-list');
+  const titleEl = document.querySelector('#col-a-motivos .panel-title');
   // Sem dados: mostra placeholder (painel permanece visível)
   if (!Object.keys(pm).length) {
     container.innerHTML = '<div style="color:var(--muted);font-size:10px;padding:6px">Sem perdas (criadas e perdidas no mês) no período</div>';
@@ -1043,6 +1044,8 @@ function buildRankRow(name, re, fut, paceTarget, meta, color){
   const totals = Object.entries(pm).map(([motivo,produtos])=>{
     return [motivo, Object.values(produtos).reduce((s,v)=>s+(v||0),0)];
   }).sort((a,b)=>b[1]-a[1]);
+  const grandTotal = totals.reduce((s,[,v])=>s+v, 0);
+  if (titleEl) titleEl.innerHTML = `Motivos de Perda <span style="color:#ef4444;font-weight:700;margin-left:6px">${fmt(grandTotal)}</span><span style="color:var(--muted);font-size:9px;font-weight:400"> total</span>`;
   const maxV = totals.length ? totals[0][1] : 1;
   totals.forEach(([motivo,total])=>{
     const pc = pct(total, maxV);
