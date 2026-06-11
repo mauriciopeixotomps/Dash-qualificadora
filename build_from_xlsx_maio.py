@@ -416,11 +416,42 @@ leads_p = dict(deals['_product'].value_counts())
 _FUNIL_NOME = {'FRANQUIA':'Franquia','PARTNER':'GS Partner',
                'Partners GS- FRANQUEADOS':'GS Partner Franqueados',
                'Partner - Franqueados':'GS Partner Franqueados'}
+def _map_funil(fun):
+    return _FUNIL_NOME.get(str(fun).strip(), str(fun))
+
 leads_por_funil = {}
 if 'Negócio - Funil' in deals.columns:
     for fun, cnt in deals['Negócio - Funil'].value_counts().items():
-        nome = _FUNIL_NOME.get(str(fun).strip(), str(fun))
-        leads_por_funil[nome] = leads_por_funil.get(nome, 0) + int(cnt)
+        leads_por_funil[_map_funil(fun)] = leads_por_funil.get(_map_funil(fun), 0) + int(cnt)
+
+ag_por_funil = {}
+if 'Negócio - Funil' in ag.columns:
+    for fun, cnt in ag['Negócio - Funil'].value_counts().items():
+        ag_por_funil[_map_funil(fun)] = ag_por_funil.get(_map_funil(fun), 0) + int(cnt)
+
+perdidos_por_funil = {}
+if 'Negócio - Funil' in perdidos.columns:
+    for fun, cnt in perdidos['Negócio - Funil'].value_counts().items():
+        perdidos_por_funil[_map_funil(fun)] = perdidos_por_funil.get(_map_funil(fun), 0) + int(cnt)
+taxa_perda_funil = {k: round(perdidos_por_funil.get(k,0)/leads_por_funil[k]*100, 1)
+                    for k in leads_por_funil if leads_por_funil[k]}
+
+import unicodedata as _ud
+def _norm_prof(p):
+    if pd.isna(p): return None
+    s = str(p).strip()
+    if not s: return None
+    s = ''.join(c for c in _ud.normalize('NFD', s) if _ud.category(c) != 'Mn')  # tira acentos p/ juntar variantes
+    return s[:1].upper() + s[1:].lower()
+profissao_por_funil = {}
+if 'Negócio - Profissão' in deals.columns and 'Negócio - Funil' in deals.columns:
+    tmp = defaultdict(lambda: defaultdict(int))
+    for _, r in deals[['Negócio - Funil','Negócio - Profissão']].iterrows():
+        prof = _norm_prof(r['Negócio - Profissão'])
+        if not prof: continue
+        tmp[_map_funil(r['Negócio - Funil'])][prof] += 1
+    for fun, profs in tmp.items():
+        profissao_por_funil[fun] = sorted(profs.items(), key=lambda x:-x[1])[:8]
 def _perdido_prod(r):
     etq = r.get('Negócio - Etiqueta') if 'Negócio - Etiqueta' in perdidos.columns else None
     p = etq_to_prod(etq) if etq is not None else None
@@ -657,6 +688,10 @@ dashboard = {
         'leads': leads_p, 'lost': lost_p,
         'loss_rate': loss_rate, 'mql_rate': mql_rate,
         'leads_por_funil': leads_por_funil,
+        'ag_por_funil': ag_por_funil,
+        'perdidos_por_funil': perdidos_por_funil,
+        'taxa_perda_funil': taxa_perda_funil,
+        'profissao_por_funil': profissao_por_funil,
     },
     'loss': {
         'by_reason_product': {r: dict(d) for r, d in reason_product.items()},

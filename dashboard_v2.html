@@ -361,6 +361,16 @@
     <div class="canvas-wrap"><canvas id="leads-produto"></canvas></div>
   </div>
 
+  <!-- Resumo por funil: leads, AG, perdidos, taxa de perda -->
+  <div class="card" id="funil-resumo-card"><h3>Resumo por Funil — Leads · Agendamentos · Perdas</h3>
+    <div id="funil-resumo-tabela"></div>
+  </div>
+
+  <!-- Profissão por produto (ranking) -->
+  <div class="card" id="profissao-card"><h3>Profissões por Produto (ranking)</h3>
+    <div id="profissao-grid" class="grid grid-3"></div>
+  </div>
+
   <!-- Pace metas headline -->
   <div class="section-title">Quanto falta para a meta</div>
   <div class="grid grid-2">
@@ -1302,6 +1312,67 @@ new Chart(document.getElementById('pace-cum'), {
       scales:{ x:{beginAtZero:true, grid:gridOpt}, y:{grid:{display:false}} }
     }
   });
+})();
+
+// === RESUMO POR FUNIL (leads · AG · perdidos · taxa perda) ===
+(function renderFunilResumo(){
+  const el = document.getElementById('funil-resumo-tabela');
+  if (!el) return;
+  const P = D.product || {};
+  const leads = P.leads_por_funil || {};
+  const ag    = P.ag_por_funil || {};
+  const perd  = P.perdidos_por_funil || {};
+  const taxa  = P.taxa_perda_funil || {};
+  const funis = Object.keys(leads).sort((a,b)=>leads[b]-leads[a]);
+  if (!funis.length) { document.getElementById('funil-resumo-card').style.display='none'; return; }
+  const cores = {'Franquia':'#22c55e','GS Partner':'#a855f7','GS Partner Franqueados':'#f59e0b'};
+  const taxaCor = t => t>=60?'#ef4444':(t>=45?'#f59e0b':'#22c55e');
+  let rows = funis.map(f=>{
+    const l=leads[f]||0, a=ag[f]||0, pd=perd[f]||0, tx=taxa[f]||0;
+    const convAg = l? (a/l*100):0;
+    return `<tr>
+      <td style="padding:8px 10px;font-weight:600;color:${cores[f]||'#cbd5e1'}">${f}</td>
+      <td style="padding:8px 10px;text-align:right;color:#fff;font-weight:700">${fmt(l)}</td>
+      <td style="padding:8px 10px;text-align:right;color:#a855f7">${fmt(a)} <span style="color:#64748b;font-size:11px">(${convAg.toFixed(0)}%)</span></td>
+      <td style="padding:8px 10px;text-align:right;color:#f87171">${fmt(pd)}</td>
+      <td style="padding:8px 10px;text-align:right;font-weight:700;color:${taxaCor(tx)}">${tx.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="border-bottom:1px solid #1e293b;color:#94a3b8;font-size:11px;text-transform:uppercase;">
+      <th style="padding:6px 10px;text-align:left;">Funil</th>
+      <th style="padding:6px 10px;text-align:right;">Leads</th>
+      <th style="padding:6px 10px;text-align:right;">Agendamentos</th>
+      <th style="padding:6px 10px;text-align:right;">Perdidos</th>
+      <th style="padding:6px 10px;text-align:right;">Taxa de perda</th>
+    </tr></thead><tbody>${rows}</tbody></table>
+    <div style="color:var(--text-muted);font-size:11px;margin-top:8px;">Agendamentos: % = agendados ÷ leads do funil. Taxa de perda: perdidos ÷ leads do funil.</div>`;
+})();
+
+// === PROFISSÕES POR PRODUTO (ranking) ===
+(function renderProfissao(){
+  const grid = document.getElementById('profissao-grid');
+  if (!grid) return;
+  const pp = (D.product && D.product.profissao_por_funil) || {};
+  const funis = Object.keys(pp);
+  if (!funis.length) { document.getElementById('profissao-card').style.display='none'; return; }
+  const cores = {'Franquia':'#22c55e','GS Partner':'#a855f7','GS Partner Franqueados':'#f59e0b'};
+  grid.innerHTML = funis.map(f=>{
+    const lista = pp[f] || [];
+    const max = lista.length ? lista[0][1] : 1;
+    const rows = lista.map(([prof,n])=>`
+      <div style="display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;margin-bottom:5px;">
+        <div>
+          <div style="font-size:12px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${prof}</div>
+          <div style="height:5px;background:#1e293b;border-radius:3px;margin-top:2px;"><div style="height:100%;width:${n/max*100}%;background:${cores[f]||'#60a5fa'};border-radius:3px;"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#fff;">${fmt(n)}</div>
+      </div>`).join('');
+    return `<div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:10px 12px;">
+      <div style="font-weight:700;color:${cores[f]||'#cbd5e1'};margin-bottom:8px;font-size:13px;">${f}</div>
+      ${rows}
+    </div>`;
+  }).join('');
 })();
 
 // === Pace meta totals (estáticos — não mudam com filtro) ===
