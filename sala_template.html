@@ -195,15 +195,15 @@ body {
 }
 
 /* ── COL C — PRODUTOS + NEGÓCIOS ────────────────────── */
-#col-b {
+#col-a {
   display: grid;
   grid-template-rows: 3fr 2fr;
   gap: 4px;
   height: 100%;
   min-height: 0;
 }
-#col-b-closer  { min-height:0; overflow:hidden; }
-#col-b-motivos { min-height:0; overflow:hidden; }
+#col-a-sdr     { min-height:0; overflow:hidden; }
+#col-a-motivos { min-height:0; overflow:hidden; }
 #col-c {
   display: grid;
   grid-template-rows: 3fr 4fr 3fr;
@@ -456,7 +456,7 @@ body {
     height: auto !important;
     grid-template-rows: none !important;
   }
-  #col-f-meta, #col-f-perdidos, #col-b, #col-b-closer, #col-b-motivos {
+  #col-f-meta, #col-f-perdidos, #col-a, #col-a-sdr, #col-a-motivos {
     min-height: auto !important;
     height: auto !important;
     overflow: visible !important;
@@ -561,8 +561,9 @@ body {
 <!-- ROW 2 -->
 <div id="row2">
 
-  <!-- Col A — SDR CC1 Realizadas -->
-  <div class="panel" style="--accent-color:#22c55e">
+  <!-- Col A — SDR (topo) + Motivos de Perda (base) -->
+  <div id="col-a">
+  <div class="panel" id="col-a-sdr" style="--accent-color:#22c55e">
     <div class="panel-title">CC1 Realizadas — SDR</div>
     <div class="legend-row">
       <span><span class="legend-dot" style="background:#22c55e"></span>Realizado</span>
@@ -573,10 +574,14 @@ body {
     </div>
     <div class="panel-body" id="sdr-list"></div>
   </div>
+  <div class="panel" id="col-a-motivos" style="--accent-color:#ef4444">
+    <div class="panel-title">Motivos de Perda</div>
+    <div class="panel-body" id="perd-list" style="overflow-y:auto"></div>
+  </div>
+  </div>
 
-  <!-- Col B — Closer (topo) + Motivos de Perda (base) -->
-  <div id="col-b">
-  <div class="panel" id="col-b-closer" style="--accent-color:#3b82f6">
+  <!-- Col B — Closer (altura cheia) -->
+  <div class="panel" style="--accent-color:#3b82f6">
     <div class="panel-title">CC1 Realizadas — Closer</div>
     <div class="legend-row">
       <span><span class="legend-dot" style="background:#22c55e"></span>Franquia</span>
@@ -589,11 +594,6 @@ body {
       <div class="panel-body" id="closer-franquia"></div>
       <div class="panel-body" id="closer-partner"></div>
     </div>
-  </div>
-  <div class="panel" id="col-b-motivos" style="--accent-color:#ef4444">
-    <div class="panel-title">Motivos de Perda</div>
-    <div class="panel-body" id="perd-list" style="overflow-y:auto"></div>
-  </div>
   </div>
 
   <!-- Col C — Produtos + Negócios -->
