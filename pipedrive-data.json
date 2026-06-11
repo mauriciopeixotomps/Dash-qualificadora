@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T22:09:03Z",
+  "generated_at": "2026-06-11T00:21:47Z",
   "mes": "2026-06",
   "reunioes_franquia": 118,
   "reunioes_total": 342,
@@ -30,5 +30,5 @@
     "Oportunidade Quente": 2
   },
   "pipeline_id": 42,
-  "dias_uteis_decorridos": 8
+  "dias_uteis_decorridos": 9
 }
