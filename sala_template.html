@@ -63,7 +63,7 @@ body {
 /* ── KPI ROW ─────────────────────────────────────────── */
 #kpi-row {
   display: grid;
-  grid-template-columns: repeat(9, 1fr) 4px repeat(5, 1fr);
+  grid-template-columns: repeat(9, 1fr);
   gap: 4px;
   padding: 4px 12px;
   background: var(--bg);
@@ -548,35 +548,6 @@ body {
     <span class="kpi-label">CC1 Inválida</span>
   </div>
 
-  <!-- Separador Partner -->
-  <div class="kpi-sep" style="background:rgba(245,158,11,.35);border-radius:1px;margin:6px 0;align-self:stretch"></div>
-
-  <!-- Partner KPI cards -->
-  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
-    <span class="kpi-num" style="color:#60a5fa" id="k-p-leads">—</span>
-    <span class="kpi-today" style="color:#60a5fa"><span class="kpi-today-label">mês </span><span id="k-p-leads-mes">—</span></span>
-    <span class="kpi-label" style="color:#f59e0b">P. Leads</span>
-  </div>
-  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
-    <span class="kpi-num" style="color:#f87171" id="k-p-lost">—</span>
-    <span class="kpi-today" style="color:#f87171"><span class="kpi-today-label">mês </span><span id="k-p-lost-mes">—</span></span>
-    <span class="kpi-label" style="color:#f59e0b">P. Perdidos</span>
-  </div>
-  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
-    <span class="kpi-num" style="color:#22c55e" id="k-p-re">—</span>
-    <span class="kpi-today" style="color:#22c55e"><span class="kpi-today-label">mês </span><span id="k-p-re-mes">—</span></span>
-    <span class="kpi-label" style="color:#f59e0b">P. RE hoje</span>
-  </div>
-  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
-    <span class="kpi-num" style="color:#ef4444" id="k-p-ns">—</span>
-    <span class="kpi-today" style="color:#ef4444"><span class="kpi-today-label">mês </span><span id="k-p-ns-mes">—</span></span>
-    <span class="kpi-label" style="color:#f59e0b">P. NS hoje</span>
-  </div>
-  <div class="kpi-card" style="border-color:rgba(245,158,11,.3)">
-    <span class="kpi-num" style="color:#f59e0b" id="k-p-ag">—</span>
-    <span class="kpi-today" style="color:#f59e0b"><span class="kpi-today-label">total </span><span id="k-p-ag-total">—</span></span>
-    <span class="kpi-label" style="color:#f59e0b">P. AGs/dia</span>
-  </div>
 </div>
 
 <!-- ROW 2 -->
@@ -1384,31 +1355,6 @@ const endLabelPlugin = {
 })();
 
 // ── PARTNER KPIs — barra superior ────────────────────────
-(function renderPartnerKpis(){
-  const PP = DS.partner_panel;
-  if (!PP) return;
-
-  const deals    = PP.deals     || {};
-  const closerRe = PP.closer_re || {};
-  const closerNs = PP.closer_ns || {};
-
-  const reHoje = Object.values(closerRe).reduce((s,v)=>s+(v.hoje||0), 0);
-  const reMes  = Object.values(closerRe).reduce((s,v)=>s+(v.mes||0),  0);
-  const nsHoje = Object.values(closerNs).reduce((s,v)=>s+(v.hoje||0), 0);
-  const nsMes  = Object.values(closerNs).reduce((s,v)=>s+(v.mes||0),  0);
-
-  $('k-p-leads').textContent     = fmt(deals.iniciados_inicio ?? 0);
-  $('k-p-leads-mes').textContent = fmt(deals.iniciados_mes    ?? 0);
-  $('k-p-lost').textContent      = fmt(deals.perdidos_inicio  ?? 0);
-  $('k-p-lost-mes').textContent  = fmt(deals.perdidos_mes     ?? 0);
-  $('k-p-re').textContent        = fmt(reHoje);
-  $('k-p-re-mes').textContent    = fmt(reMes);
-  $('k-p-ns').textContent        = fmt(nsHoje);
-  $('k-p-ns-mes').textContent    = fmt(nsMes);
-  $('k-p-ag').textContent        = fmt(PP.media_ag_dia ?? 0);
-  $('k-p-ag-total').textContent  = fmt(PP.ag_inicio    ?? 0);
-})();
-
 // ── AUTO-REFRESH: verifica versão nova no servidor a cada 2 min ──
 const _currentUpdate = LAST_UPDATE;
 function checkAndReload(){
