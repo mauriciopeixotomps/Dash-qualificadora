@@ -348,12 +348,16 @@
   <!-- Placar do Ritmo -->
   <div class="card" id="placar-ritmo" style="margin-top:14px;"></div>
 
-  <!-- Produção diária em barras -->
-  <div class="card"><h3>Produção Diária — Realizadas &amp; Agendadas</h3>
-    <div class="canvas-wrap tall"><canvas id="daily-bars"></canvas></div>
-    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
-      Barras = quantidade realizada/agendada em cada dia. Linha = meta diária necessária para fechar a meta do mês.
-    </div>
+  <!-- Diário (barras) + Acumulado (curva) por indicador -->
+  <div class="section-title">Diário & Acumulado por Indicador</div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Leads Gerados</h3><div class="canvas-wrap"><canvas id="combo-leads"></canvas></div></div>
+    <div class="card"><h3>Agendamentos (CC1)</h3><div class="canvas-wrap"><canvas id="combo-ag"></canvas></div></div>
+    <div class="card"><h3>Realizadas (CC1)</h3><div class="canvas-wrap"><canvas id="combo-re"></canvas></div></div>
+    <div class="card"><h3>Perdidos</h3><div class="canvas-wrap"><canvas id="combo-lost"></canvas></div></div>
+  </div>
+  <div style="color: var(--text-muted); font-size: 11.5px; margin: 4px 0 8px;">
+    Barras = registro de cada dia. Linha = acumulado no mês.
   </div>
 
   <!-- Leads gerados por produto -->
@@ -1252,39 +1256,43 @@ new Chart(document.getElementById('pace-cum'), {
     </div>`;
 })();
 
-// === PRODUÇÃO DIÁRIA — BARRAS (Realizadas + Agendadas por dia) ===
-(function renderDailyBars(){
-  const canvas = document.getElementById('daily-bars');
-  if (!canvas) return;
-  const reDia = D.daily_series.map(d => d.re);
-  const agDia = D.daily_series.map(d => d.ag);
-  // meta diária = meta total / dias úteis do mês
-  const metaDiaria = (D.meta.team_total_re_goal || sdrGoalTotal) / (TOTAL_DAYS || 1);
-  const metaLine = D.daily_series.map(d => {
-    const dt = new Date(d.date + 'T00:00:00');
-    const wd = dt.getDay() >= 1 && dt.getDay() <= 5;
-    return wd ? Math.round(metaDiaria) : 0;
-  });
-  new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: dailyLabels,
-      datasets: [
-        {label:'CC1 Realizadas', data: reDia, backgroundColor: COLORS.re, borderRadius:3,
-          datalabels:{display: ctx=>ctx.dataIndex<=lastIdx && ctx.raw>0, color:'#22c55e', anchor:'end', align:'top', font:{size:9,weight:'bold'}, formatter:v=>v}},
-        {label:'CC1 Agendadas', data: agDia, backgroundColor: 'rgba(168,85,247,0.55)', borderRadius:3,
-          datalabels:{display:false}},
-        {label:`Meta diária (${Math.round(metaDiaria)})`, type:'line', data: metaLine,
-          borderColor:'#f59e0b', borderDash:[5,4], borderWidth:2, pointRadius:0, fill:false,
-          datalabels:{display:false}},
-      ]
-    },
-    options: {
-      maintainAspectRatio:false, responsive:true, layout:{padding:{top:18}},
-      plugins:{ legend:{position:'top', labels:{color:'#cbd5e1'}}, tooltip:{mode:'index', intersect:false} },
-      scales:{ x:{grid:gridOpt}, y:{beginAtZero:true, grid:gridOpt} },
-      interaction:{mode:'index', intersect:false}
-    }
+// === COMBO: barras diárias + curva acumulada (por indicador) ===
+(function renderCombos(){
+  const cumSumLocal = arr => { let s=0; return arr.map(v=>s+=v); };
+  const indicadores = [
+    {canvas:'combo-leads', key:'leads', label:'Leads',        cor:COLORS.leads},
+    {canvas:'combo-ag',    key:'ag',    label:'Agendamentos', cor:COLORS.ag},
+    {canvas:'combo-re',    key:'re',    label:'Realizadas',   cor:COLORS.re},
+    {canvas:'combo-lost',  key:'lost',  label:'Perdidos',     cor:COLORS.lost},
+  ];
+  indicadores.forEach(ind => {
+    const cv = document.getElementById(ind.canvas);
+    if (!cv) return;
+    const diario = D.daily_series.map(d => d[ind.key] || 0);
+    const acum   = cumSumLocal(diario);
+    new Chart(cv, {
+      data: {
+        labels: dailyLabels,
+        datasets: [
+          { type:'bar', label:`${ind.label}/dia`, data: diario, yAxisID:'y',
+            backgroundColor: ind.cor, borderRadius:2, datalabels:{display:false} },
+          { type:'line', label:`Acumulado`, data: acum, yAxisID:'y1',
+            borderColor: ind.cor, borderWidth:2, tension:0.25, pointRadius:0, fill:false,
+            datalabels:{display:false} },
+        ]
+      },
+      options: {
+        maintainAspectRatio:false, responsive:true,
+        plugins:{ legend:{position:'top', labels:{color:'#cbd5e1', boxWidth:12, font:{size:10}}},
+          tooltip:{mode:'index', intersect:false} },
+        scales:{
+          x:{grid:gridOpt, ticks:{maxTicksLimit:12, font:{size:9}}},
+          y:{beginAtZero:true, position:'left', grid:gridOpt, title:{display:true, text:'dia', color:'#64748b', font:{size:9}}},
+          y1:{beginAtZero:true, position:'right', grid:{display:false}, title:{display:true, text:'acum.', color:'#64748b', font:{size:9}}},
+        },
+        interaction:{mode:'index', intersect:false}
+      }
+    });
   });
 })();
 
