@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-12T09:03:35Z",
+  "generated_at": "2026-06-12T12:59:01Z",
   "mes": "2026-06",
-  "reunioes_franquia": 131,
-  "reunioes_total": 383,
-  "reunioes_mes": 131,
+  "reunioes_franquia": 132,
+  "reunioes_total": 388,
+  "reunioes_mes": 132,
   "contratos_mes": 0,
   "taxa_conversao_pct": 0.0,
   "reunioes_por_dia": {
@@ -15,18 +15,18 @@
     "2026-06-08": 18,
     "2026-06-09": 17,
     "2026-06-10": 10,
-    "2026-06-11": 14
+    "2026-06-11": 14,
+    "2026-06-12": 1
   },
   "contratos_por_dia": {},
   "funil_franquia": {
     "Proposta": 12,
-    "Desconhecida": 1912,
-    "Pré-Qualificação": 5,
+    "Desconhecida": 1911,
+    "Pré-Qualificação": 7,
     "MQL FRANQUIA": 16,
-    "SQL": 32,
+    "SQL": 33,
     "Oportunidade": 6,
-    "Lead Franquia": 1,
-    "Em atendimento": 9,
+    "Em atendimento": 8,
     "Negociação": 5,
     "Oportunidade Quente": 2
   },
