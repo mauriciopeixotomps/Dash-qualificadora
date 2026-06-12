@@ -366,6 +366,11 @@
     <div id="funil-resumo-tabela"></div>
   </div>
 
+  <!-- Resumo semanal -->
+  <div class="card" id="semanal-card"><h3>Resumo Semanal — Leads (por funil) · Agendamentos · Realizadas · Perdidos</h3>
+    <div id="semanal-tabela"></div>
+  </div>
+
   <!-- Profissão por produto (ranking) -->
   <div class="card" id="profissao-card"><h3>Profissões por Produto (ranking)</h3>
     <div id="profissao-grid" class="grid grid-3"></div>
@@ -1312,6 +1317,41 @@ new Chart(document.getElementById('pace-cum'), {
       scales:{ x:{beginAtZero:true, grid:gridOpt}, y:{grid:{display:false}} }
     }
   });
+})();
+
+// === RESUMO SEMANAL (tabela) ===
+(function renderSemanal(){
+  const el = document.getElementById('semanal-tabela');
+  if (!el) return;
+  const wks = D.weekly_resumo || [];
+  if (!wks.length) { document.getElementById('semanal-card').style.display='none'; return; }
+  const cores = {'Franquia':'#22c55e','GS Partner':'#a855f7','GS Partner Franqueados':'#f59e0b'};
+  const funis = ['Franquia','GS Partner','GS Partner Franqueados'];
+  const th = (t,al='right')=>`<th style="padding:6px 10px;text-align:${al};">${t}</th>`;
+  const td = (t,al='right',c='#cbd5e1',bold=false)=>`<td style="padding:7px 10px;text-align:${al};color:${c};${bold?'font-weight:700;':''}">${t}</td>`;
+  let rows = wks.map(w=>{
+    const lf = w.leads_por_funil||{};
+    const leadsCell = `<b style="color:#fff">${fmt(w.leads_total)}</b>`
+      + `<div style="font-size:10px;color:#64748b;margin-top:1px;">`
+      + funis.filter(f=>lf[f]).map(f=>`<span style="color:${cores[f]}">${f.replace('GS Partner Franqueados','GSF').replace('GS Partner','GS')} ${fmt(lf[f])}</span>`).join(' · ')
+      + `</div>`;
+    return `<tr style="border-bottom:1px solid #14203a;">
+      ${td(`<b>${w.semana}</b><div style="font-size:10px;color:#64748b">${w.periodo}</div>`,'left')}
+      ${td(leadsCell,'right')}
+      ${td(fmt(w.ag),'right','#a855f7')}
+      ${td(fmt(w.re),'right','#22c55e',true)}
+      ${td(fmt(w.perdidos),'right','#f87171')}
+    </tr>`;
+  }).join('');
+  // Totais
+  const T = wks.reduce((a,w)=>{a.leads+=w.leads_total;a.ag+=w.ag;a.re+=w.re;a.perd+=w.perdidos;return a;},{leads:0,ag:0,re:0,perd:0});
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="border-bottom:1px solid #1e293b;color:#94a3b8;font-size:11px;text-transform:uppercase;">
+      ${th('Semana','left')}${th('Leads (por funil)')}${th('Agendamentos')}${th('Realizadas')}${th('Perdidos')}
+    </tr></thead><tbody>${rows}</tbody>
+    <tfoot><tr style="border-top:2px solid #1e293b;font-weight:700;">
+      ${td('TOTAL','left','#fff',true)}${td(fmt(T.leads),'right','#fff',true)}${td(fmt(T.ag),'right','#a855f7',true)}${td(fmt(T.re),'right','#22c55e',true)}${td(fmt(T.perd),'right','#f87171',true)}
+    </tr></tfoot></table>`;
 })();
 
 // === RESUMO POR FUNIL (leads · AG · perdidos · taxa perda) ===

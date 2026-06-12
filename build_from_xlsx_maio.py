@@ -452,6 +452,37 @@ if 'Negócio - Profissão' in deals.columns and 'Negócio - Funil' in deals.colu
         tmp[_map_funil(r['Negócio - Funil'])][prof] += 1
     for fun, profs in tmp.items():
         profissao_por_funil[fun] = sorted(profs.items(), key=lambda x:-x[1])[:8]
+
+# ── RESUMO SEMANAL: leads (por funil) · AG · RE · perdidos ──────────────────
+import datetime as _dtm
+def _week_monday(d): return d - _dtm.timedelta(days=d.weekday())
+_wk = defaultdict(lambda: {'leads': defaultdict(int), 'ag':0, 're':0, 'perdidos':0})
+# Leads por funil (data de criação)
+_cri = pd.to_datetime(deals['Negócio - Negócio criado em'], errors='coerce')
+for _d, _fun in zip(_cri.dt.date, deals['Negócio - Funil'] if 'Negócio - Funil' in deals.columns else [None]*len(deals)):
+    if pd.isna(_d): continue
+    if not (MONTH_START <= _d <= MONTH_END): continue
+    _wk[_week_monday(_d)]['leads'][_map_funil(_fun)] += 1
+# AG e RE (data marcada = _due, já filtrado ao mês)
+for _col_df, _key in ((ag,'ag'), (re_,'re')):
+    if '_due' in _col_df.columns:
+        for _d in pd.to_datetime(_col_df['_due'], errors='coerce').dt.date.dropna():
+            if MONTH_START <= _d <= MONTH_END: _wk[_week_monday(_d)][_key] += 1
+# Perdidos (data de perda)
+if 'Negócio - Data de perda' in perdidos.columns:
+    for _d in pd.to_datetime(perdidos['Negócio - Data de perda'], errors='coerce').dt.date.dropna():
+        if MONTH_START <= _d <= MONTH_END: _wk[_week_monday(_d)]['perdidos'] += 1
+weekly_resumo = []
+for i, _k in enumerate(sorted(_wk), 1):
+    _ini = max(_k, MONTH_START); _fim = min(_k + _dtm.timedelta(days=6), MONTH_END)
+    _v = _wk[_k]
+    weekly_resumo.append({
+        'semana': f'Sem {i}',
+        'periodo': f"{_ini.strftime('%d/%m')}–{_fim.strftime('%d/%m')}",
+        'leads_por_funil': dict(_v['leads']),
+        'leads_total': sum(_v['leads'].values()),
+        'ag': _v['ag'], 're': _v['re'], 'perdidos': _v['perdidos'],
+    })
 def _perdido_prod(r):
     etq = r.get('Negócio - Etiqueta') if 'Negócio - Etiqueta' in perdidos.columns else None
     p = etq_to_prod(etq) if etq is not None else None
@@ -683,6 +714,7 @@ dashboard = {
     'closer': {'re': closer_re, 'future': closer_future, 'ns': closer_ns, 'inv': closer_inv},
     'closer_team': {'franquia': sorted(CLOSER_FRANQUIA), 'partner': sorted(CLOSER_PARTNER)},
     'closer_daily': closer_daily,
+    'weekly_resumo': weekly_resumo,
     'product': {
         'ag': ag_p, 're': re_p, 'ns': ns_p,
         'leads': leads_p, 'lost': lost_p,
