@@ -42,7 +42,8 @@ SDR_SET = set(SDR_LIST)
 # GS Partner Franqueados — funil próprio (closers Raissas)
 CLOSER_GS_FRANQUEADOS = {'Raissa Antunes','Raíssa Nobre'}
 CLOSER_PARTNER = {'Maria Luísa','Djulia Silva','Haynnã','Samuel Almeida',
-                  'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres'}
+                  'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres',
+                  'Tom Mansur','Clayton Bastos'}
 CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Adalberto Neto','Andresa Caldas',
                    'Émerson Cavitchoni','Suzanny Mauren Dihelem','Leonardo Ribeiro',
                    'Felippe Porcella','Lorenzo Coronel','Samuel Brião',

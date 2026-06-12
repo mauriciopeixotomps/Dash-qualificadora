@@ -63,8 +63,10 @@ if not reag_df.empty:
         reag_hoje = int((reag_df['_dt'].dt.date == today_date_dt).sum())
 
 # Closer por Funil (separação por lista fixa de nomes, igual ao build_from_xlsx_maio.py)
-CLOSER_PARTNER  = {'Maria Luísa','Djulia Silva','Haynnã','Samuel Almeida','Raissa Antunes',
-                   'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres','Raíssa Nobre'}
+CLOSER_GS_FRANQUEADOS = {'Raissa Antunes','Raíssa Nobre'}
+CLOSER_PARTNER  = {'Maria Luísa','Djulia Silva','Haynnã','Samuel Almeida',
+                   'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres',
+                   'Tom Mansur','Clayton Bastos'}
 CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Adalberto Neto','Andresa Caldas',
                    'Émerson Cavitchoni','Suzanny Mauren Dihelem','Leonardo Ribeiro',
                    'Felippe Porcella','Lorenzo Coronel','Samuel Brião','Fred','Gabriel Meneses'}
