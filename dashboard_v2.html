@@ -316,6 +316,7 @@
     <div class="kpi" style="border-color:#f43f5e33;"><div class="kpi-label" style="color:#f43f5e;">CC1 Inválidas</div><div class="kpi-value" id="kpi-inv" style="color:#f43f5e;"></div><div class="kpi-sub" id="kpi-inv-sub"></div></div>
   </div>
 
+
   <!-- Pace vs Meta (apenas Maio em diante) -->
   <div id="pace-meta-section" style="display:none;">
     <div class="section-title">🎯 Pace vs Meta — Time</div>
@@ -328,41 +329,14 @@
     <div class="card" id="pace-franquia-total-card" style="margin-top:14px;"></div>
   </div>
 
-  <!-- Curve chart -->
-  <div class="section-title">Pace diário</div>
-  <div class="card"><h3>Leads vs Perdidos vs Agendamentos vs Realizadas</h3>
-    <div class="canvas-wrap tall"><canvas id="curve"></canvas></div>
-  </div>
-
-  <div class="card"><h3>Pace Acumulado — __MONTH_LABEL__</h3>
-    <div class="canvas-wrap tall"><canvas id="curve-cum"></canvas></div>
-  </div>
-
-  <div class="card"><h3>Pace Acumulado vs Meta — Realizadas</h3>
-    <div class="canvas-wrap tall"><canvas id="pace-cum"></canvas></div>
-    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
-      Linha verde sólida = realizadas acumuladas. Linhas tracejadas = onde o time deveria estar a cada dia para fechar a meta no fim do mês (avança apenas em dias úteis).
-    </div>
-  </div>
-
-  <!-- Placar do Ritmo -->
-  <div class="card" id="placar-ritmo" style="margin-top:14px;"></div>
-
-  <!-- Diário (barras) + Acumulado (curva) por indicador -->
-  <div class="section-title">Diário & Acumulado por Indicador</div>
-  <div class="grid grid-2">
-    <div class="card"><h3>Leads Gerados</h3><div class="canvas-wrap"><canvas id="combo-leads"></canvas></div></div>
-    <div class="card"><h3>Agendamentos (CC1)</h3><div class="canvas-wrap"><canvas id="combo-ag"></canvas></div></div>
-    <div class="card"><h3>Realizadas (CC1)</h3><div class="canvas-wrap"><canvas id="combo-re"></canvas></div></div>
-    <div class="card"><h3>Perdidos</h3><div class="canvas-wrap"><canvas id="combo-lost"></canvas></div></div>
-  </div>
-  <div style="color: var(--text-muted); font-size: 11.5px; margin: 4px 0 8px;">
-    Barras = registro de cada dia. Linha = acumulado no mês.
-  </div>
-
   <!-- Leads gerados por produto -->
   <div class="card" id="leads-por-produto-card"><h3>Leads Gerados por Produto</h3>
     <div class="canvas-wrap"><canvas id="leads-produto"></canvas></div>
+  </div>
+
+  <!-- Profissão por produto (ranking) -->
+  <div class="card" id="profissao-card"><h3>Profissões por Produto (ranking)</h3>
+    <div id="profissao-grid" class="grid grid-3"></div>
   </div>
 
   <!-- Resumo por funil: leads, AG, perdidos, taxa de perda -->
@@ -373,77 +347,6 @@
   <!-- Resumo semanal -->
   <div class="card" id="semanal-card"><h3>Resumo Semanal — Leads (por funil) · Agendamentos · Realizadas · Perdidos</h3>
     <div id="semanal-tabela"></div>
-  </div>
-
-  <!-- Profissão por produto (ranking) -->
-  <div class="card" id="profissao-card"><h3>Profissões por Produto (ranking)</h3>
-    <div id="profissao-grid" class="grid grid-3"></div>
-  </div>
-
-  <!-- Pace metas headline -->
-  <div class="section-title">Quanto falta para a meta</div>
-  <div class="grid grid-2">
-    <div class="pace-card">
-      <div class="pace-headline">
-        <div class="pace-num" id="sdr-total"></div>
-        <div class="pace-divider">/</div>
-        <div class="pace-num" id="sdr-meta-total"><small></small></div>
-      </div>
-      <div class="pace-meta-info" id="sdr-pace-info"></div>
-      <div class="pace-bar-track">
-        <div class="pace-bar-fill" id="sdr-bar-fill"></div>
-        <div class="pace-bar-future" id="sdr-bar-future"></div>
-        <div class="pace-target-line" id="sdr-bar-target"><div class="pace-target-label" id="sdr-bar-label">Hoje</div></div>
-      </div>
-      <div class="pace-legend">
-        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
-        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
-        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
-      </div>
-    </div>
-    <div class="pace-card">
-      <div class="pace-headline">
-        <div class="pace-num" id="closer-total"></div>
-        <div class="pace-divider">/</div>
-        <div class="pace-num" id="closer-meta-total"><small></small></div>
-      </div>
-      <div class="pace-meta-info" id="closer-pace-info"></div>
-      <div class="pace-bar-track">
-        <div class="pace-bar-fill" id="closer-bar-fill"></div>
-        <div class="pace-bar-future" id="closer-bar-future"></div>
-        <div class="pace-target-line" id="closer-bar-target"><div class="pace-target-label" id="closer-bar-label">Hoje</div></div>
-      </div>
-      <div class="pace-legend">
-        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
-        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
-        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Per-person pace with gap merged in -->
-  <div class="card"><h3>Pace por SDR — Meta 70 realizadas</h3><div id="sdr-pace-list"></div></div>
-  <div class="grid grid-2">
-    <div class="card"><h3>Pace por Closer FRANQUIA — Meta 40</h3><div id="closer-pace-list-franquia"></div></div>
-    <div class="card"><h3>Pace por Closer PARTNER — Meta 40</h3><div id="closer-pace-list-partner"></div></div>
-  </div>
-
-  <!-- SDR atividades -->
-  <div class="section-title">Atividade SDR</div>
-  <div class="grid grid-2">
-    <div class="card"><h3>Agendamentos por SDR</h3><div class="canvas-wrap tall"><canvas id="sdr-ag-chart"></canvas></div></div>
-    <div class="card"><h3>Realizadas por SDR</h3><div class="canvas-wrap tall"><canvas id="sdr-re-chart"></canvas></div></div>
-  </div>
-
-  <!-- Closer atividades -->
-  <div class="section-title">Atividade Closer</div>
-  <div class="card"><h3>Realizadas / Para acontecer / No Show por Closer</h3>
-    <table id="closer-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
-    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
-      <b>👆 Clique em qualquer coluna do header para ordenar.</b><br/>
-      <b>Show Rate</b> = RE / (RE + NS) — quantos efetivamente compareceram do que era pra acontecer.<br/>
-      <b>Total</b> = RE + Para acontecer + NS.
-    </div>
   </div>
 
   <!-- Por produto -->
@@ -459,17 +362,6 @@
     <table id="noshow-table" style="width:100%; margin-top:14px; border-collapse:collapse; font-size:12px;"></table>
     <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
       Taxa de No Show = NS / (NS + RE) — do que deveria ter acontecido, quanto não compareceu.
-    </div>
-  </div>
-
-  <!-- Ranking proporcional SDR: AG × RE × NS -->
-  <div class="card"><h3>Ranking SDR — Agendamentos × Realizadas × No Show (proporcional)</h3>
-    <table id="sdr-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
-    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
-      <b>👆 Clique em qualquer coluna do header para ordenar.</b> Clique de novo para inverter (asc/desc). A ordem é salva automaticamente.<br/>
-      <b>Show Rate</b> = RE / (RE + NS) — do que o SDR agendou e foi visitado, quantos compareceram.<br/>
-      <b>Taxa NS</b> = NS / (RE + NS) — inverso do Show Rate.<br/>
-      <b>Conversão AG→RE</b> = RE / AG — eficiência total do SDR em transformar agendamento em reunião realizada.
     </div>
   </div>
 
@@ -524,6 +416,117 @@
   <div class="card"><h3>Perdidos por Motivo × Campanha (top 12)</h3>
     <div class="heat-scroll"><table class="heat-table" id="motivo-campanha"></table></div>
   </div>
+
+  <!-- Curve chart -->
+  <div class="section-title">Pace diário</div>
+  <div class="card"><h3>Leads vs Perdidos vs Agendamentos vs Realizadas</h3>
+    <div class="canvas-wrap tall"><canvas id="curve"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Pace Acumulado — __MONTH_LABEL__</h3>
+    <div class="canvas-wrap tall"><canvas id="curve-cum"></canvas></div>
+  </div>
+
+  <div class="card"><h3>Pace Acumulado vs Meta — Realizadas</h3>
+    <div class="canvas-wrap tall"><canvas id="pace-cum"></canvas></div>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Linha verde sólida = realizadas acumuladas. Linhas tracejadas = onde o time deveria estar a cada dia para fechar a meta no fim do mês (avança apenas em dias úteis).
+    </div>
+  </div>
+
+  <!-- Placar do Ritmo -->
+  <div class="card" id="placar-ritmo" style="margin-top:14px;"></div>
+
+  <!-- Diário (barras) + Acumulado (curva) por indicador -->
+  <div class="section-title">Diário & Acumulado por Indicador</div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Leads Gerados</h3><div class="canvas-wrap"><canvas id="combo-leads"></canvas></div></div>
+    <div class="card"><h3>Agendamentos (CC1)</h3><div class="canvas-wrap"><canvas id="combo-ag"></canvas></div></div>
+    <div class="card"><h3>Realizadas (CC1)</h3><div class="canvas-wrap"><canvas id="combo-re"></canvas></div></div>
+    <div class="card"><h3>Perdidos</h3><div class="canvas-wrap"><canvas id="combo-lost"></canvas></div></div>
+  </div>
+  <div style="color: var(--text-muted); font-size: 11.5px; margin: 4px 0 8px;">
+    Barras = registro de cada dia. Linha = acumulado no mês.
+  </div>
+
+  <!-- Pace metas headline -->
+  <div class="section-title">Quanto falta para a meta</div>
+  <div class="grid grid-2">
+    <div class="pace-card">
+      <div class="pace-headline">
+        <div class="pace-num" id="sdr-total"></div>
+        <div class="pace-divider">/</div>
+        <div class="pace-num" id="sdr-meta-total"><small></small></div>
+      </div>
+      <div class="pace-meta-info" id="sdr-pace-info"></div>
+      <div class="pace-bar-track">
+        <div class="pace-bar-fill" id="sdr-bar-fill"></div>
+        <div class="pace-bar-future" id="sdr-bar-future"></div>
+        <div class="pace-target-line" id="sdr-bar-target"><div class="pace-target-label" id="sdr-bar-label">Hoje</div></div>
+      </div>
+      <div class="pace-legend">
+        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
+        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
+        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
+      </div>
+    </div>
+    <div class="pace-card">
+      <div class="pace-headline">
+        <div class="pace-num" id="closer-total"></div>
+        <div class="pace-divider">/</div>
+        <div class="pace-num" id="closer-meta-total"><small></small></div>
+      </div>
+      <div class="pace-meta-info" id="closer-pace-info"></div>
+      <div class="pace-bar-track">
+        <div class="pace-bar-fill" id="closer-bar-fill"></div>
+        <div class="pace-bar-future" id="closer-bar-future"></div>
+        <div class="pace-target-line" id="closer-bar-target"><div class="pace-target-label" id="closer-bar-label">Hoje</div></div>
+      </div>
+      <div class="pace-legend">
+        <span><span class="sw" style="background: var(--green);"></span>Realizadas</span>
+        <span><span class="sw" style="background: var(--purple);"></span>Para acontecer</span>
+        <span><span class="sw" style="background: var(--red); width:3px; height:14px;"></span>Onde deveria estar hoje</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-person pace with gap merged in -->
+  <div class="card"><h3>Pace por SDR — Meta 70 realizadas</h3><div id="sdr-pace-list"></div></div>
+
+  <div class="grid grid-2">
+    <div class="card"><h3>Pace por Closer FRANQUIA — Meta 40</h3><div id="closer-pace-list-franquia"></div></div>
+    <div class="card"><h3>Pace por Closer PARTNER — Meta 40</h3><div id="closer-pace-list-partner"></div></div>
+  </div>
+
+  <!-- Closer atividades -->
+  <div class="section-title">Atividade Closer</div>
+  <div class="card"><h3>Realizadas / Para acontecer / No Show por Closer</h3>
+    <table id="closer-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      <b>👆 Clique em qualquer coluna do header para ordenar.</b><br/>
+      <b>Show Rate</b> = RE / (RE + NS) — quantos efetivamente compareceram do que era pra acontecer.<br/>
+      <b>Total</b> = RE + Para acontecer + NS.
+    </div>
+  </div>
+
+  <!-- SDR atividades -->
+  <div class="section-title">Atividade SDR</div>
+  <div class="grid grid-2">
+    <div class="card"><h3>Agendamentos por SDR</h3><div class="canvas-wrap tall"><canvas id="sdr-ag-chart"></canvas></div></div>
+    <div class="card"><h3>Realizadas por SDR</h3><div class="canvas-wrap tall"><canvas id="sdr-re-chart"></canvas></div></div>
+  </div>
+
+  <!-- Ranking proporcional SDR: AG × RE × NS -->
+  <div class="card"><h3>Ranking SDR — Agendamentos × Realizadas × No Show (proporcional)</h3>
+    <table id="sdr-ranking" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      <b>👆 Clique em qualquer coluna do header para ordenar.</b> Clique de novo para inverter (asc/desc). A ordem é salva automaticamente.<br/>
+      <b>Show Rate</b> = RE / (RE + NS) — do que o SDR agendou e foi visitado, quantos compareceram.<br/>
+      <b>Taxa NS</b> = NS / (RE + NS) — inverso do Show Rate.<br/>
+      <b>Conversão AG→RE</b> = RE / AG — eficiência total do SDR em transformar agendamento em reunião realizada.
+    </div>
+  </div>
+
 </div>
 
 <script>
