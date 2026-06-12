@@ -1343,23 +1343,26 @@ new Chart(document.getElementById('pace-cum'), {
       + `<div style="font-size:10px;color:#64748b;margin-top:1px;">`
       + funis.filter(f=>lf[f]).map(f=>`<span style="color:${cores[f]}">${f.replace('GS Partner Franqueados','GSF').replace('GS Partner','GS')} ${fmt(lf[f])}</span>`).join(' · ')
       + `</div>`;
+    const pc = (n,base)=> base? ` <span style="color:#64748b;font-size:10.5px;font-weight:400;">(${(n/base*100).toFixed(0)}%)</span>` : '';
     return `<tr style="border-bottom:1px solid #14203a;">
       ${td(`<b>${w.semana}</b><div style="font-size:10px;color:#64748b">${w.periodo}</div>`,'left')}
       ${td(leadsCell,'right')}
-      ${td(fmt(w.ag),'right','#a855f7')}
-      ${td(fmt(w.re),'right','#22c55e',true)}
-      ${td(fmt(w.perdidos),'right','#f87171')}
+      ${td(fmt(w.ag)+pc(w.ag,w.leads_total),'right','#a855f7')}
+      ${td(fmt(w.re)+pc(w.re,w.ag),'right','#22c55e',true)}
+      ${td(fmt(w.perdidos)+pc(w.perdidos,w.leads_total),'right','#f87171')}
     </tr>`;
   }).join('');
   // Totais
   const T = wks.reduce((a,w)=>{a.leads+=w.leads_total;a.ag+=w.ag;a.re+=w.re;a.perd+=w.perdidos;return a;},{leads:0,ag:0,re:0,perd:0});
+  const pcT = (n,base)=> base? ` <span style="color:#94a3b8;font-size:10.5px;font-weight:400;">(${(n/base*100).toFixed(0)}%)</span>` : '';
   el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
     <thead><tr style="border-bottom:1px solid #1e293b;color:#94a3b8;font-size:11px;text-transform:uppercase;">
-      ${th('Semana','left')}${th('Leads (por funil)')}${th('Agendamentos')}${th('Realizadas')}${th('Perdidos')}
+      ${th('Semana','left')}${th('Leads (por funil)')}${th('Agendamentos (% leads)')}${th('Realizadas (% agend.)')}${th('Perdidos (% leads)')}
     </tr></thead><tbody>${rows}</tbody>
     <tfoot><tr style="border-top:2px solid #1e293b;font-weight:700;">
-      ${td('TOTAL','left','#fff',true)}${td(fmt(T.leads),'right','#fff',true)}${td(fmt(T.ag),'right','#a855f7',true)}${td(fmt(T.re),'right','#22c55e',true)}${td(fmt(T.perd),'right','#f87171',true)}
-    </tr></tfoot></table>`;
+      ${td('TOTAL','left','#fff',true)}${td(fmt(T.leads),'right','#fff',true)}${td(fmt(T.ag)+pcT(T.ag,T.leads),'right','#a855f7',true)}${td(fmt(T.re)+pcT(T.re,T.ag),'right','#22c55e',true)}${td(fmt(T.perd)+pcT(T.perd,T.leads),'right','#f87171',true)}
+    </tr></tfoot></table>
+    <div style="color:var(--text-muted);font-size:11px;margin-top:8px;">Agendamentos % = sobre leads da semana · Realizadas % = sobre agendamentos · Perdidos % = sobre leads.</div>`;
 })();
 
 // === RESUMO POR FUNIL (leads · AG · perdidos · taxa perda) ===
