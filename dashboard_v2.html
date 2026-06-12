@@ -437,16 +437,12 @@
   <!-- Placar do Ritmo -->
   <div class="card" id="placar-ritmo" style="margin-top:14px;"></div>
 
-  <!-- Diário (barras) + Acumulado (curva) por indicador -->
-  <div class="section-title">Diário & Acumulado por Indicador</div>
-  <div class="grid grid-2">
-    <div class="card"><h3>Leads Gerados</h3><div class="canvas-wrap"><canvas id="combo-leads"></canvas></div></div>
-    <div class="card"><h3>Agendamentos (CC1)</h3><div class="canvas-wrap"><canvas id="combo-ag"></canvas></div></div>
-    <div class="card"><h3>Realizadas (CC1)</h3><div class="canvas-wrap"><canvas id="combo-re"></canvas></div></div>
-    <div class="card"><h3>Perdidos</h3><div class="canvas-wrap"><canvas id="combo-lost"></canvas></div></div>
-  </div>
-  <div style="color: var(--text-muted); font-size: 11.5px; margin: 4px 0 8px;">
-    Barras = registro de cada dia. Linha = acumulado no mês.
+  <!-- Diário (barras) + Acumulado (curva) — todos os indicadores juntos -->
+  <div class="card"><h3>Diário &amp; Acumulado — Todos os Indicadores</h3>
+    <div class="canvas-wrap tall"><canvas id="combo-all"></canvas></div>
+    <div style="color: var(--text-muted); font-size: 11.5px; margin-top: 8px;">
+      Barras = registro de cada dia (eixo esquerdo). Linhas tracejadas = acumulado no mês (eixo direito).
+    </div>
   </div>
 
   <!-- Pace metas headline -->
@@ -1259,43 +1255,42 @@ new Chart(document.getElementById('pace-cum'), {
     </div>`;
 })();
 
-// === COMBO: barras diárias + curva acumulada (por indicador) ===
-(function renderCombos(){
+// === COMBO ÚNICO: barras diárias + curvas acumuladas de TODOS os indicadores ===
+(function renderComboAll(){
+  const cv = document.getElementById('combo-all');
+  if (!cv) return;
   const cumSumLocal = arr => { let s=0; return arr.map(v=>s+=v); };
-  const indicadores = [
-    {canvas:'combo-leads', key:'leads', label:'Leads',        cor:COLORS.leads},
-    {canvas:'combo-ag',    key:'ag',    label:'Agendamentos', cor:COLORS.ag},
-    {canvas:'combo-re',    key:'re',    label:'Realizadas',   cor:COLORS.re},
-    {canvas:'combo-lost',  key:'lost',  label:'Perdidos',     cor:COLORS.lost},
+  const inds = [
+    {key:'leads', label:'Leads',        cor:COLORS.leads},
+    {key:'ag',    label:'Agendamentos', cor:COLORS.ag},
+    {key:'re',    label:'Realizadas',   cor:COLORS.re},
+    {key:'lost',  label:'Perdidos',     cor:COLORS.lost},
   ];
-  indicadores.forEach(ind => {
-    const cv = document.getElementById(ind.canvas);
-    if (!cv) return;
+  const datasets = [];
+  inds.forEach(ind => {
     const diario = D.daily_series.map(d => d[ind.key] || 0);
-    const acum   = cumSumLocal(diario);
-    new Chart(cv, {
-      data: {
-        labels: dailyLabels,
-        datasets: [
-          { type:'bar', label:`${ind.label}/dia`, data: diario, yAxisID:'y',
-            backgroundColor: ind.cor, borderRadius:2, datalabels:{display:false} },
-          { type:'line', label:`Acumulado`, data: acum, yAxisID:'y1',
-            borderColor: ind.cor, borderWidth:2, tension:0.25, pointRadius:0, fill:false,
-            datalabels:{display:false} },
-        ]
+    datasets.push({ type:'bar', label:`${ind.label}/dia`, data: diario, yAxisID:'y',
+      backgroundColor: ind.cor, borderRadius:2, datalabels:{display:false} });
+  });
+  inds.forEach(ind => {
+    const acum = cumSumLocal(D.daily_series.map(d => d[ind.key] || 0));
+    datasets.push({ type:'line', label:`${ind.label} (acum.)`, data: acum, yAxisID:'y1',
+      borderColor: ind.cor, borderWidth:2, borderDash:[5,3], tension:0.25, pointRadius:0, fill:false,
+      datalabels:{display:false} });
+  });
+  new Chart(cv, {
+    data: { labels: dailyLabels, datasets },
+    options: {
+      maintainAspectRatio:false, responsive:true,
+      plugins:{ legend:{position:'top', labels:{color:'#cbd5e1', boxWidth:12, font:{size:10}}},
+        tooltip:{mode:'index', intersect:false} },
+      scales:{
+        x:{grid:gridOpt, ticks:{maxTicksLimit:15, font:{size:9}}},
+        y:{beginAtZero:true, position:'left', grid:gridOpt, title:{display:true, text:'por dia', color:'#64748b', font:{size:10}}},
+        y1:{beginAtZero:true, position:'right', grid:{display:false}, title:{display:true, text:'acumulado', color:'#64748b', font:{size:10}}},
       },
-      options: {
-        maintainAspectRatio:false, responsive:true,
-        plugins:{ legend:{position:'top', labels:{color:'#cbd5e1', boxWidth:12, font:{size:10}}},
-          tooltip:{mode:'index', intersect:false} },
-        scales:{
-          x:{grid:gridOpt, ticks:{maxTicksLimit:12, font:{size:9}}},
-          y:{beginAtZero:true, position:'left', grid:gridOpt, title:{display:true, text:'dia', color:'#64748b', font:{size:9}}},
-          y1:{beginAtZero:true, position:'right', grid:{display:false}, title:{display:true, text:'acum.', color:'#64748b', font:{size:9}}},
-        },
-        interaction:{mode:'index', intersect:false}
-      }
-    });
+      interaction:{mode:'index', intersect:false}
+    }
   });
 })();
 
