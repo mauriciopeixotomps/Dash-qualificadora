@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-14T19:43:51Z",
+  "generated_at": "2026-06-14T21:19:09Z",
   "mes": "2026-06",
   "reunioes_franquia": 123,
   "reunioes_total": 416,
@@ -20,9 +20,9 @@
   "contratos_por_dia": {},
   "funil_franquia": {
     "Proposta": 12,
-    "Desconhecida": 1912,
+    "Desconhecida": 1911,
     "Lead Franquia": 6,
-    "Pré-Qualificação": 5,
+    "Pré-Qualificação": 6,
     "MQL FRANQUIA": 9,
     "SQL": 35,
     "Oportunidade": 6,
