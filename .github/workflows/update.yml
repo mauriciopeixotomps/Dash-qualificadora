@@ -5,6 +5,11 @@ on:
     - cron: '0,30 11-21 * * 1-5'
     - cron: '0 21 * * 6'
   workflow_dispatch:
+  # Encadeia no workflow "Sync Pipedrive Franquia Data" (roda de hora em hora, confiável)
+  # — garante atualização do dashboard mesmo se o schedule/cron externo falhar.
+  workflow_run:
+    workflows: ["Sync Pipedrive Franquia Data"]
+    types: [completed]
 
 permissions:
   contents: write
