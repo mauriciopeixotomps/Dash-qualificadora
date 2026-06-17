@@ -340,9 +340,9 @@ def deal_row(d, include_lost_fields=False):
         'Negócio - UTM term': d.get(CF_UTM_TERM),
         'Negócio - Telefone': d.get(CF_TELEFONE),
         'Pessoa - Telefone': None,
+        'Negócio - Etiqueta': etiqueta,   # origem do lead (sempre — base da classificação por modelo)
     }
     if include_lost_fields:
-        row['Negócio - Etiqueta'] = etiqueta
         row['Negócio - Motivo da perda'] = d.get('lost_reason')
         row['Negócio - Data de perda'] = d.get('lost_time')
     return row

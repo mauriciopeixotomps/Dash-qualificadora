@@ -233,7 +233,14 @@ if 'Negócio - Etiqueta' in perdidos.columns and 'Negócio - Título' in perdido
     for _, row in perdidos[['Negócio - Título','Negócio - Etiqueta']].dropna(subset=['Negócio - Título']).iterrows():
         title_to_etq[row['Negócio - Título']] = row['Negócio - Etiqueta']
 
-deals['_etq'] = deals['Negócio - Título'].map(title_to_etq) if 'Negócio - Título' in deals.columns else None
+# Origem do lead = ETIQUETA real do Pipedrive (sinal confiável). Fallback por título só se vazia.
+if 'Negócio - Etiqueta' in deals.columns:
+    deals['_etq'] = deals['Negócio - Etiqueta']
+    _miss = deals['_etq'].isna()
+    if _miss.any() and 'Negócio - Título' in deals.columns:
+        deals.loc[_miss, '_etq'] = deals.loc[_miss, 'Negócio - Título'].map(title_to_etq)
+else:
+    deals['_etq'] = deals['Negócio - Título'].map(title_to_etq) if 'Negócio - Título' in deals.columns else None
 def deal_prod(r):
     p = etq_to_prod(r['_etq'])
     if p: return p
