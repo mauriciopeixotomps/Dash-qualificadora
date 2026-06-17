@@ -339,12 +339,14 @@
     <div id="profissao-grid" class="grid grid-3"></div>
   </div>
 
-  <!-- Ganhos Franquia — análise por período -->
+  <!-- Ganhos por funil — análise por período e funil -->
   <div class="card" id="ganhos-card">
     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-      <h3 style="margin:0;">Ganhos Franquia — Profissões, Campanhas e Criativos</h3>
+      <h3 style="margin:0;">Ganhos por Funil — Conversão por Campanha e Criativo</h3>
       <div id="ganhos-filtro" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
     </div>
+    <div id="ganhos-funil-filtro" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"></div>
+    <div id="ganhos-funil-cards" style="display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;"></div>
     <div id="ganhos-resumo" style="font-size:13px; color:var(--text-muted); margin:6px 0 12px;"></div>
     <div class="grid grid-3" id="ganhos-grid"></div>
   </div>
@@ -1453,10 +1455,23 @@ new Chart(document.getElementById('pace-cum'), {
     'tudo':      { label:'Tudo',      ini:new Date(2000,0,1) },
   };
   let atual = 'trimestre';
+  let funilSel = 'Franquia';  // começa no que gera receita
+
+  const FUNIL_COR = {'Franquia':'#22c55e','GS Partner':'#a855f7','GS Partner Franqueados':'#f59e0b'};
+  const FUNIS = ['Franquia','GS Partner','GS Partner Franqueados'];
 
   const filtroEl = document.getElementById('ganhos-filtro');
   filtroEl.innerHTML = Object.entries(presets).map(([k,p])=>
     `<button data-p="${k}" style="font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid #334155;background:${k===atual?'#22c55e':'transparent'};color:${k===atual?'#04210f':'#cbd5e1'};cursor:pointer;font-weight:${k===atual?'700':'400'};">${p.label}</button>`
+  ).join('');
+
+  const funilEl = document.getElementById('ganhos-funil-filtro');
+  function pintaFunilBtns(){
+    funilEl.querySelectorAll('button').forEach(x=>{ const on=x.dataset.f===funilSel; const cor=FUNIL_COR[x.dataset.f]||'#3b82f6';
+      x.style.background=on?cor:'transparent'; x.style.color=on?'#0a0a0a':'#cbd5e1'; x.style.fontWeight=on?'700':'400'; x.style.borderColor=on?cor:'#334155'; });
+  }
+  funilEl.innerHTML = FUNIS.map(f=>
+    `<button data-f="${f}" style="font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid #334155;background:transparent;color:#cbd5e1;cursor:pointer;">${f}${f==='Franquia'?' · receita':' · sem receita'}</button>`
   ).join('');
 
   function topN(arr, key, n=10){
@@ -1464,7 +1479,7 @@ new Chart(document.getElementById('pace-cum'), {
     arr.forEach(x=>{ const v=x[key]; if(v){ c[v]=(c[v]||0)+1; } });
     return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,n);
   }
-  function coluna(titulo, lista, total, cor){
+  function coluna(titulo, lista, cor){
     if(!lista.length) return `<div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:10px 12px;"><div style="font-weight:700;color:${cor};margin-bottom:8px;font-size:13px;">${titulo}</div><div style="color:#64748b;font-size:12px;">Sem dados no período</div></div>`;
     const max=lista[0][1];
     const rows=lista.map(([k,n])=>`
@@ -1481,13 +1496,25 @@ new Chart(document.getElementById('pace-cum'), {
 
   function render(){
     const ini = presets[atual].ini;
-    const filt = dados.filter(x=>{ const dt=new Date(x.d+'T00:00:00'); return dt>=ini && dt<=hoje; });
+    const noPeriodo = dados.filter(x=>{ const dt=new Date(x.d+'T00:00:00'); return dt>=ini && dt<=hoje; });
+    // Cards de resumo por funil (no período)
+    document.getElementById('ganhos-funil-cards').innerHTML = FUNIS.map(f=>{
+      const n = noPeriodo.filter(x=>x.funil===f).length;
+      const on = f===funilSel;
+      return `<div style="flex:1; min-width:150px; background:${on?'#0f1d12':'var(--color-background-secondary,#0f172a)'}; border:1px solid ${on?FUNIL_COR[f]:'#1e293b'}; border-radius:8px; padding:10px 12px;">
+        <div style="font-size:12px; color:#94a3b8;">${f}${f==='Franquia'?' (receita)':' (sem receita)'}</div>
+        <div style="font-size:24px; font-weight:700; color:${FUNIL_COR[f]};">${n}</div>
+      </div>`;
+    }).join('');
+    // Rankings do funil selecionado
+    const filt = noPeriodo.filter(x=>x.funil===funilSel);
+    const cor = FUNIL_COR[funilSel];
     document.getElementById('ganhos-resumo').textContent =
-      `${filt.length} negócios ganhos no funil Franquia · período: ${fmtBR(ini.toISOString().slice(0,10))} a ${fmtBR(today)}`;
+      `${filt.length} ganhos no funil ${funilSel} · período: ${fmtBR(ini.toISOString().slice(0,10))} a ${fmtBR(today)}`;
     document.getElementById('ganhos-grid').innerHTML =
-      coluna('Profissões', topN(filt,'prof'), filt.length, '#22c55e') +
-      coluna('Campanhas', topN(filt,'camp'), filt.length, '#3b82f6') +
-      coluna('Criativos', topN(filt,'cont'), filt.length, '#f59e0b');
+      coluna('Profissões', topN(filt,'prof'), cor) +
+      coluna('Campanhas', topN(filt,'camp'), cor) +
+      coluna('Criativos', topN(filt,'cont'), cor);
   }
   filtroEl.querySelectorAll('button').forEach(b=>{
     b.onclick=()=>{ atual=b.dataset.p;
@@ -1496,6 +1523,10 @@ new Chart(document.getElementById('pace-cum'), {
       render();
     };
   });
+  funilEl.querySelectorAll('button').forEach(b=>{
+    b.onclick=()=>{ funilSel=b.dataset.f; pintaFunilBtns(); render(); };
+  });
+  pintaFunilBtns();
   render();
 })();
 

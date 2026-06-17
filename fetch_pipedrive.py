@@ -394,8 +394,11 @@ print(f'   {len(perdidos_maio)} perdidos (criado+perdido Maio + Funil FR/PT + et
 pd.DataFrame(deals_maio).to_excel(os.path.join(OUT_DIR,'deals.xlsx'), index=False)
 pd.DataFrame(perdidos_maio).to_excel(os.path.join(OUT_DIR,'perdidos.xlsx'), index=False)
 
-# ============= GANHOS FRANQUIA (won) — para análise por período no dashboard =============
-print('→ Fetching deals GANHOS (Franquia)...')
+# ============= GANHOS por FUNIL (won) — análise por período/funil no dashboard =============
+# Captura ganhos dos 3 funis (Franquia=receita, Partner e Partner-Franqueados=sem receita)
+# com o funil ONDE foi ganho, para medir conversão de campanha por funil.
+print('→ Fetching deals GANHOS (todos os funis)...')
+GANHO_FUNIL = {42: 'Franquia', 44: 'GS Partner', 50: 'GS Partner Franqueados'}
 ganhos_rows = []
 start = 0
 while True:
@@ -412,13 +415,15 @@ while True:
             time.sleep(10 * (attempt + 1))
     data = body.get('data') or []
     for d in data:
-        if d.get('pipeline_id') != 42:  # só FRANQUIA
+        funil = GANHO_FUNIL.get(d.get('pipeline_id'))
+        if not funil:
             continue
         wt = (d.get('won_time') or '')[:10]
         if not wt:
             continue
         ganhos_rows.append({
             'Data ganho': wt,
+            'Funil': funil,
             'Profissão': d.get(CF_PROFISSAO),
             'UTM campaign': d.get(CF_UTM_CAMPAIGN),
             'UTM content': d.get(CF_UTM_CONTENT),
@@ -427,7 +432,7 @@ while True:
     if not pag.get('more_items_in_collection'):
         break
     start = pag.get('next_start', start + 500)
-print(f'   {len(ganhos_rows)} ganhos Franquia para ganhos.xlsx')
+print(f'   {len(ganhos_rows)} ganhos (todos os funis) para ganhos.xlsx')
 pd.DataFrame(ganhos_rows).to_excel(os.path.join(OUT_DIR,'ganhos.xlsx'), index=False)
 
 # ============= FETCH ACTIVITIES =============

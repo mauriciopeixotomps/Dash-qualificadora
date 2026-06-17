@@ -495,6 +495,7 @@ if os.path.exists(_gpath):
         if not _dts or _dts == 'nan': continue
         ganhos_franquia.append({
             'd': _dts,
+            'funil': (str(_r.get('Funil')).strip() if pd.notna(_r.get('Funil')) else 'Franquia'),
             'prof': _norm_prof(_r.get('Profissão')),
             'camp': (str(_r.get('UTM campaign')).strip() if pd.notna(_r.get('UTM campaign')) else None),
             'cont': (str(_r.get('UTM content')).strip() if pd.notna(_r.get('UTM content')) else None),
