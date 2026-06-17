@@ -484,6 +484,21 @@ for i, _k in enumerate(sorted(_wk), 1):
         'leads_total': sum(_v['leads'].values()),
         'ag': _v['ag'], 're': _v['re'], 'perdidos': _v['perdidos'],
     })
+
+# ── GANHOS FRANQUIA (histórico) — análise por período no dashboard ──────────
+ganhos_franquia = []
+_gpath = os.path.join(DATA_DIR, 'ganhos.xlsx')
+if os.path.exists(_gpath):
+    _g = pd.read_excel(_gpath)
+    for _, _r in _g.iterrows():
+        _dts = str(_r.get('Data ganho','') or '')[:10]
+        if not _dts or _dts == 'nan': continue
+        ganhos_franquia.append({
+            'd': _dts,
+            'prof': _norm_prof(_r.get('Profissão')),
+            'camp': (str(_r.get('UTM campaign')).strip() if pd.notna(_r.get('UTM campaign')) else None),
+            'cont': (str(_r.get('UTM content')).strip() if pd.notna(_r.get('UTM content')) else None),
+        })
 def _perdido_prod(r):
     etq = r.get('Negócio - Etiqueta') if 'Negócio - Etiqueta' in perdidos.columns else None
     p = etq_to_prod(etq) if etq is not None else None
@@ -716,6 +731,7 @@ dashboard = {
     'closer_team': {'franquia': sorted(CLOSER_FRANQUIA), 'partner': sorted(CLOSER_PARTNER)},
     'closer_daily': closer_daily,
     'weekly_resumo': weekly_resumo,
+    'ganhos_franquia': ganhos_franquia,
     'product': {
         'ag': ag_p, 're': re_p, 'ns': ns_p,
         'leads': leads_p, 'lost': lost_p,

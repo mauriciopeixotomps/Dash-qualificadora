@@ -394,6 +394,42 @@ print(f'   {len(perdidos_maio)} perdidos (criado+perdido Maio + Funil FR/PT + et
 pd.DataFrame(deals_maio).to_excel(os.path.join(OUT_DIR,'deals.xlsx'), index=False)
 pd.DataFrame(perdidos_maio).to_excel(os.path.join(OUT_DIR,'perdidos.xlsx'), index=False)
 
+# ============= GANHOS FRANQUIA (won) — para análise por período no dashboard =============
+print('→ Fetching deals GANHOS (Franquia)...')
+ganhos_rows = []
+start = 0
+while True:
+    params = {'api_token': TOKEN, 'status': 'won', 'limit': 500, 'start': start, 'sort': 'won_time DESC'}
+    url = f'{BASE}/deals?' + urllib.parse.urlencode(params)
+    body = None
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(url, timeout=120) as r:
+                body = json.loads(r.read())
+            break
+        except Exception as exc:
+            if attempt == 5: raise
+            time.sleep(10 * (attempt + 1))
+    data = body.get('data') or []
+    for d in data:
+        if d.get('pipeline_id') != 42:  # só FRANQUIA
+            continue
+        wt = (d.get('won_time') or '')[:10]
+        if not wt:
+            continue
+        ganhos_rows.append({
+            'Data ganho': wt,
+            'Profissão': d.get(CF_PROFISSAO),
+            'UTM campaign': d.get(CF_UTM_CAMPAIGN),
+            'UTM content': d.get(CF_UTM_CONTENT),
+        })
+    pag = (body.get('additional_data') or {}).get('pagination') or {}
+    if not pag.get('more_items_in_collection'):
+        break
+    start = pag.get('next_start', start + 500)
+print(f'   {len(ganhos_rows)} ganhos Franquia para ganhos.xlsx')
+pd.DataFrame(ganhos_rows).to_excel(os.path.join(OUT_DIR,'ganhos.xlsx'), index=False)
+
 # ============= FETCH ACTIVITIES =============
 # Vou pegar todas as atividades dos tipos relevantes em Maio
 # /activities aceita start_date e end_date (due_date)

@@ -339,6 +339,16 @@
     <div id="profissao-grid" class="grid grid-3"></div>
   </div>
 
+  <!-- Ganhos Franquia — análise por período -->
+  <div class="card" id="ganhos-card">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+      <h3 style="margin:0;">Ganhos Franquia — Profissões, Campanhas e Criativos</h3>
+      <div id="ganhos-filtro" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    </div>
+    <div id="ganhos-resumo" style="font-size:13px; color:var(--text-muted); margin:6px 0 12px;"></div>
+    <div class="grid grid-3" id="ganhos-grid"></div>
+  </div>
+
   <!-- Resumo por funil: leads, AG, perdidos, taxa de perda -->
   <div class="card" id="funil-resumo-card"><h3>Resumo por Funil — Leads · Agendamentos · Perdas</h3>
     <div id="funil-resumo-tabela"></div>
@@ -1422,6 +1432,71 @@ new Chart(document.getElementById('pace-cum'), {
       ${rows}
     </div>`;
   }).join('');
+})();
+
+// === GANHOS FRANQUIA — análise por período (filtro selecionável) ===
+(function renderGanhos(){
+  const card = document.getElementById('ganhos-card');
+  if (!card) return;
+  const dados = D.ganhos_franquia || [];
+  if (!dados.length) { card.style.display='none'; return; }
+
+  const hoje = new Date(today + 'T00:00:00');
+  const fmtBR = iso => iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
+
+  // Presets de período (referência = hoje)
+  function inicioTrimestre(d){ const m=Math.floor(d.getMonth()/3)*3; return new Date(d.getFullYear(), m, 1); }
+  const presets = {
+    'mes':       { label:'Este mês',  ini:new Date(hoje.getFullYear(), hoje.getMonth(), 1) },
+    'trimestre': { label:'Trimestre', ini:inicioTrimestre(hoje) },
+    'ano':       { label:'Este ano',  ini:new Date(hoje.getFullYear(), 0, 1) },
+    'tudo':      { label:'Tudo',      ini:new Date(2000,0,1) },
+  };
+  let atual = 'trimestre';
+
+  const filtroEl = document.getElementById('ganhos-filtro');
+  filtroEl.innerHTML = Object.entries(presets).map(([k,p])=>
+    `<button data-p="${k}" style="font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid #334155;background:${k===atual?'#22c55e':'transparent'};color:${k===atual?'#04210f':'#cbd5e1'};cursor:pointer;font-weight:${k===atual?'700':'400'};">${p.label}</button>`
+  ).join('');
+
+  function topN(arr, key, n=10){
+    const c={};
+    arr.forEach(x=>{ const v=x[key]; if(v){ c[v]=(c[v]||0)+1; } });
+    return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,n);
+  }
+  function coluna(titulo, lista, total, cor){
+    if(!lista.length) return `<div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:10px 12px;"><div style="font-weight:700;color:${cor};margin-bottom:8px;font-size:13px;">${titulo}</div><div style="color:#64748b;font-size:12px;">Sem dados no período</div></div>`;
+    const max=lista[0][1];
+    const rows=lista.map(([k,n])=>`
+      <div style="display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;margin-bottom:5px;">
+        <div>
+          <div style="font-size:11.5px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${k}">${k}</div>
+          <div style="height:5px;background:#1e293b;border-radius:3px;margin-top:2px;"><div style="height:100%;width:${n/max*100}%;background:${cor};border-radius:3px;"></div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#fff;">${n}</div>
+      </div>`).join('');
+    return `<div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:10px 12px;">
+      <div style="font-weight:700;color:${cor};margin-bottom:8px;font-size:13px;">${titulo}</div>${rows}</div>`;
+  }
+
+  function render(){
+    const ini = presets[atual].ini;
+    const filt = dados.filter(x=>{ const dt=new Date(x.d+'T00:00:00'); return dt>=ini && dt<=hoje; });
+    document.getElementById('ganhos-resumo').textContent =
+      `${filt.length} negócios ganhos no funil Franquia · período: ${fmtBR(ini.toISOString().slice(0,10))} a ${fmtBR(today)}`;
+    document.getElementById('ganhos-grid').innerHTML =
+      coluna('Profissões', topN(filt,'prof'), filt.length, '#22c55e') +
+      coluna('Campanhas', topN(filt,'camp'), filt.length, '#3b82f6') +
+      coluna('Criativos', topN(filt,'cont'), filt.length, '#f59e0b');
+  }
+  filtroEl.querySelectorAll('button').forEach(b=>{
+    b.onclick=()=>{ atual=b.dataset.p;
+      filtroEl.querySelectorAll('button').forEach(x=>{ const on=x.dataset.p===atual;
+        x.style.background=on?'#22c55e':'transparent'; x.style.color=on?'#04210f':'#cbd5e1'; x.style.fontWeight=on?'700':'400'; });
+      render();
+    };
+  });
+  render();
 })();
 
 // === Pace meta totals (estáticos — não mudam com filtro) ===
