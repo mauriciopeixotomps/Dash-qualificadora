@@ -54,7 +54,7 @@ CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Thuany','Adalberto Neto','An
                    'Felippe Porcella','Lorenzo Coronel','Samuel Brião','Fred','Gabriel Meneses',
                    'Ariane','Gabriela Oliveira','Luciana Krewer Issler','Mauricio Peixoto'}
 # Closers que saíram — contam nos TOTAIS mas NÃO aparecem no ranking
-CLOSER_SAIRAM = {'Tomaz Fabres','Haynnã'}
+CLOSER_SAIRAM = {'Tomaz Fabres','Haynnã','Thuany','Thuany Ghabril','Andresa Caldas'}
 
 # Data de início do funil Partner-Franqueados sob gestão da equipe
 PARTNER_START = _date(2026, 5, 27)
