@@ -49,9 +49,12 @@ CLOSER_GS_FRANQUEADOS = {'Raissa Antunes','Raíssa Nobre'}
 CLOSER_PARTNER  = {'Maria Luísa','Djulia Silva','Haynnã','Samuel Almeida',
                    'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres',
                    'Tom Mansur','Clayton Bastos'}
-CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Adalberto Neto','Andresa Caldas',
-                   'Émerson Cavitchoni','Suzanny Mauren Dihelem','Leonardo Ribeiro',
-                   'Felippe Porcella','Lorenzo Coronel','Samuel Brião','Fred','Gabriel Meneses'}
+CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Thuany','Adalberto Neto','Andresa Caldas',
+                   'Émerson Cavitchoni','Suzanny Mauren','Suzanny Mauren Dihelem','Leonardo Ribeiro',
+                   'Felippe Porcella','Lorenzo Coronel','Samuel Brião','Fred','Gabriel Meneses',
+                   'Ariane','Gabriela Oliveira','Luciana Krewer Issler','Mauricio Peixoto'}
+# Closers que saíram — contam nos TOTAIS mas NÃO aparecem no ranking
+CLOSER_SAIRAM = {'Tomaz Fabres','Haynnã'}
 
 # Data de início do funil Partner-Franqueados sob gestão da equipe
 PARTNER_START = _date(2026, 5, 27)
@@ -64,6 +67,7 @@ if not re_df2.empty:
         counts = re_df2[col_resp2].dropna().value_counts()
         for name, cnt in counts.items():
             name = str(name)
+            if name in CLOSER_SAIRAM: continue  # saiu — fora do ranking (total conta no produto)
             if name in CLOSER_FRANQUIA:
                 closer_by_funil['FRANQUIA'][name] = int(cnt)
             elif name in CLOSER_PARTNER:

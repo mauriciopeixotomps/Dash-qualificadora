@@ -44,10 +44,10 @@ CLOSER_GS_FRANQUEADOS = {'Raissa Antunes','Raíssa Nobre'}
 CLOSER_PARTNER = {'Maria Luísa','Djulia Silva','Haynnã','Samuel Almeida',
                   'Laura Feijó Junqueira','Manuella Oliveira','Tomaz Fabres',
                   'Tom Mansur','Clayton Bastos'}
-CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Adalberto Neto','Andresa Caldas',
-                   'Émerson Cavitchoni','Suzanny Mauren Dihelem','Leonardo Ribeiro',
-                   'Felippe Porcella','Lorenzo Coronel','Samuel Brião',
-                   'Fred','Gabriel Meneses'}
+CLOSER_FRANQUIA = {'William Dias','Thuany Ghabril','Thuany','Adalberto Neto','Andresa Caldas',
+                   'Émerson Cavitchoni','Suzanny Mauren','Suzanny Mauren Dihelem','Leonardo Ribeiro',
+                   'Felippe Porcella','Lorenzo Coronel','Samuel Brião','Fred','Gabriel Meneses',
+                   'Ariane','Gabriela Oliveira','Luciana Krewer Issler','Mauricio Peixoto'}
 
 with open(METAS) as f:
     metas_cfg = json.load(f)
