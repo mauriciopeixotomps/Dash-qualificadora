@@ -140,9 +140,11 @@ jobs:
 
           # ── Closers da Franquia — precisa vir antes de contratos e meetings
           FRANQUIA_CLOSERS = {
-              'adalberto neto', 'bruna salazar', 'felippe porcella', 'fred',
-              'gabriel meneses', 'leonardo ribeiro', 'lorenzo coronel',
-              'samuel brião', 'suzanny mauren dihelem', 'thuany ghabril',
+              'adalberto neto', 'ariane', 'bruna mota', 'bruna salazar',
+              'ernesto pozzebon', 'felippe porcella', 'fred',
+              'gabriel meneses', 'gabriela cunha', 'gabriela oliveira',
+              'leonardo ribeiro', 'lorenzo coronel', 'luciana krewer',
+              'samuel brião', 'suzanny mauren', 'thuany ghabril',
               'william dias', 'émerson cavitchoni', 'emerson cavitchoni',
           }
           users_resp = api_get('users')
