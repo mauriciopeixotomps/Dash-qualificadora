@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-24T18:55:52Z",
+  "generated_at": "2026-06-24T20:52:17Z",
   "mes": "2026-06",
-  "reunioes_franquia": 213,
-  "reunioes_total": 726,
-  "reunioes_mes": 213,
+  "reunioes_franquia": 219,
+  "reunioes_total": 743,
+  "reunioes_mes": 219,
   "contratos_mes": 0,
   "taxa_conversao_pct": 0.0,
   "reunioes_por_dia": {
@@ -23,15 +23,15 @@
     "2026-06-19": 8,
     "2026-06-22": 17,
     "2026-06-23": 12,
-    "2026-06-24": 5
+    "2026-06-24": 11
   },
   "contratos_por_dia": {},
   "funil_franquia": {
     "Em atendimento": 13,
-    "Desconhecida": 1905,
+    "Desconhecida": 1907,
     "SQL": 37,
-    "MQL FRANQUIA": 9,
-    "Pré-Qualificação": 12,
+    "MQL FRANQUIA": 8,
+    "Pré-Qualificação": 11,
     "Negociação": 1,
     "Proposta": 10,
     "Oportunidade": 9,
