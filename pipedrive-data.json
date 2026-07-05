@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-05T10:21:07Z",
+  "generated_at": "2026-07-05T12:21:26Z",
   "mes": "2026-07",
   "reunioes_franquia": 28,
   "reunioes_total": 67,
@@ -13,13 +13,13 @@
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1978,
+    "Desconhecida": 1977,
+    "LEAD": 2,
     "CONTRATO ENVIADO": 1,
     "NEGOCIAÇÃO": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
     "EM ATENDIMENTO": 2,
     "PRÉ-QUALIFICAÇÃO": 6,
-    "LEAD": 1,
     "OPORTUNIDADE (FPQ RECEBIDA)": 2,
     "AGUARDANDO FPQ": 4,
     "PROPOSTA": 2
