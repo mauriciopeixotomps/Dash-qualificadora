@@ -26,6 +26,7 @@ jobs:
         env:
           PIPEDRIVE_API_TOKEN: ${{ secrets.PIPEDRIVE_TOKEN }}
           PIPEDRIVE_COMPANY_DOMAIN: ${{ secrets.PIPEDRIVE_COMPANY_DOMAIN }}
+          PIPEDRIVE_SF_TOKEN: ${{ secrets.PIPEDRIVE_SF_TOKEN }}
           MES_OVERRIDE: ${{ github.event.inputs.mes_override }}
         run: |
           python3 - <<'PYEOF'
@@ -237,12 +238,86 @@ jobs:
           dias_uteis = sum(1 for i in range((today - date(today.year, today.month, 1)).days + 1)
                           if (date(today.year, today.month, 1) + timedelta(i)).weekday() < 5)
 
+          # ── Caixa realizado — Pipedrive Studio Fiscal (grupostudioexp) ──
+          caixa_realizado = None
+          SF_TOKEN = os.environ.get('PIPEDRIVE_SF_TOKEN', '').strip()
+          if SF_TOKEN:
+              SF_BASE = 'https://grupostudioexp.pipedrive.com/api/v1'
+
+              def sf_get(path, params=None, retries=5):
+                  p = dict(params or {}); p['api_token'] = SF_TOKEN
+                  url = f'{SF_BASE}/{path}?' + urllib.parse.urlencode(p)
+                  req2 = urllib.request.Request(url, headers={'Accept': 'application/json'})
+                  for attempt in range(retries):
+                      try:
+                          time.sleep(0.3)
+                          with urllib.request.urlopen(req2, timeout=30) as r:
+                              return json.loads(r.read())
+                      except urllib.error.HTTPError as e:
+                          if e.code == 429:
+                              time.sleep(10 * (attempt + 1))
+                          elif e.code == 400:
+                              return {'data': [], 'additional_data': {}}
+                          else:
+                              raise
+                  raise RuntimeError('SF: falhou após tentativas')
+
+              def sf_fetch_paged(path, params, max_pages=20):
+                  items, start = [], 0
+                  for _ in range(max_pages):
+                      r = sf_get(path, {**params, 'limit': 100, 'start': start})
+                      batch = r.get('data') or []
+                      if not batch: break
+                      items.extend(batch)
+                      more = (r.get('additional_data') or {}).get('pagination', {}).get('more_items_in_collection', False)
+                      if not more: break
+                      start += len(batch)
+                  return items
+
+              # Auto-descobrir pipeline de Franquia na SF
+              sf_pipelines = sf_get('pipelines').get('data') or []
+              print("SF pipelines:")
+              for pl in sf_pipelines: print(f"  id={pl['id']} name={pl['name']}")
+              sf_pipeline_id = None
+              for pl in sf_pipelines:
+                  if any(k in pl['name'].lower() for k in ('franquia', 'expansao', 'expansão')):
+                      sf_pipeline_id = pl['id']
+                      print(f"SF pipeline selecionado: {pl['name']} (id={sf_pipeline_id})")
+                      break
+              if sf_pipeline_id:
+                  sf_won_items = sf_fetch_paged('deals', {'pipeline_id': sf_pipeline_id, 'status': 'won'})
+                  caixa_realizado = 0
+                  for d in sf_won_items:
+                      wt = d.get('won_time') or ''
+                      if not wt: continue
+                      try:
+                          dt_utc = datetime.strptime(wt[:19], '%Y-%m-%d %H:%M:%S').replace(tzinfo=_tz.utc)
+                          won_date = (dt_utc - timedelta(hours=3)).strftime('%Y-%m-%d')
+                      except Exception:
+                          won_date = wt[:10]
+                      if won_date.startswith(mes):
+                          caixa_realizado += float(d.get('value') or 0)
+                  print(f"Caixa realizado SF: R$ {caixa_realizado:,.2f}")
+              else:
+                  print("SF: pipeline de Franquia não encontrado — caixa=null")
+          else:
+              print("PIPEDRIVE_SF_TOKEN não configurado — caixa=null")
+
+          # ── UPs e comissão ─────────────────────────────────────────────
+          UP_FRANQUIAS = 4
+          UP_CAIXA     = 140_000
+          up_f = contratos_mes // UP_FRANQUIAS
+          up_c = int(caixa_realizado // UP_CAIXA) if caixa_realizado is not None else None
+          ups  = min(up_f, up_c) if up_c is not None else None
+          comissao_variavel = max(0, (ups - 1)) * 5000 if ups is not None else None
+          print(f"UPs: Franquias={up_f}, Caixa={up_c}, total={ups}, comissão=R${comissao_variavel}")
+
           output = {
               'generated_at':          datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
               'mes':                   mes,
-              'reunioes_franquia':     reunioes_mes,    # para cálculo da taxa
-              'reunioes_total':        reunioes_total,  # para cálculo da comissão
-              'reunioes_mes':          reunioes_mes,    # compat. retroativa
+              'reunioes_franquia':     reunioes_mes,
+              'reunioes_total':        reunioes_total,
+              'reunioes_mes':          reunioes_mes,
               'contratos_mes':         contratos_mes,
               'taxa_conversao_pct':    taxa,
               'reunioes_por_dia':      dict(sorted(reunioes_por_dia.items())),
@@ -250,10 +325,15 @@ jobs:
               'funil_franquia':        funil_franquia,
               'pipeline_id':           pipeline_id,
               'dias_uteis_decorridos': dias_uteis,
+              'caixa_realizado':       caixa_realizado,
+              'up_franquias':          up_f,
+              'up_caixa':              up_c,
+              'ups_completos':         ups,
+              'comissao_variavel':     comissao_variavel,
           }
           with open(output_file, 'w', encoding='utf-8') as f:
               json.dump(output, f, ensure_ascii=False, indent=2)
-          print(f"OK — {reunioes_mes} RE-Franquia, {reunioes_total} RE-Total, {contratos_mes} contratos, {taxa}%")
+          print(f"OK — {reunioes_mes} RE-Franquia, {reunioes_total} RE-Total, {contratos_mes} contratos, caixa={caixa_realizado}, {ups} UPs")
           PYEOF
 
       - name: Commit & push pipedrive-data.json
