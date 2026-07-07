@@ -287,6 +287,7 @@ jobs:
               if sf_pipeline_id:
                   sf_won_items = sf_fetch_paged('deals', {'pipeline_id': sf_pipeline_id, 'status': 'won'})
                   caixa_realizado = 0
+                  contratos_sf    = 0
                   for d in sf_won_items:
                       wt = d.get('won_time') or ''
                       if not wt: continue
@@ -297,7 +298,8 @@ jobs:
                           won_date = wt[:10]
                       if won_date.startswith(mes):
                           caixa_realizado += float(d.get('value') or 0)
-                  print(f"Caixa realizado SF: R$ {caixa_realizado:,.2f}")
+                          contratos_sf    += 1
+                  print(f"SF: {contratos_sf} contratos, Caixa R$ {caixa_realizado:,.2f}")
               else:
                   print("SF: pipeline de Franquia não encontrado — caixa=null")
           else:
@@ -306,11 +308,12 @@ jobs:
           # ── UPs e comissão ─────────────────────────────────────────────
           UP_FRANQUIAS = 4
           UP_CAIXA     = 140_000
-          up_f = contratos_mes // UP_FRANQUIAS
+          franquias_vendidas = contratos_sf if SF_TOKEN and sf_pipeline_id else contratos_mes
+          up_f = franquias_vendidas // UP_FRANQUIAS
           up_c = int(caixa_realizado // UP_CAIXA) if caixa_realizado is not None else None
           ups  = min(up_f, up_c) if up_c is not None else None
           comissao_variavel = max(0, (ups - 1)) * 5000 if ups is not None else None
-          print(f"UPs: Franquias={up_f}, Caixa={up_c}, total={ups}, comissão=R${comissao_variavel}")
+          print(f"UPs: Franquias={up_f} ({franquias_vendidas} vendidas), Caixa={up_c}, total={ups}, comissão=R${comissao_variavel}")
 
           output = {
               'generated_at':          datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -319,6 +322,7 @@ jobs:
               'reunioes_total':        reunioes_total,
               'reunioes_mes':          reunioes_mes,
               'contratos_mes':         contratos_mes,
+              'franquias_vendidas':    franquias_vendidas,
               'taxa_conversao_pct':    taxa,
               'reunioes_por_dia':      dict(sorted(reunioes_por_dia.items())),
               'contratos_por_dia':     dict(sorted(contratos_por_dia.items())),
@@ -333,7 +337,7 @@ jobs:
           }
           with open(output_file, 'w', encoding='utf-8') as f:
               json.dump(output, f, ensure_ascii=False, indent=2)
-          print(f"OK — {reunioes_mes} RE-Franquia, {reunioes_total} RE-Total, {contratos_mes} contratos, caixa={caixa_realizado}, {ups} UPs")
+          print(f"OK — {reunioes_mes} RE-Franquia, {reunioes_total} RE-Total, {franquias_vendidas} franquias vendidas, caixa={caixa_realizado}, {ups} UPs")
           PYEOF
 
       - name: Commit & push pipedrive-data.json
