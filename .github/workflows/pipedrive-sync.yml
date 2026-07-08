@@ -411,8 +411,8 @@ jobs:
               sdr_metrics = {}
               for s_email, s_pid in SDR_USER_IDS.items():
                   time.sleep(0.4)
-                  # Negócios iniciados = deals com owner=SDR criados no mês
-                  neg_paged, _  = fetch_paged('deals', {'user_id': s_pid, 'status': 'all'}, max_pages=10)
+                  # Negócios iniciados = deals no pipeline principal com owner=SDR criados no mês
+                  neg_paged, _  = fetch_paged('deals', {'user_id': s_pid, 'pipeline_id': pipeline_id, 'status': 'all'}, max_pages=10)
                   neg_iniciados = sum(1 for d in neg_paged if (d.get('add_time') or '')[:7] == mes)
                   time.sleep(0.4)
                   # Agendamentos CC1 (tipos: agendamento_de_cc1, agendamento_cc1___bot, agendamento_bot)
