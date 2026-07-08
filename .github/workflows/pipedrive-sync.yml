@@ -365,12 +365,13 @@ jobs:
           SB_URL_ENV = os.environ.get('SUPABASE_URL', '').strip()
           SB_KEY_ENV = os.environ.get('SUPABASE_SERVICE_KEY', '').strip()
           if SB_URL_ENV and SB_KEY_ENV:
-              # Mapa email→pipedrive_user_id (SF) para closers
+              # Mapa email→pipedrive_user_id (SF) para closers e gestor
               SF_USER_IDS = {
                   'adalberto.neto@grupostudio.com.br':    24688510,
                   'frederico.garcia@grupostudio.com.br':  23882023,
                   'leonardo.ribeiro@grupostudio.com.br':  22760768,
                   'luciana.issler@grupostudio.com.br':    25500365,
+                  'yuri.ivasko@grupostudio.com.br':       25604909,
               }
               # Mapa email→pipedrive_user_id (Qualificadora) para SDRs
               SDR_USER_IDS = {
@@ -423,8 +424,11 @@ jobs:
               print(f"Supabase: {len(profiles)} perfis encontrados")
 
               now_iso = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-              UP_CLOSER_F = 1
-              UP_CLOSER_C = 35_000
+              UP_ROLE = {
+                  'closer':  {'f': 1, 'c': 35_000,  'val': 2_500},
+                  'gerente': {'f': 4, 'c': 140_000, 'val': 5_000},
+                  'gestor':  {'f': 8, 'c': 280_000, 'val': 10_000},
+              }
               rows = []
               for prof in profiles:
                   role  = prof.get('role','')
@@ -439,12 +443,13 @@ jobs:
                           'comissao_variavel': comissao_variavel or 0,
                           'generated_at': now_iso,
                       })
-                  elif role == 'closer':
-                      cd = closer_sf_data.get(email, {'franquias': 0, 'caixa': 0.0})
-                      c_up_f = cd['franquias'] // UP_CLOSER_F
-                      c_up_c = int(cd['caixa'] // UP_CLOSER_C)
+                  elif role in ('closer', 'gestor'):
+                      cd  = closer_sf_data.get(email, {'franquias': 0, 'caixa': 0.0})
+                      cfg = UP_ROLE[role]
+                      c_up_f = cd['franquias'] // cfg['f']
+                      c_up_c = int(cd['caixa'] // cfg['c'])
                       c_ups  = min(c_up_f, c_up_c)
-                      c_com  = max(0, c_ups - 1) * 2500
+                      c_com  = max(0, c_ups - 1) * cfg['val']
                       rows.append({
                           'user_id': uid, 'mes': mes,
                           'franquias_vendidas': cd['franquias'],
