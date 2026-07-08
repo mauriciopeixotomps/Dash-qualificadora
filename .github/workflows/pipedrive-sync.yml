@@ -371,7 +371,6 @@ jobs:
                   'frederico.garcia@grupostudio.com.br':  23882023,
                   'leonardo.ribeiro@grupostudio.com.br':  22760768,
                   'luciana.issler@grupostudio.com.br':    25500365,
-                  'yuri.ivasko@grupostudio.com.br':       25604909,
               }
               # Mapa email→pipedrive_user_id (Qualificadora) para SDRs
               SDR_USER_IDS = {
