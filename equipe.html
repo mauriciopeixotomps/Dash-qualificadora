@@ -39,6 +39,9 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 }
 .btn-login:hover { background: #22d3ee; }
 .login-err { color: var(--red); font-size: 12px; margin-top: 10px; min-height: 18px; }
+.login-ok  { color: var(--green); font-size: 12px; margin-top: 10px; }
+.link-btn  { background: none; border: none; color: var(--cyan); font-size: 12px; cursor: pointer; padding: 0; margin-top: 12px; display: block; text-align: center; }
+.link-btn:hover { text-decoration: underline; }
 
 /* ── APP ── */
 #app-screen { display: none; padding: 20px; max-width: 1100px; margin: 0 auto; }
@@ -133,7 +136,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 
 <!-- ── LOGIN ── -->
 <div id="login-screen">
-  <div class="login-box">
+  <div class="login-box" id="login-box">
     <div class="login-logo">Grupo Studio</div>
     <div class="login-sub">Painel de Comissão — Equipe Expansão</div>
     <div class="field">
@@ -146,6 +149,37 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
     </div>
     <button class="btn-login" id="btn-login">Entrar</button>
     <div class="login-err" id="login-err"></div>
+    <button class="link-btn" id="btn-forgot">Esqueci minha senha</button>
+  </div>
+
+  <!-- tela recuperação -->
+  <div class="login-box" id="forgot-box" style="display:none;">
+    <div class="login-logo">Grupo Studio</div>
+    <div class="login-sub">Recuperação de senha</div>
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="inp-reset-email" placeholder="seu@grupostudio.com.br" autocomplete="email">
+    </div>
+    <button class="btn-login" id="btn-send-reset">Enviar link de redefinição</button>
+    <div class="login-ok" id="reset-ok" style="display:none;">Link enviado! Verifique seu e-mail.</div>
+    <div class="login-err" id="reset-err"></div>
+    <button class="link-btn" id="btn-back-login">← Voltar para o login</button>
+  </div>
+
+  <!-- tela nova senha (após clicar no link do email) -->
+  <div class="login-box" id="newpwd-box" style="display:none;">
+    <div class="login-logo">Grupo Studio</div>
+    <div class="login-sub">Defina sua nova senha</div>
+    <div class="field">
+      <label>Nova senha</label>
+      <input type="password" id="inp-newpwd" placeholder="mínimo 6 caracteres">
+    </div>
+    <div class="field">
+      <label>Confirmar senha</label>
+      <input type="password" id="inp-newpwd2" placeholder="repita a senha">
+    </div>
+    <button class="btn-login" id="btn-set-pwd">Salvar nova senha</button>
+    <div class="login-err" id="newpwd-err"></div>
   </div>
 </div>
 
@@ -240,6 +274,48 @@ async function login() {
 document.getElementById('btn-login').addEventListener('click', login);
 document.getElementById('inp-senha').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
+// ── ESQUECI MINHA SENHA ─────────────────────────────────────
+document.getElementById('btn-forgot').addEventListener('click', () => {
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('forgot-box').style.display = 'block';
+  const email = document.getElementById('inp-email').value.trim();
+  if (email) document.getElementById('inp-reset-email').value = email;
+});
+
+document.getElementById('btn-back-login').addEventListener('click', () => {
+  document.getElementById('forgot-box').style.display = 'none';
+  document.getElementById('login-box').style.display = 'block';
+});
+
+document.getElementById('btn-send-reset').addEventListener('click', async () => {
+  const email = document.getElementById('inp-reset-email').value.trim();
+  document.getElementById('reset-err').textContent = '';
+  document.getElementById('reset-ok').style.display = 'none';
+  if (!email) { document.getElementById('reset-err').textContent = 'Informe seu e-mail.'; return; }
+  document.getElementById('btn-send-reset').textContent = 'Enviando...';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://mauriciopeixotomps.github.io/Dash-qualificadora/equipe.html',
+  });
+  document.getElementById('btn-send-reset').textContent = 'Enviar link de redefinição';
+  if (error) { document.getElementById('reset-err').textContent = error.message; return; }
+  document.getElementById('reset-ok').style.display = 'block';
+});
+
+// ── NOVA SENHA (callback do link de email) ──────────────────
+document.getElementById('btn-set-pwd').addEventListener('click', async () => {
+  const p1 = document.getElementById('inp-newpwd').value;
+  const p2 = document.getElementById('inp-newpwd2').value;
+  document.getElementById('newpwd-err').textContent = '';
+  if (p1.length < 6) { document.getElementById('newpwd-err').textContent = 'Mínimo 6 caracteres.'; return; }
+  if (p1 !== p2)     { document.getElementById('newpwd-err').textContent = 'As senhas não coincidem.'; return; }
+  document.getElementById('btn-set-pwd').textContent = 'Salvando...';
+  const { error } = await sb.auth.updateUser({ password: p1 });
+  document.getElementById('btn-set-pwd').textContent = 'Salvar nova senha';
+  if (error) { document.getElementById('newpwd-err').textContent = error.message; return; }
+  // senha salva → vai para o app
+  showApp();
+});
+
 document.getElementById('btn-logout').addEventListener('click', async () => {
   await sb.auth.signOut();
   document.getElementById('login-screen').style.display = 'flex';
@@ -254,9 +330,21 @@ document.getElementById('btn-back').addEventListener('click', () => {
 
 // ── INICIALIZAÇÃO ───────────────────────────────────────────
 sb.auth.onAuthStateChange((event, session) => {
-  if (session) showApp();
-  else {
+  if (event === 'PASSWORD_RECOVERY') {
+    // usuário clicou no link de redefinição → mostra tela de nova senha
     document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('forgot-box').style.display = 'none';
+    document.getElementById('newpwd-box').style.display = 'block';
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('detail-screen').style.display = 'none';
+  } else if (session) {
+    showApp();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-box').style.display = 'block';
+    document.getElementById('forgot-box').style.display = 'none';
+    document.getElementById('newpwd-box').style.display = 'none';
     document.getElementById('app-screen').style.display = 'none';
     document.getElementById('detail-screen').style.display = 'none';
   }
