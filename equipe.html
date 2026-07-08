@@ -329,18 +329,27 @@ document.getElementById('btn-back').addEventListener('click', () => {
 });
 
 // ── INICIALIZAÇÃO ───────────────────────────────────────────
+function showNewPwdScreen() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('forgot-box').style.display = 'none';
+  document.getElementById('newpwd-box').style.display = 'block';
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('detail-screen').style.display = 'none';
+}
+
+// Detectar token de recuperação na URL (hash ou query)
+const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+const queryParams = new URLSearchParams(window.location.search);
+const isRecovery = hashParams.get('type') === 'recovery' || queryParams.get('type') === 'recovery';
+if (isRecovery) showNewPwdScreen();
+
 sb.auth.onAuthStateChange((event, session) => {
   if (event === 'PASSWORD_RECOVERY') {
-    // usuário clicou no link de redefinição → mostra tela de nova senha
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('login-box').style.display = 'none';
-    document.getElementById('forgot-box').style.display = 'none';
-    document.getElementById('newpwd-box').style.display = 'block';
-    document.getElementById('app-screen').style.display = 'none';
-    document.getElementById('detail-screen').style.display = 'none';
-  } else if (session) {
+    showNewPwdScreen();
+  } else if (session && !isRecovery) {
     showApp();
-  } else {
+  } else if (!session && !isRecovery) {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('login-box').style.display = 'block';
     document.getElementById('forgot-box').style.display = 'none';
