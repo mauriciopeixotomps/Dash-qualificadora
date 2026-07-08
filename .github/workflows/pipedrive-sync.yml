@@ -360,6 +360,84 @@ jobs:
           with open(output_file, 'w', encoding='utf-8') as f:
               json.dump(output, f, ensure_ascii=False, indent=2)
           print(f"OK — {reunioes_mes} RE-Franquia, {reunioes_total} RE-Total, {franquias_vendidas} franquias vendidas, caixa={caixa_realizado}, {ups} UPs")
+
+          # ── Gravar no Supabase por usuário ────────────────────────────
+          SB_URL_ENV = os.environ.get('SUPABASE_URL', '').strip()
+          SB_KEY_ENV = os.environ.get('SUPABASE_SERVICE_KEY', '').strip()
+          if SB_URL_ENV and SB_KEY_ENV:
+              # Mapa email → dados do mês (por cargo)
+              # Buscar perfis
+              req_prof = urllib.request.Request(
+                  f'{SB_URL_ENV}/rest/v1/profiles?select=id,email,role',
+                  headers={'Authorization': f'Bearer {SB_KEY_ENV}', 'apikey': SB_KEY_ENV}
+              )
+              with urllib.request.urlopen(req_prof, timeout=15) as rp:
+                  profiles = json.loads(rp.read())
+              print(f"Supabase: {len(profiles)} perfis encontrados")
+
+              now_iso = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+              rows = []
+              for prof in profiles:
+                  role  = prof.get('role','')
+                  uid   = prof['id']
+                  email = prof.get('email','')
+                  if role in ('closer','gerente','gestor'):
+                      # Para gerente: usa dados já calculados
+                      if role == 'gerente':
+                          rows.append({
+                              'user_id': uid, 'mes': mes,
+                              'franquias_vendidas': franquias_vendidas,
+                              'caixa_realizado': caixa_realizado,
+                              'ups_completos': ups or 0,
+                              'comissao_variavel': comissao_variavel or 0,
+                              'generated_at': now_iso,
+                          })
+                      else:
+                          # Closer/Gestor: buscar individualmente no SF por owner_id
+                          # (implementação futura — por ora insere zeros)
+                          rows.append({
+                              'user_id': uid, 'mes': mes,
+                              'franquias_vendidas': 0,
+                              'caixa_realizado': None,
+                              'ups_completos': 0,
+                              'comissao_variavel': 0,
+                              'generated_at': now_iso,
+                          })
+                  elif role == 'sdr':
+                      # SDR: buscar métricas por user_id no Pipedrive principal
+                      # Reuniões agendadas e realizadas já temos por uid
+                      rows.append({
+                          'user_id': uid, 'mes': mes,
+                          'leads_recebidos': 0,
+                          'cc1_agendadas': 0,
+                          'cc1_realizadas': 0,
+                          'taxa_agendamento': 0,
+                          'taxa_realizacao': 0,
+                          'ups_completos': 0,
+                          'comissao_variavel': 0,
+                          'generated_at': now_iso,
+                      })
+                  # admin: sem dados de comissão individual
+              if rows:
+                  payload = json.dumps(rows).encode()
+                  req_ins = urllib.request.Request(
+                      f'{SB_URL_ENV}/rest/v1/commission_data',
+                      data=payload,
+                      headers={
+                          'Authorization': f'Bearer {SB_KEY_ENV}',
+                          'apikey': SB_KEY_ENV,
+                          'Content-Type': 'application/json',
+                          'Prefer': 'resolution=merge-duplicates',
+                      },
+                      method='POST'
+                  )
+                  try:
+                      with urllib.request.urlopen(req_ins, timeout=15) as ri:
+                          print(f"Supabase: {len(rows)} registros gravados (HTTP {ri.status})")
+                  except urllib.error.HTTPError as e:
+                      print(f"Supabase erro: {e.read().decode()[:200]}")
+          else:
+              print("SUPABASE_URL/SERVICE_KEY não configurados — pulando gravação")
           PYEOF
 
       - name: Commit & push pipedrive-data.json
