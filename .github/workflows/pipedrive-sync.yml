@@ -285,12 +285,22 @@ jobs:
                       print(f"SF pipeline selecionado: {pl['name']} (id={sf_pipeline_id})")
                       break
               if sf_pipeline_id:
+                  # Descobrir stage final do pipeline (ex: "CONTRATO ENVIADO")
+                  sf_stages = sf_get('stages', {'pipeline_id': sf_pipeline_id}).get('data') or []
+                  sf_stage_ids = [s['id'] for s in sf_stages]
+                  sf_last_stage_id = max(sf_stage_ids) if sf_stage_ids else None
+                  print(f"SF stages: {[s['name'] for s in sf_stages]}")
+                  print(f"SF stage final (contrato): id={sf_last_stage_id}")
+
                   sf_won_items = sf_fetch_paged('deals', {'pipeline_id': sf_pipeline_id, 'status': 'won'})
                   caixa_realizado = 0
                   contratos_sf    = 0
                   for d in sf_won_items:
                       wt = d.get('won_time') or ''
                       if not wt: continue
+                      # Só contar deals que estavam no stage final (CONTRATO ENVIADO)
+                      if sf_last_stage_id and d.get('stage_id') != sf_last_stage_id:
+                          continue
                       try:
                           dt_utc = datetime.strptime(wt[:19], '%Y-%m-%d %H:%M:%S').replace(tzinfo=_tz.utc)
                           won_date = (dt_utc - timedelta(hours=3)).strftime('%Y-%m-%d')
@@ -299,7 +309,7 @@ jobs:
                       if won_date.startswith(mes):
                           caixa_realizado += float(d.get('value') or 0)
                           contratos_sf    += 1
-                  print(f"SF: {contratos_sf} contratos, Caixa R$ {caixa_realizado:,.2f}")
+                  print(f"SF: {contratos_sf} contratos (stage final), Caixa R$ {caixa_realizado:,.2f}")
               else:
                   print("SF: pipeline de Franquia não encontrado — caixa=null")
           else:
