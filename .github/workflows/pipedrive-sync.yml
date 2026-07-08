@@ -406,13 +406,38 @@ jobs:
                       closer_sf_data[c_email] = {'franquias': c_franq, 'caixa': c_caixa}
                       print(f"Closer {c_email}: {c_franq} franq, R${c_caixa:,.0f}")
 
-              # Pré-calcular reuniões por SDR no Pipedrive principal
+              # Pré-calcular métricas por SDR no Pipedrive principal
+              AGEND_TYPES = 'agendamento_de_cc1,agendamento_cc1___bot,agendamento_bot'
               sdr_metrics = {}
               for s_email, s_pid in SDR_USER_IDS.items():
-                  s_acts = get_meetings_for_user(str(s_pid))
-                  cc1_r = len(s_acts)
-                  sdr_metrics[s_email] = {'cc1_realizadas': cc1_r}
-                  print(f"SDR {s_email}: {cc1_r} CC1 realizadas")
+                  time.sleep(0.4)
+                  # Negócios iniciados = deals com owner=SDR criados no mês
+                  neg_paged, _  = fetch_paged('deals', {'user_id': s_pid, 'status': 'all'}, max_pages=10)
+                  neg_iniciados = sum(1 for d in neg_paged if (d.get('add_time') or '')[:7] == mes)
+                  time.sleep(0.4)
+                  # Agendamentos CC1 (tipos: agendamento_de_cc1, agendamento_cc1___bot, agendamento_bot)
+                  agend_paged, _ = fetch_paged('activities', {'user_id': s_pid, 'type': AGEND_TYPES}, max_pages=10)
+                  agendamentos   = sum(1 for a in agend_paged if (a.get('due_date') or '')[:7] == mes)
+                  time.sleep(0.4)
+                  # CC1 Realizadas (meeting done, created_by = SDR)
+                  cc1_paged, _  = fetch_paged('activities', {'user_id': s_pid, 'type': 'meeting', 'done': 1}, max_pages=10)
+                  cc1_realizadas = sum(1 for a in cc1_paged
+                                       if (a.get('due_date') or '')[:7] == mes
+                                       and str(a.get('created_by_user_id') or '') == str(s_pid))
+                  taxa_ag  = round(agendamentos  / neg_iniciados  * 100, 1) if neg_iniciados  else 0
+                  taxa_re  = round(cc1_realizadas / agendamentos   * 100, 1) if agendamentos   else 0
+                  up1      = 1 if (taxa_ag >= 30 and taxa_re >= 65) else 0
+                  com_sdr  = 2000 if up1 else 0
+                  sdr_metrics[s_email] = {
+                      'leads_recebidos': neg_iniciados,
+                      'cc1_agendadas':   agendamentos,
+                      'cc1_realizadas':  cc1_realizadas,
+                      'taxa_agendamento': taxa_ag,
+                      'taxa_realizacao':  taxa_re,
+                      'ups_completos':    up1,
+                      'comissao_variavel': com_sdr,
+                  }
+                  print(f"SDR {s_email}: {neg_iniciados} neg, {agendamentos} agend ({taxa_ag}%), {cc1_realizadas} CC1 ({taxa_re}%) → UP={up1} R${com_sdr}")
 
               req_prof = urllib.request.Request(
                   f'{SB_URL_ENV}/rest/v1/profiles?select=id,email,role',
@@ -458,12 +483,20 @@ jobs:
                           'generated_at': now_iso,
                       })
                   elif role == 'sdr':
-                      sm = sdr_metrics.get(email, {'cc1_realizadas': 0})
+                      sm = sdr_metrics.get(email, {
+                          'leads_recebidos': 0, 'cc1_agendadas': 0, 'cc1_realizadas': 0,
+                          'taxa_agendamento': 0, 'taxa_realizacao': 0,
+                          'ups_completos': 0, 'comissao_variavel': 0,
+                      })
                       rows.append({
                           'user_id': uid, 'mes': mes,
-                          'cc1_realizadas': sm['cc1_realizadas'],
-                          'ups_completos': 0,
-                          'comissao_variavel': 0,
+                          'leads_recebidos':   sm['leads_recebidos'],
+                          'cc1_agendadas':     sm['cc1_agendadas'],
+                          'cc1_realizadas':    sm['cc1_realizadas'],
+                          'taxa_agendamento':  sm['taxa_agendamento'],
+                          'taxa_realizacao':   sm['taxa_realizacao'],
+                          'ups_completos':     sm['ups_completos'],
+                          'comissao_variavel': sm['comissao_variavel'],
                           'generated_at': now_iso,
                       })
               if rows:
