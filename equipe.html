@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Comissão — Equipe Expansão</title>
+<!-- captura o hash ANTES do Supabase limpá-lo -->
+<script>window.__initialHash = window.location.hash;</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -338,8 +340,8 @@ function showNewPwdScreen() {
   document.getElementById('detail-screen').style.display = 'none';
 }
 
-// Detectar token de recuperação na URL (hash ou query)
-const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+// Detectar token de recuperação capturado ANTES do Supabase limpar o hash
+const hashParams = new URLSearchParams((window.__initialHash || '').replace('#', ''));
 const queryParams = new URLSearchParams(window.location.search);
 const isRecovery = hashParams.get('type') === 'recovery' || queryParams.get('type') === 'recovery';
 if (isRecovery) showNewPwdScreen();
