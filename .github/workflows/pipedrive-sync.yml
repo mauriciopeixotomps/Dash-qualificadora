@@ -310,6 +310,17 @@ jobs:
                           caixa_realizado += float(d.get('value') or 0)
                           contratos_sf    += 1
                   print(f"SF: {contratos_sf} contratos (stage final), Caixa R$ {caixa_realizado:,.2f}")
+
+                  # Funil SF — open deals com stage_id válido no pipeline
+                  sf_stage_map = {s['id']: s['name'] for s in sf_stages}
+                  sf_open = sf_fetch_paged('deals', {'pipeline_id': sf_pipeline_id, 'status': 'open'})
+                  funil_sf = {}
+                  for d in sf_open:
+                      sid = d.get('stage_id')
+                      stage_name = sf_stage_map.get(sid)
+                      if stage_name:  # ignora stages desconhecidos
+                          funil_sf[stage_name] = funil_sf.get(stage_name, 0) + 1
+                  print(f"SF funil: {funil_sf}")
               else:
                   print("SF: pipeline de Franquia não encontrado — caixa=null")
           else:
@@ -340,6 +351,7 @@ jobs:
               'pipeline_id':           pipeline_id,
               'dias_uteis_decorridos': dias_uteis,
               'caixa_realizado':       caixa_realizado,
+              'funil_sf':              funil_sf if SF_TOKEN and sf_pipeline_id else {},
               'up_franquias':          up_f,
               'up_caixa':              up_c,
               'ups_completos':         ups,

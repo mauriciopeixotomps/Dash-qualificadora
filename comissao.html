@@ -381,7 +381,7 @@ function buildUPCards(upsAtual) {
 function applyData(pd) {
   const franquias = pd ? (pd.franquias_vendidas ?? pd.contratos_mes ?? 0) : 0;
   const caixa     = pd ? pd.caixa_realizado : null;
-  const funil     = pd ? (pd.funil_franquia || {}) : {};
+  const funil     = pd ? (pd.funil_sf || pd.funil_franquia || {}) : {};
   const du        = pd ? (pd.dias_uteis_decorridos ?? 0) : 0;
   const gerado    = pd ? pd.generated_at : null;
   const mes       = pd ? pd.mes : '—';
