@@ -27,6 +27,8 @@ jobs:
           PIPEDRIVE_API_TOKEN: ${{ secrets.PIPEDRIVE_TOKEN }}
           PIPEDRIVE_COMPANY_DOMAIN: ${{ secrets.PIPEDRIVE_COMPANY_DOMAIN }}
           PIPEDRIVE_SF_TOKEN: ${{ secrets.PIPEDRIVE_SF_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           MES_OVERRIDE: ${{ github.event.inputs.mes_override }}
         run: |
           python3 - <<'PYEOF'
