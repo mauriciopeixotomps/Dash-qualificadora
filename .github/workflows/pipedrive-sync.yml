@@ -365,8 +365,55 @@ jobs:
           SB_URL_ENV = os.environ.get('SUPABASE_URL', '').strip()
           SB_KEY_ENV = os.environ.get('SUPABASE_SERVICE_KEY', '').strip()
           if SB_URL_ENV and SB_KEY_ENV:
-              # Mapa email → dados do mês (por cargo)
-              # Buscar perfis
+              # Mapa email→pipedrive_user_id (SF) para closers
+              SF_USER_IDS = {
+                  'adalberto.neto@grupostudio.com.br':    24688510,
+                  'frederico.garcia@grupostudio.com.br':  23882023,
+                  'leonardo.ribeiro@grupostudio.com.br':  22760768,
+                  'luciana.issler@grupostudio.com.br':    25500365,
+              }
+              # Mapa email→pipedrive_user_id (Qualificadora) para SDRs
+              SDR_USER_IDS = {
+                  'jonatans.junior@grupostudio.com.br':   24560514,
+                  'leonardo.soares@grupostudio.com.br':   24165647,
+                  'lorenzo.meneghetti@grupostudio.com.br':24196535,
+              }
+
+              # Pré-calcular franquias/caixa por closer no SF
+              closer_sf_data = {}
+              if SF_TOKEN and sf_pipeline_id and sf_last_stage_id:
+                  for c_email, c_pid in SF_USER_IDS.items():
+                      c_won = sf_fetch_paged('deals', {
+                          'pipeline_id': sf_pipeline_id,
+                          'status': 'won',
+                          'user_id': c_pid,
+                      })
+                      c_franq = 0
+                      c_caixa = 0.0
+                      for d in c_won:
+                          if d.get('stage_id') != sf_last_stage_id:
+                              continue
+                          wt = d.get('won_time') or ''
+                          if not wt: continue
+                          try:
+                              dt_utc = datetime.strptime(wt[:19], '%Y-%m-%d %H:%M:%S').replace(tzinfo=_tz.utc)
+                              won_date = (dt_utc - timedelta(hours=3)).strftime('%Y-%m-%d')
+                          except Exception:
+                              won_date = wt[:10]
+                          if won_date.startswith(mes):
+                              c_franq += 1
+                              c_caixa += float(d.get('value') or 0)
+                      closer_sf_data[c_email] = {'franquias': c_franq, 'caixa': c_caixa}
+                      print(f"Closer {c_email}: {c_franq} franq, R${c_caixa:,.0f}")
+
+              # Pré-calcular reuniões por SDR no Pipedrive principal
+              sdr_metrics = {}
+              for s_email, s_pid in SDR_USER_IDS.items():
+                  s_acts = get_meetings_for_user(str(s_pid))
+                  cc1_r = len(s_acts)
+                  sdr_metrics[s_email] = {'cc1_realizadas': cc1_r}
+                  print(f"SDR {s_email}: {cc1_r} CC1 realizadas")
+
               req_prof = urllib.request.Request(
                   f'{SB_URL_ENV}/rest/v1/profiles?select=id,email,role',
                   headers={'Authorization': f'Bearer {SB_KEY_ENV}', 'apikey': SB_KEY_ENV}
@@ -376,48 +423,45 @@ jobs:
               print(f"Supabase: {len(profiles)} perfis encontrados")
 
               now_iso = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+              UP_CLOSER_F = 1
+              UP_CLOSER_C = 35_000
               rows = []
               for prof in profiles:
                   role  = prof.get('role','')
                   uid   = prof['id']
                   email = prof.get('email','')
-                  if role in ('closer','gerente','gestor'):
-                      # Para gerente: usa dados já calculados
-                      if role == 'gerente':
-                          rows.append({
-                              'user_id': uid, 'mes': mes,
-                              'franquias_vendidas': franquias_vendidas,
-                              'caixa_realizado': caixa_realizado,
-                              'ups_completos': ups or 0,
-                              'comissao_variavel': comissao_variavel or 0,
-                              'generated_at': now_iso,
-                          })
-                      else:
-                          # Closer/Gestor: buscar individualmente no SF por owner_id
-                          # (implementação futura — por ora insere zeros)
-                          rows.append({
-                              'user_id': uid, 'mes': mes,
-                              'franquias_vendidas': 0,
-                              'caixa_realizado': None,
-                              'ups_completos': 0,
-                              'comissao_variavel': 0,
-                              'generated_at': now_iso,
-                          })
-                  elif role == 'sdr':
-                      # SDR: buscar métricas por user_id no Pipedrive principal
-                      # Reuniões agendadas e realizadas já temos por uid
+                  if role == 'gerente':
                       rows.append({
                           'user_id': uid, 'mes': mes,
-                          'leads_recebidos': 0,
-                          'cc1_agendadas': 0,
-                          'cc1_realizadas': 0,
-                          'taxa_agendamento': 0,
-                          'taxa_realizacao': 0,
+                          'franquias_vendidas': franquias_vendidas,
+                          'caixa_realizado': caixa_realizado,
+                          'ups_completos': ups or 0,
+                          'comissao_variavel': comissao_variavel or 0,
+                          'generated_at': now_iso,
+                      })
+                  elif role == 'closer':
+                      cd = closer_sf_data.get(email, {'franquias': 0, 'caixa': 0.0})
+                      c_up_f = cd['franquias'] // UP_CLOSER_F
+                      c_up_c = int(cd['caixa'] // UP_CLOSER_C)
+                      c_ups  = min(c_up_f, c_up_c)
+                      c_com  = max(0, c_ups - 1) * 2500
+                      rows.append({
+                          'user_id': uid, 'mes': mes,
+                          'franquias_vendidas': cd['franquias'],
+                          'caixa_realizado': cd['caixa'],
+                          'ups_completos': c_ups,
+                          'comissao_variavel': c_com,
+                          'generated_at': now_iso,
+                      })
+                  elif role == 'sdr':
+                      sm = sdr_metrics.get(email, {'cc1_realizadas': 0})
+                      rows.append({
+                          'user_id': uid, 'mes': mes,
+                          'cc1_realizadas': sm['cc1_realizadas'],
                           'ups_completos': 0,
                           'comissao_variavel': 0,
                           'generated_at': now_iso,
                       })
-                  # admin: sem dados de comissão individual
               if rows:
                   payload = json.dumps(rows).encode()
                   req_ins = urllib.request.Request(
