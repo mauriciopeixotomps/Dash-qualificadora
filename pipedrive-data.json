@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-08T00:33:08Z",
+  "generated_at": "2026-07-08T01:26:24Z",
   "mes": "2026-07",
   "reunioes_franquia": 56,
   "reunioes_total": 128,
@@ -31,6 +31,18 @@
   "pipeline_id": 62,
   "dias_uteis_decorridos": 6,
   "caixa_realizado": 31500.0,
+  "funil_sf": {
+    "PRÉ-QUALIFICAÇÃO": 6,
+    "CONTRATO ENVIADO": 1,
+    "NEGOCIAÇÃO": 1,
+    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
+    "LEAD": 2,
+    "EM ATENDIMENTO": 3,
+    "PROPOSTA": 2,
+    "AGUARDANDO FPQ": 2,
+    "MQL FRANQUIA": 2,
+    "OPORTUNIDADE (FPQ RECEBIDA)": 1
+  },
   "up_franquias": 0,
   "up_caixa": 0,
   "ups_completos": 0,
