@@ -400,13 +400,14 @@ async function loadTeam() {
 
   document.getElementById('team-cards').innerHTML = mesData.map(d => {
     const profile = d.profiles;
-    const role    = profile?.role || 'closer';
-    const { ups } = calcUPs(role, d);
-    const comissao = ROLES[role]?.comissao(ups) || 0;
+    const role        = profile?.role || 'closer';
+    const displayRole = role === 'admin' ? 'gerente' : role;
+    const { ups } = calcUPs(displayRole, d);
+    const comissao = ROLES[displayRole]?.comissao(ups) || 0;
     const cor = comissao > 0 ? 'var(--green)' : ups >= 1 ? 'var(--amber)' : 'var(--muted)';
-    const maxUP = ROLES[role]?.maxUP || 1;
+    const maxUP = ROLES[displayRole]?.maxUP || 1;
     const progPct = Math.min((ups / maxUP) * 100, 100);
-    const roleLabel = ROLES[role]?.label || role;
+    const roleLabel = ROLES[displayRole]?.label || displayRole;
 
     return `
     <div class="member-card" onclick="showDetailForEmail('${profile?.email}')">
