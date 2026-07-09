@@ -460,7 +460,7 @@ jobs:
                   role  = prof.get('role','')
                   uid   = prof['id']
                   email = prof.get('email','')
-                  if role == 'gerente':
+                  if role in ('gerente', 'admin'):
                       rows.append({
                           'user_id': uid, 'mes': mes,
                           'franquias_vendidas': franquias_vendidas,
