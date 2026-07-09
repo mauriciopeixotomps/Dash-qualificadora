@@ -411,17 +411,27 @@ jobs:
               # CC1 Realizadas do mês inteiro (busca global, filtra por created_by=SDR)
               AGEND_TYPES = 'agendamento_de_cc1,agendamento_cc1___bot,agendamento_bot'
               all_cc1_mes, _ = fetch_paged('activities', {'type': 'meeting', 'done': 1}, max_pages=30)
+              all_cc1_mes_raw = all_cc1_mes
               all_cc1_mes = [a for a in all_cc1_mes if (a.get('due_date') or '')[:7] == mes]
-              print(f"CC1 realizadas total em {mes}: {len(all_cc1_mes)}")
+              print(f"CC1 realizadas total em {mes}: {len(all_cc1_mes)} (de {len(all_cc1_mes_raw)} totais)")
+              # Debug: mostrar campos das primeiras reuniões do mês
+              for dbg in all_cc1_mes[:3]:
+                  print(f"  CC1 debug: id={dbg.get('id')} due={dbg.get('due_date')} user_id={dbg.get('user_id')} created_by={dbg.get('created_by_user_id')} subject={dbg.get('subject','')[:40]}")
+
+              # Buscar todos os deals do pipeline uma vez (evita N chamadas repetidas)
+              all_deals_pipeline, _ = fetch_paged('deals', {'pipeline_id': pipeline_id, 'status': 'all'}, max_pages=20)
+              deals_mes = [d for d in all_deals_pipeline if (d.get('add_time') or '')[:7] == mes]
+              print(f"Deals no pipeline em {mes}: {len(deals_mes)} (de {len(all_deals_pipeline)} totais)")
+              if deals_mes:
+                  dbg_d = deals_mes[0]
+                  print(f"  Deal debug: id={dbg_d.get('id')} creator_user_id={dbg_d.get('creator_user_id')} user_id={dbg_d.get('user_id')}")
 
               sdr_metrics = {}
               for s_email, s_pid in SDR_USER_IDS.items():
                   time.sleep(0.4)
                   # Negócios iniciados = deals criados pelo SDR no pipeline principal no mês
-                  neg_paged, _  = fetch_paged('deals', {'pipeline_id': pipeline_id, 'status': 'all'}, max_pages=20)
-                  neg_iniciados = sum(1 for d in neg_paged
-                                      if (d.get('add_time') or '')[:7] == mes
-                                      and str((d.get('creator_user_id') or {}).get('id') or d.get('creator_user_id') or '') == str(s_pid))
+                  neg_iniciados = sum(1 for d in deals_mes
+                                      if str((d.get('creator_user_id') or {}).get('id') or d.get('creator_user_id') or '') == str(s_pid))
                   time.sleep(0.4)
                   # Agendamentos CC1 pelo SDR no mês
                   agend_paged, _ = fetch_paged('activities', {'user_id': s_pid, 'type': AGEND_TYPES}, max_pages=10)
