@@ -501,8 +501,10 @@ jobs:
                           'comissao_variavel': sm['comissao_variavel'],
                           'generated_at': now_iso,
                       })
-              if rows:
-                  payload = json.dumps(rows).encode()
+              # Upsert um por vez para evitar erro de colunas diferentes entre roles
+              ok = 0
+              for row in rows:
+                  payload = json.dumps(row).encode()
                   req_ins = urllib.request.Request(
                       f'{SB_URL_ENV}/rest/v1/commission_data',
                       data=payload,
@@ -516,9 +518,10 @@ jobs:
                   )
                   try:
                       with urllib.request.urlopen(req_ins, timeout=15) as ri:
-                          print(f"Supabase: {len(rows)} registros gravados (HTTP {ri.status})")
+                          ok += 1
                   except urllib.error.HTTPError as e:
-                      print(f"Supabase erro: {e.read().decode()[:200]}")
+                      print(f"Supabase erro ({row.get('user_id','')}): {e.read().decode()[:200]}")
+              print(f"Supabase: {ok}/{len(rows)} registros gravados")
           else:
               print("SUPABASE_URL/SERVICE_KEY não configurados — pulando gravação")
           PYEOF
