@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T23:58:44Z",
+  "generated_at": "2026-07-14T03:16:48Z",
   "mes": "2026-07",
   "reunioes_franquia": 83,
   "reunioes_total": 249,
@@ -31,7 +31,7 @@
     "PROPOSTA": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 9,
+  "dias_uteis_decorridos": 10,
   "caixa_realizado": 31500.0,
   "funil_sf": {
     "PRÉ-QUALIFICAÇÃO": 4,
