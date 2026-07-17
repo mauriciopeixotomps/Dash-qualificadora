@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-17T10:04:02Z",
+  "generated_at": "2026-07-17T16:20:36Z",
   "mes": "2026-07",
-  "reunioes_franquia": 119,
-  "reunioes_total": 367,
-  "reunioes_mes": 119,
+  "reunioes_franquia": 124,
+  "reunioes_total": 377,
+  "reunioes_mes": 124,
   "contratos_mes": 0,
   "franquias_vendidas": 1,
   "taxa_conversao_pct": 0.0,
@@ -19,12 +19,13 @@
     "2026-07-13": 13,
     "2026-07-14": 11,
     "2026-07-15": 13,
-    "2026-07-16": 11
+    "2026-07-16": 11,
+    "2026-07-17": 5
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1988,
-    "OPORTUNIDADE (FPQ RECEBIDA)": 4,
+    "Desconhecida": 1989,
+    "OPORTUNIDADE (FPQ RECEBIDA)": 3,
     "NEGOCIAÇÃO": 2,
     "EM ATENDIMENTO": 1,
     "AGUARDANDO FPQ": 2,
@@ -35,7 +36,7 @@
   "dias_uteis_decorridos": 13,
   "caixa_realizado": 31500.0,
   "funil_sf": {
-    "OPORTUNIDADE (FPQ RECEBIDA)": 4,
+    "OPORTUNIDADE (FPQ RECEBIDA)": 3,
     "NEGOCIAÇÃO": 2,
     "EM ATENDIMENTO": 1,
     "AGUARDANDO FPQ": 2,
