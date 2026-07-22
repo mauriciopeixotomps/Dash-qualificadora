@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-22T16:29:11Z",
+  "generated_at": "2026-07-22T18:12:19Z",
   "mes": "2026-07",
-  "reunioes_franquia": 175,
-  "reunioes_total": 462,
-  "reunioes_mes": 175,
+  "reunioes_franquia": 178,
+  "reunioes_total": 467,
+  "reunioes_mes": 178,
   "contratos_mes": 0,
   "franquias_vendidas": 1,
   "taxa_conversao_pct": 0.0,
@@ -23,28 +23,28 @@
     "2026-07-17": 8,
     "2026-07-20": 11,
     "2026-07-21": 10,
-    "2026-07-22": 7
+    "2026-07-22": 10
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1986,
+    "Desconhecida": 1987,
     "AGUARDANDO FPQ": 5,
     "OPORTUNIDADE (FPQ RECEBIDA)": 2,
     "NEGOCIAÇÃO": 2,
     "EM ATENDIMENTO": 1,
-    "MQL FRANQUIA": 3,
-    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1
+    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1,
+    "MQL FRANQUIA": 2
   },
   "pipeline_id": 62,
   "dias_uteis_decorridos": 16,
   "caixa_realizado": 31500.0,
   "funil_sf": {
-    "AGUARDANDO FPQ": 5,
+    "AGUARDANDO FPQ": 6,
     "OPORTUNIDADE (FPQ RECEBIDA)": 2,
     "NEGOCIAÇÃO": 2,
     "EM ATENDIMENTO": 1,
-    "MQL FRANQUIA": 3,
-    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1
+    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1,
+    "MQL FRANQUIA": 1
   },
   "up_franquias": 0,
   "up_caixa": 0,
