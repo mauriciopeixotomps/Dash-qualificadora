@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-21T23:59:43Z",
+  "generated_at": "2026-07-22T03:35:04Z",
   "mes": "2026-07",
   "reunioes_franquia": 168,
   "reunioes_total": 450,
@@ -35,7 +35,7 @@
     "MQL FRANQUIA": 2
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 15,
+  "dias_uteis_decorridos": 16,
   "caixa_realizado": 31500.0,
   "funil_sf": {
     "OPORTUNIDADE (FPQ RECEBIDA)": 3,
