@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-22T20:15:15Z",
+  "generated_at": "2026-07-23T00:05:08Z",
   "mes": "2026-07",
-  "reunioes_franquia": 182,
-  "reunioes_total": 476,
-  "reunioes_mes": 182,
+  "reunioes_franquia": 184,
+  "reunioes_total": 481,
+  "reunioes_mes": 184,
   "contratos_mes": 0,
   "franquias_vendidas": 1,
   "taxa_conversao_pct": 0.0,
@@ -23,7 +23,7 @@
     "2026-07-17": 8,
     "2026-07-20": 11,
     "2026-07-21": 10,
-    "2026-07-22": 14
+    "2026-07-22": 16
   },
   "contratos_por_dia": {},
   "funil_franquia": {
@@ -36,7 +36,7 @@
     "MQL FRANQUIA": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 16,
+  "dias_uteis_decorridos": 17,
   "caixa_realizado": 31500.0,
   "funil_sf": {
     "AGUARDANDO FPQ": 6,
