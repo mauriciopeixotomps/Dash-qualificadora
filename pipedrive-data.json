@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-26T22:03:49Z",
+  "generated_at": "2026-07-27T00:04:53Z",
   "mes": "2026-07",
   "reunioes_franquia": 198,
   "reunioes_total": 520,
@@ -39,7 +39,7 @@
     "PROPOSTA": 2
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 18,
+  "dias_uteis_decorridos": 19,
   "caixa_realizado": 71250.0,
   "funil_sf": {
     "OPORTUNIDADE (FPQ RECEBIDA)": 2,
