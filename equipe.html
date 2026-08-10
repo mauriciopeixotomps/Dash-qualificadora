@@ -194,7 +194,10 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
       <button class="btn-logout" id="btn-logout">Sair</button>
     </div>
   </div>
-  <div id="mes-label" style="font-size:12px;color:var(--muted);margin-bottom:16px;"></div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+    <div id="mes-label" style="font-size:12px;color:var(--muted);"></div>
+    <select id="mes-select" style="font-size:12px;background:var(--card);color:var(--fg);border:1px solid #334155;border-radius:6px;padding:4px 8px;cursor:pointer;display:none;" onchange="onMesChange(this.value)"></select>
+  </div>
   <div id="team-cards" class="team-grid">
     <div class="loading">Carregando dados da equipe...</div>
   </div>
@@ -380,24 +383,15 @@ async function showApp() {
 }
 
 // ── VISÃO ADMIN — todos os membros ─────────────────────────
-async function loadTeam() {
-  const { data, error } = await sb
-    .from('commission_data')
-    .select('*, profiles(name, role, email)')
-    .order('mes', { ascending: false });
+let allTeamData = [];
 
-  if (error || !data?.length) {
-    document.getElementById('team-cards').innerHTML =
-      '<div class="loading">Nenhum dado disponível ainda. Execute o workflow para gerar os dados.</div>';
-    return;
-  }
+function onMesChange(mes) {
+  renderTeamCards(allTeamData, mes);
+}
 
-  // Pegar mês mais recente
-  const latestMes = data[0].mes;
-  document.getElementById('mes-label').textContent = `Mês de referência: ${latestMes}`;
-
-  const mesData = data.filter(d => d.mes === latestMes);
-
+function renderTeamCards(data, mes) {
+  const mesData = data.filter(d => d.mes === mes);
+  document.getElementById('mes-label').textContent = `Mês de referência: ${formatMes(mes)}`;
   document.getElementById('team-cards').innerHTML = mesData.map(d => {
     const profile = d.profiles;
     const role        = profile?.role || 'closer';
@@ -420,6 +414,36 @@ async function loadTeam() {
       <div class="mc-bar-track"><div class="mc-bar-fill" style="width:${progPct}%;background:${cor}"></div></div>
     </div>`;
   }).join('');
+}
+
+async function loadTeam() {
+  const { data, error } = await sb
+    .from('commission_data')
+    .select('*, profiles(name, role, email)')
+    .order('mes', { ascending: false });
+
+  if (error || !data?.length) {
+    document.getElementById('team-cards').innerHTML =
+      '<div class="loading">Nenhum dado disponível ainda. Execute o workflow para gerar os dados.</div>';
+    return;
+  }
+
+  allTeamData = data;
+
+  // Meses disponíveis (únicos, mais recente primeiro)
+  const meses = [...new Set(data.map(d => d.mes))].sort((a,b) => b.localeCompare(a));
+  const sel = document.getElementById('mes-select');
+  sel.innerHTML = meses.map(m => `<option value="${m}">${formatMes(m)}</option>`).join('');
+  if (meses.length > 1) sel.style.display = '';
+
+  renderTeamCards(data, meses[0]);
+}
+
+function formatMes(mes) {
+  if (!mes || mes === '—') return mes;
+  const [ano, mon] = mes.split('-');
+  const nomes = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  return `${nomes[+mon]} ${ano}`;
 }
 
 async function showDetailForEmail(email) {
