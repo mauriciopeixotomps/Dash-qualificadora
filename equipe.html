@@ -404,7 +404,7 @@ function renderTeamCards(data, mes) {
     const roleLabel = ROLES[displayRole]?.label || displayRole;
 
     return `
-    <div class="member-card" onclick="showDetailForEmail('${profile?.email}')">
+    <div class="member-card" onclick="showDetailForEmail('${profile?.email}', '${mes}')">
       <div class="mc-role">${roleLabel}</div>
       <div class="mc-name">${profile?.name || profile?.email || '—'}</div>
       <div class="label">UPs completas</div>
@@ -446,19 +446,21 @@ function formatMes(mes) {
   return `${nomes[+mon]} ${ano}`;
 }
 
-async function showDetailForEmail(email) {
+async function showDetailForEmail(email, mes) {
   document.getElementById('app-screen').style.display = 'none';
-  showDetailForUser(email);
+  showDetailForUser(email, mes);
 }
 
 // ── DASHBOARD INDIVIDUAL ────────────────────────────────────
-async function showDetailForUser(email) {
+async function showDetailForUser(email, mes) {
   document.getElementById('detail-screen').style.display = 'block';
   document.getElementById('detail-content').innerHTML = '<div class="loading">Carregando...</div>';
 
   const { data: profile } = await sb.from('profiles').select('*').eq('email', email).single();
-  const { data: rows } = await sb.from('commission_data')
-    .select('*').eq('user_id', profile?.id).order('mes', { ascending: false }).limit(1);
+  let query = sb.from('commission_data').select('*').eq('user_id', profile?.id).order('mes', { ascending: false });
+  if (mes) query = query.eq('mes', mes);
+  else query = query.limit(1);
+  const { data: rows } = await query;
 
   const d    = rows?.[0];
   const role = profile?.role || 'closer';
