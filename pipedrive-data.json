@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-12T18:59:10Z",
+  "generated_at": "2026-08-12T20:03:09Z",
   "mes": "2026-08",
   "reunioes_franquia": 70,
   "reunioes_total": 187,
@@ -20,15 +20,15 @@
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1998,
-    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1,
+    "Desconhecida": 1997,
+    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 2,
     "NEGOCIAÇÃO": 1
   },
   "pipeline_id": 62,
   "dias_uteis_decorridos": 8,
   "caixa_realizado": 0,
   "funil_sf": {
-    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1,
+    "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 2,
     "NEGOCIAÇÃO": 1
   },
   "up_franquias": 0,
