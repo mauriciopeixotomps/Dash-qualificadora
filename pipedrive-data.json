@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-17T23:21:33Z",
+  "generated_at": "2026-08-18T00:59:44Z",
   "mes": "2026-08",
   "reunioes_franquia": 85,
   "reunioes_total": 244,
@@ -28,7 +28,7 @@
     "NEGOCIAÇÃO": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 11,
+  "dias_uteis_decorridos": 12,
   "caixa_realizado": 157750.0,
   "funil_sf": {
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 2,
