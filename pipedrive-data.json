@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-21T16:30:29Z",
+  "generated_at": "2026-08-21T17:26:17Z",
   "mes": "2026-08",
   "reunioes_franquia": 115,
-  "reunioes_total": 324,
+  "reunioes_total": 325,
   "reunioes_mes": 115,
   "contratos_mes": 0,
   "franquias_vendidas": 2,
@@ -27,7 +27,8 @@
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1996,
+    "Desconhecida": 1995,
+    "LEAD": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
     "NEGOCIAÇÃO": 1
   },
@@ -35,6 +36,7 @@
   "dias_uteis_decorridos": 15,
   "caixa_realizado": 157750.0,
   "funil_sf": {
+    "LEAD": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
     "NEGOCIAÇÃO": 1
   },
