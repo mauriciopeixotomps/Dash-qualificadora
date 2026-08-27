@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-08-27T02:52:24Z",
+  "generated_at": "2026-08-27T13:42:42Z",
   "mes": "2026-08",
-  "reunioes_franquia": 140,
-  "reunioes_total": 396,
-  "reunioes_mes": 140,
+  "reunioes_franquia": 142,
+  "reunioes_total": 403,
+  "reunioes_mes": 142,
   "contratos_mes": 0,
   "franquias_vendidas": 2,
   "taxa_conversao_pct": 0.0,
@@ -26,12 +26,13 @@
     "2026-08-21": 6,
     "2026-08-24": 3,
     "2026-08-25": 5,
-    "2026-08-26": 13
+    "2026-08-26": 13,
+    "2026-08-27": 2
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1990,
-    "LEAD": 2,
+    "Desconhecida": 1991,
+    "LEAD": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 4,
     "EM ATENDIMENTO": 2,
     "NEGOCIAÇÃO": 1,
@@ -41,7 +42,7 @@
   "dias_uteis_decorridos": 19,
   "caixa_realizado": 157750.0,
   "funil_sf": {
-    "LEAD": 2,
+    "LEAD": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 4,
     "EM ATENDIMENTO": 2,
     "NEGOCIAÇÃO": 1,
