@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-10T23:41:25Z",
+  "generated_at": "2026-09-11T02:45:02Z",
   "mes": "2026-09",
   "reunioes_franquia": 58,
   "reunioes_total": 136,
@@ -26,7 +26,7 @@
     "OPORTUNIDADE (FPQ RECEBIDA)": 2
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 8,
+  "dias_uteis_decorridos": 9,
   "caixa_realizado": 0.0,
   "funil_sf": {
     "PRÉ-QUALIFICAÇÃO": 4,
