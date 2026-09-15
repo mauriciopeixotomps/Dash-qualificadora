@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-14T21:24:35Z",
+  "generated_at": "2026-09-15T00:14:39Z",
   "mes": "2026-09",
-  "reunioes_franquia": 76,
-  "reunioes_total": 177,
-  "reunioes_mes": 76,
+  "reunioes_franquia": 78,
+  "reunioes_total": 179,
+  "reunioes_mes": 78,
   "contratos_mes": 0,
   "franquias_vendidas": 2,
   "taxa_conversao_pct": 0.0,
@@ -16,7 +16,7 @@
     "2026-09-09": 10,
     "2026-09-10": 8,
     "2026-09-11": 10,
-    "2026-09-14": 7
+    "2026-09-14": 9
   },
   "contratos_por_dia": {},
   "funil_franquia": {
@@ -28,7 +28,7 @@
     "NEGOCIAÇÃO": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 10,
+  "dias_uteis_decorridos": 11,
   "caixa_realizado": 0.0,
   "funil_sf": {
     "PRÉ-QUALIFICAÇÃO": 3,
