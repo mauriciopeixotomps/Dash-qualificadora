@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-17T14:39:18Z",
+  "generated_at": "2026-09-17T18:47:51Z",
   "mes": "2026-09",
-  "reunioes_franquia": 95,
-  "reunioes_total": 215,
-  "reunioes_mes": 95,
+  "reunioes_franquia": 96,
+  "reunioes_total": 219,
+  "reunioes_mes": 96,
   "contratos_mes": 0,
   "franquias_vendidas": 2,
   "taxa_conversao_pct": 0.0,
@@ -19,7 +19,7 @@
     "2026-09-14": 10,
     "2026-09-15": 4,
     "2026-09-16": 7,
-    "2026-09-17": 5
+    "2026-09-17": 6
   },
   "contratos_por_dia": {},
   "funil_franquia": {
