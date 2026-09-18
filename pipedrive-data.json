@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-17T23:54:58Z",
+  "generated_at": "2026-09-18T02:57:16Z",
   "mes": "2026-09",
   "reunioes_franquia": 99,
   "reunioes_total": 224,
@@ -30,7 +30,7 @@
     "NEGOCIAÇÃO": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 13,
+  "dias_uteis_decorridos": 14,
   "caixa_realizado": 0.0,
   "funil_sf": {
     "MQL FRANQUIA": 3,
