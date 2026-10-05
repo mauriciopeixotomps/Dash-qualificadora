@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-04T22:18:05Z",
+  "generated_at": "2026-10-05T01:34:41Z",
   "mes": "2026-10",
   "reunioes_franquia": 11,
   "reunioes_total": 25,
@@ -21,7 +21,7 @@
     "OPORTUNIDADE (FPQ RECEBIDA)": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 2,
+  "dias_uteis_decorridos": 3,
   "caixa_realizado": 38250.0,
   "funil_sf": {
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
