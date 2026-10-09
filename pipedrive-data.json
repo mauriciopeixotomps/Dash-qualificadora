@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-08T22:49:50Z",
+  "generated_at": "2026-10-09T02:45:43Z",
   "mes": "2026-10",
   "reunioes_franquia": 30,
   "reunioes_total": 89,
@@ -27,7 +27,7 @@
     "NEGOCIAÇÃO": 1
   },
   "pipeline_id": 63,
-  "dias_uteis_decorridos": 6,
+  "dias_uteis_decorridos": 7,
   "caixa_realizado": 0,
   "funil_sf": {
     "AGUARDANDO FPQ": 3,
