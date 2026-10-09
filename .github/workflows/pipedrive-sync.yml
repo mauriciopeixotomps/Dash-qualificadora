@@ -465,9 +465,10 @@ jobs:
               now_iso = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
               # Circular 002/2026 — vigência set/2026
               UP_ROLE = {
-                  'closer':  {'f': 1, 'c': 17_500,  'val': 2_500},
-                  'gerente': {'f': 4, 'c': 70_000,  'val': 5_000},
-                  'gestor':  {'f': 8, 'c': 140_000, 'val': 10_000},
+                  'closer':          {'f': 2, 'c': 35_000, 'val': 2_500},
+                  'closer_outbound': {'f': 1, 'c': 35_000, 'val': 2_500},
+                  'gerente':         {'f': 4, 'c': 70_000,  'val': 5_000},
+                  'gestor':          {'f': 8, 'c': 140_000, 'val': 10_000},
               }
               rows = []
               for prof in profiles:
@@ -483,13 +484,13 @@ jobs:
                           'comissao_variavel': comissao_variavel or 0,
                           'generated_at': now_iso,
                       })
-                  elif role in ('closer', 'gestor'):
+                  elif role in ('closer', 'closer_outbound', 'gestor'):
                       cd  = closer_sf_data.get(email, {'franquias': 0, 'caixa': 0.0})
                       cfg = UP_ROLE[role]
                       c_up_f = cd['franquias'] // cfg['f']
                       c_up_c = int(cd['caixa'] // cfg['c'])
                       c_ups  = min(c_up_f, c_up_c)
-                      c_com  = max(0, c_ups - 1) * cfg['val']
+                      c_com  = c_ups * cfg['val']
                       rows.append({
                           'user_id': uid, 'mes': mes,
                           'franquias_vendidas': cd['franquias'],
