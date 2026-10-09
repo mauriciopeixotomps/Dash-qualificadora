@@ -226,7 +226,7 @@ const Pct = v => (v || 0).toFixed(1) + '%';
 const ROLES = {
   closer: {
     label: 'Closer',
-    upF: 1, upC: 35_000,
+    upF: 1, upC: 17_500,
     comissao: ups => ups < 2 ? 0 : (ups - 1) * 2_500,
     maxUP: 6,
   },
@@ -237,13 +237,13 @@ const ROLES = {
   },
   gerente: {
     label: 'Gerente de Expansão',
-    upF: 4, upC: 140_000,
+    upF: 4, upC: 70_000,
     comissao: ups => ups < 2 ? 0 : (ups - 1) * 5_000,
     maxUP: 5,
   },
   gestor: {
     label: 'Gestor de Qualificação',
-    upF: 8, upC: 280_000,
+    upF: 8, upC: 140_000,
     comissao: ups => ups < 2 ? 0 : (ups - 1) * 10_000,
     maxUP: 4,
   },

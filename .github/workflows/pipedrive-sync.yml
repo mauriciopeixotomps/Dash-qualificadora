@@ -463,10 +463,11 @@ jobs:
               print(f"Supabase: {len(profiles)} perfis encontrados")
 
               now_iso = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+              # Circular 002/2026 — vigência set/2026
               UP_ROLE = {
-                  'closer':  {'f': 1, 'c': 35_000,  'val': 2_500},
-                  'gerente': {'f': 4, 'c': 140_000, 'val': 5_000},
-                  'gestor':  {'f': 8, 'c': 280_000, 'val': 10_000},
+                  'closer':  {'f': 1, 'c': 17_500,  'val': 2_500},
+                  'gerente': {'f': 4, 'c': 70_000,  'val': 5_000},
+                  'gestor':  {'f': 8, 'c': 140_000, 'val': 10_000},
               }
               rows = []
               for prof in profiles:
