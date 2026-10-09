@@ -381,7 +381,7 @@ jobs:
                   'lorenzo.meneghetti@grupostudio.com.br':24196535,
               }
 
-              # Pré-calcular franquias/caixa por closer no SF
+              # Pré-calcular franquias/caixa/partners por closer no SF
               closer_sf_data = {}
               if SF_TOKEN and sf_pipeline_id and sf_last_stage_id:
                   for c_email, c_pid in SF_USER_IDS.items():
@@ -392,9 +392,8 @@ jobs:
                       })
                       c_franq = 0
                       c_caixa = 0.0
+                      c_partners = 0
                       for d in c_won:
-                          if d.get('stage_id') != sf_last_stage_id:
-                              continue
                           wt = d.get('won_time') or ''
                           if not wt: continue
                           try:
@@ -402,11 +401,19 @@ jobs:
                               won_date = (dt_utc - timedelta(hours=3)).strftime('%Y-%m-%d')
                           except Exception:
                               won_date = wt[:10]
-                          if won_date.startswith(mes):
+                          if not won_date.startswith(mes):
+                              continue
+                          if d.get('stage_id') == sf_last_stage_id:
                               c_franq += 1
                               c_caixa += float(d.get('value') or 0)
-                      closer_sf_data[c_email] = {'franquias': c_franq, 'caixa': c_caixa}
-                      print(f"Closer {c_email}: {c_franq} franq, R${c_caixa:,.0f}")
+                          else:
+                              # Verificar se é Contrato Partner (produto_id=120)
+                              time.sleep(0.2)
+                              prods = sf_fetch_paged(f'deals/{d["id"]}/products', {})
+                              if any(p.get('product_id') == 120 for p in prods):
+                                  c_partners += 1
+                      closer_sf_data[c_email] = {'franquias': c_franq, 'caixa': c_caixa, 'partners': c_partners}
+                      print(f"Closer {c_email}: {c_franq} franq, R${c_caixa:,.0f}, {c_partners} partners")
 
               # CC1 Realizadas do mês inteiro (busca global, filtra por created_by=SDR)
               AGEND_TYPES = 'agendamento_de_cc1,agendamento_cc1___bot,agendamento_bot'
@@ -485,18 +492,20 @@ jobs:
                           'generated_at': now_iso,
                       })
                   elif role in ('closer', 'closer_outbound', 'gestor'):
-                      cd  = closer_sf_data.get(email, {'franquias': 0, 'caixa': 0.0})
+                      cd  = closer_sf_data.get(email, {'franquias': 0, 'caixa': 0.0, 'partners': 0})
                       cfg = UP_ROLE[role]
                       c_up_f = cd['franquias'] // cfg['f']
                       c_up_c = int(cd['caixa'] // cfg['c'])
                       c_ups  = min(c_up_f, c_up_c)
                       c_com  = c_ups * cfg['val']
+                      c_bonus_partner = cd.get('partners', 0) * 20
                       rows.append({
                           'user_id': uid, 'mes': mes,
                           'franquias_vendidas': cd['franquias'],
                           'caixa_realizado': cd['caixa'],
                           'ups_completos': c_ups,
                           'comissao_variavel': c_com,
+                          'bonus_partner': c_bonus_partner,
                           'generated_at': now_iso,
                       })
                   elif role == 'sdr':
