@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-09T19:25:09Z",
+  "generated_at": "2026-10-09T19:29:33Z",
   "mes": "2026-10",
   "reunioes_franquia": 36,
-  "reunioes_total": 105,
+  "reunioes_total": 106,
   "reunioes_mes": 36,
   "contratos_mes": 0,
   "franquias_vendidas": 0,
@@ -36,7 +36,7 @@
     "EM ATENDIMENTO": 5,
     "PRÉ-QUALIFICAÇÃO": 4,
     "LEAD": 6,
-    "MQL FRANQUIA": 7,
+    "MQL FRANQUIA": 8,
     "PROPOSTA": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
     "NEGOCIAÇÃO": 1
