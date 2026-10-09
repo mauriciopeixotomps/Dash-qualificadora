@@ -471,11 +471,12 @@ jobs:
 
               now_iso = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
               # Circular 002/2026 — vigência set/2026
+              # free=1 significa que a 1ª UP não é remunerada (paga a partir da 2ª)
               UP_ROLE = {
-                  'closer':          {'f': 2, 'c': 35_000, 'val': 2_500},
-                  'closer_outbound': {'f': 1, 'c': 35_000, 'val': 2_500},
-                  'gerente':         {'f': 4, 'c': 70_000,  'val': 5_000},
-                  'gestor':          {'f': 8, 'c': 140_000, 'val': 10_000},
+                  'closer':          {'f': 1, 'c': 17_500, 'val': 2_500, 'free': 1},
+                  'closer_outbound': {'f': 1, 'c': 35_000, 'val': 2_500, 'free': 0},
+                  'gerente':         {'f': 4, 'c': 70_000,  'val': 5_000, 'free': 1},
+                  'gestor':          {'f': 8, 'c': 140_000, 'val': 10_000, 'free': 1},
               }
               rows = []
               for prof in profiles:
@@ -497,7 +498,7 @@ jobs:
                       c_up_f = cd['franquias'] // cfg['f']
                       c_up_c = int(cd['caixa'] // cfg['c'])
                       c_ups  = min(c_up_f, c_up_c)
-                      c_com  = c_ups * cfg['val']
+                      c_com  = max(0, c_ups - cfg.get('free', 0)) * cfg['val']
                       c_bonus_partner = cd.get('partners', 0) * 20
                       rows.append({
                           'user_id': uid, 'mes': mes,

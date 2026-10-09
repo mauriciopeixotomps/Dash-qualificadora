@@ -226,8 +226,8 @@ const Pct = v => (v || 0).toFixed(1) + '%';
 const ROLES = {
   closer: {
     label: 'Closer',
-    upF: 2, upC: 35_000,
-    comissao: ups => ups * 2_500,
+    upF: 1, upC: 17_500,
+    comissao: ups => ups < 2 ? 0 : (ups - 1) * 2_500,
     maxUP: 6,
   },
   closer_outbound: {
