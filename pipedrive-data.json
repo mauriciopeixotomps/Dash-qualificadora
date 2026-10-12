@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-12T16:28:10Z",
+  "generated_at": "2026-10-12T23:28:44Z",
   "mes": "2026-10",
   "reunioes_franquia": 40,
   "reunioes_total": 111,
@@ -18,12 +18,12 @@
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1960,
+    "Desconhecida": 1961,
     "LEAD": 16,
     "AGUARDANDO FPQ": 4,
     "EM ATENDIMENTO": 5,
     "PRÉ-QUALIFICAÇÃO": 4,
-    "MQL FRANQUIA": 7,
+    "MQL FRANQUIA": 6,
     "PROPOSTA": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 2,
     "NEGOCIAÇÃO": 1
@@ -36,7 +36,7 @@
     "AGUARDANDO FPQ": 4,
     "EM ATENDIMENTO": 5,
     "PRÉ-QUALIFICAÇÃO": 4,
-    "MQL FRANQUIA": 7,
+    "MQL FRANQUIA": 6,
     "PROPOSTA": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 2,
     "NEGOCIAÇÃO": 1
