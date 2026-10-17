@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-17T14:04:24Z",
+  "generated_at": "2026-10-17T17:46:11Z",
   "mes": "2026-10",
   "reunioes_franquia": 63,
   "reunioes_total": 182,
@@ -22,9 +22,9 @@
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1965,
+    "Desconhecida": 1964,
+    "LEAD": 8,
     "AGUARDANDO FPQ": 5,
-    "LEAD": 7,
     "PRÉ-QUALIFICAÇÃO": 8,
     "MQL FRANQUIA": 8,
     "EM ATENDIMENTO": 3,
@@ -36,8 +36,8 @@
   "dias_uteis_decorridos": 12,
   "caixa_realizado": 0,
   "funil_sf": {
+    "LEAD": 8,
     "AGUARDANDO FPQ": 5,
-    "LEAD": 7,
     "PRÉ-QUALIFICAÇÃO": 8,
     "MQL FRANQUIA": 8,
     "EM ATENDIMENTO": 3,
