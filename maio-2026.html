@@ -135,6 +135,12 @@
 
     /* Grid sempre 1 coluna no mobile */
     .grid-5, .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr !important; }
+
+    /* Person rows: esconde a barra e compacta colunas */
+    .person-row { grid-template-columns: 26px 1fr auto auto !important; gap: 6px !important; }
+    .person-bar-track { display: none !important; }
+    .person-stat { min-width: 0 !important; font-size: 11px; }
+    .person-gap { font-size: 11px; }
   }
   .kpi.kpi-lost .kpi-value { color: #f87171; }
   .kpi {
@@ -1074,7 +1080,7 @@ for (let i = D.daily_series.length-1; i >= 0; i--) {
   if (d.leads || d.lost || d.ag || d.re) { lastIdx = i; break; }
 }
 
-// Show value on every day where progress was made (cumulative)
+// Show value only on the last data point to avoid clutter
 const cumDl = (color) => ({
   display: ctx => ctx.dataIndex === lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
   color: '#fff',
