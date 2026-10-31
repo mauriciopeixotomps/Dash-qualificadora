@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T01:26:22Z",
+  "generated_at": "2026-10-31T07:59:11Z",
   "mes": "2026-10",
   "reunioes_franquia": 104,
   "reunioes_total": 374,
@@ -32,8 +32,8 @@
   "funil_franquia": {
     "Desconhecida": 1973,
     "PRÉ-QUALIFICAÇÃO": 1,
-    "LEAD": 10,
-    "EM ATENDIMENTO": 11,
+    "LEAD": 11,
+    "EM ATENDIMENTO": 10,
     "AGUARDANDO FPQ": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
     "PROPOSTA": 1
@@ -43,8 +43,8 @@
   "caixa_realizado": 337000.26,
   "funil_sf": {
     "PRÉ-QUALIFICAÇÃO": 1,
-    "LEAD": 10,
-    "EM ATENDIMENTO": 11,
+    "LEAD": 11,
+    "EM ATENDIMENTO": 10,
     "AGUARDANDO FPQ": 1,
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 3,
     "PROPOSTA": 1
