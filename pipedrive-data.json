@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-15T20:48:04Z",
+  "generated_at": "2026-11-16T00:42:25Z",
   "mes": "2026-11",
   "reunioes_franquia": 72,
   "reunioes_total": 206,
@@ -33,7 +33,7 @@
     "PROPOSTA": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 10,
+  "dias_uteis_decorridos": 11,
   "caixa_realizado": 0.0,
   "funil_sf": {
     "CONTRATO ENVIADO": 1,
