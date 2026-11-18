@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-17T19:36:00Z",
+  "generated_at": "2026-11-18T02:04:50Z",
   "mes": "2026-11",
-  "reunioes_franquia": 83,
-  "reunioes_total": 242,
-  "reunioes_mes": 83,
+  "reunioes_franquia": 86,
+  "reunioes_total": 250,
+  "reunioes_mes": 86,
   "contratos_mes": 0,
   "franquias_vendidas": 1,
   "taxa_conversao_pct": 0.0,
@@ -19,7 +19,7 @@
     "2026-11-12": 8,
     "2026-11-13": 5,
     "2026-11-16": 6,
-    "2026-11-17": 5,
+    "2026-11-17": 8,
     "2026-11-20": 1
   },
   "contratos_por_dia": {},
@@ -35,7 +35,7 @@
     "PROPOSTA": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 12,
+  "dias_uteis_decorridos": 13,
   "caixa_realizado": 0.0,
   "funil_sf": {
     "CONTRATO ENVIADO": 1,
