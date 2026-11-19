@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-18T19:24:29Z",
+  "generated_at": "2026-11-19T01:41:44Z",
   "mes": "2026-11",
-  "reunioes_franquia": 95,
-  "reunioes_total": 267,
-  "reunioes_mes": 95,
+  "reunioes_franquia": 97,
+  "reunioes_total": 269,
+  "reunioes_mes": 97,
   "contratos_mes": 0,
   "franquias_vendidas": 1,
   "taxa_conversao_pct": 0.0,
@@ -20,7 +20,7 @@
     "2026-11-13": 5,
     "2026-11-16": 7,
     "2026-11-17": 8,
-    "2026-11-18": 8,
+    "2026-11-18": 10,
     "2026-11-20": 1
   },
   "contratos_por_dia": {},
@@ -36,7 +36,7 @@
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 13,
+  "dias_uteis_decorridos": 14,
   "caixa_realizado": 0.0,
   "funil_sf": {
     "PROPOSTA": 2,
