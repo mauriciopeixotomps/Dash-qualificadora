@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-19T18:51:12Z",
+  "generated_at": "2026-11-20T01:02:34Z",
   "mes": "2026-11",
   "reunioes_franquia": 98,
-  "reunioes_total": 274,
+  "reunioes_total": 283,
   "reunioes_mes": 98,
   "contratos_mes": 0,
   "franquias_vendidas": 1,
@@ -25,10 +25,10 @@
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1985,
+    "Desconhecida": 1983,
     "PROPOSTA": 2,
     "NEGOCIAÇÃO": 2,
-    "LEAD": 5,
+    "LEAD": 7,
     "EM ATENDIMENTO": 2,
     "MQL FRANQUIA": 1,
     "PRÉ-QUALIFICAÇÃO": 1,
@@ -36,12 +36,12 @@
     "OPORTUNIDADE QUENTE (CC2 AGENDADA)": 1
   },
   "pipeline_id": 62,
-  "dias_uteis_decorridos": 14,
+  "dias_uteis_decorridos": 15,
   "caixa_realizado": 0.0,
   "funil_sf": {
     "PROPOSTA": 2,
     "NEGOCIAÇÃO": 2,
-    "LEAD": 5,
+    "LEAD": 7,
     "EM ATENDIMENTO": 2,
     "MQL FRANQUIA": 1,
     "PRÉ-QUALIFICAÇÃO": 1,
