@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-28T01:02:21Z",
+  "generated_at": "2026-11-28T08:50:09Z",
   "mes": "2026-11",
   "reunioes_franquia": 110,
   "reunioes_total": 368,
@@ -30,10 +30,10 @@
   },
   "contratos_por_dia": {},
   "funil_franquia": {
-    "Desconhecida": 1982,
+    "Desconhecida": 1980,
     "PROPOSTA": 2,
     "CONTRATO ENVIADO": 1,
-    "LEAD": 8,
+    "LEAD": 10,
     "EM ATENDIMENTO": 2,
     "NEGOCIAÇÃO": 1,
     "MQL FRANQUIA": 1,
@@ -47,7 +47,7 @@
   "funil_sf": {
     "PROPOSTA": 2,
     "CONTRATO ENVIADO": 1,
-    "LEAD": 8,
+    "LEAD": 10,
     "EM ATENDIMENTO": 2,
     "NEGOCIAÇÃO": 1,
     "MQL FRANQUIA": 1,
